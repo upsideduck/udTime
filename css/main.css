@@ -1,0 +1,226 @@
+body {
+	font: 11px Verdana, Arial, Helvetica, sans-serif;
+	color: #666666;
+}
+.textfield {
+	font-size: 11px;
+	color: #333333;
+	background: #F7F7F7;
+	border: 1px solid #CCCCCC;
+	padding-left: 1px;
+}
+h1 {
+	color: #99CC00;
+	margin: 0px 0px 5px;
+	padding: 0px 0px 3px;
+	font: bold 18px Verdana, Arial, Helvetica, sans-serif;
+	border-bottom: 1px dashed #E6E8ED;
+}
+a {
+	color: #2D3954;
+	font-size: 11px;
+}
+a:hover {
+	color: #99CC00;
+}
+.notification {
+	display: compact;
+	float: right;
+}
+.err {
+	color: #FF9900;
+}
+.succ {
+	color: #99CC00;
+}
+.pos {
+	color: #99CC00;
+}
+.neg {
+	color: #FF9900;
+}
+th {
+	font-weight: bold;
+	text-align: left;
+}
+
+p.registerlink {
+    
+      text-align: center;
+
+      }
+
+img.logo {
+      position: relative;
+      top: -5px; 
+      float: right;
+      width: 150px;
+}
+
+.pagebody {
+      padding-top: 25px;
+}
+
+.footer {
+	border-top: 1px dashed #E6E8ED;
+	margin: 5px 0px;
+	padding: 5px 0px 3px;
+}
+	
+#result {
+	color: #FF9900;
+}
+
+.notification_mainform {
+	
+	text-align: left;
+	padding-bottom: 10px;
+}
+/* @group table view */
+
+.container {
+	text-align: center;
+	min-width: 500px;
+
+}
+
+.hf_tab {
+	
+	text-align: left;
+	width: 12.1%;
+	display: inline-block;
+	margin: 2px;
+	color: #000;
+}
+
+.week_container {
+	width: 100%;
+	height: 80%;
+	font-size: 10px;
+	text-align: center;
+	background-color: #ff9d8c;
+}
+
+.day_container {
+	height: 100%;
+	width: 12.1%; 
+	display: inline-block;
+	background-color: #dfdbe1;
+	border: 1px solid #000;
+	margin: 2px;
+	padding-left: 2px;
+}
+
+.work_tab{
+	left:  -2px;
+	width:  100%;
+	background-color: #a10b11;
+	position: relative;
+	text-align: center;
+	border-top: 1px solid #000;
+	border-bottom: 1px solid #000;
+	padding-right: 1px;
+	padding-left: 1px;
+}
+
+.work_tab a {
+	display: block;
+	height: 100%;
+	width: 100%;
+}
+
+.break_tab {
+	background-color: #bcbebb;
+	position: relative;
+	border-bottom: 1px solid #000;
+	border-top: 1px solid #000;
+}
+
+.break_tab a {
+	display: block;
+	height: 100%;
+	width: 100%;
+}
+
+.totals {
+	font-size: 18px;
+	text-align: center;
+	margin-bottom: 10px;
+}
+
+#loading {
+	text-align: center;
+}
+
+.week_container_list {
+	display: block;
+}
+
+.day_header_list {
+	font-weight: bold;
+}
+
+.day_container_list {
+	display: table-cell;
+	padding-right: 10px;
+}
+
+/* @end */
+
+/* @group list view */
+
+ .work_list {
+ 	list-style-type: none;
+ 	padding-left: 0px;
+ }
+ 
+ .break_list {
+ 	list-style-type: none;
+ 	padding-left: 0px;
+ 	
+ }
+ 
+ .work_item_list {
+ 	
+ }
+ 
+ .break_item_list {
+ 	
+ }
+ 
+ .work_break_item_list{
+ 	padding: 0px;
+ }
+/* @end */
+
+/* @group Summary list */
+.weeklist_item{
+	display: table-row;
+}
+.weeklist_date{
+	display: table-cell;
+	padding-right: 5px;
+}
+.weeklist_timestamp{
+	display: table-cell;
+	padding-right: 5px;
+}
+.weeklist_holiday{
+	display: table-cell;
+	padding-right: 5px;
+}
+.weeklist_diff{
+	display: table-cell;
+	padding-right: 5px;
+}
+.weeklist_status{
+	display: table-cell;
+	padding-right: 5px;	
+}
+
+#weeklist_alltotals {
+	border-top: 1px solid #000000;
+	margin-top: 5px;
+	width: 250px;
+}
+/* @end */
