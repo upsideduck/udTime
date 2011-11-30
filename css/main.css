@@ -223,4 +223,7 @@ img.logo {
 	margin-top: 5px;
 	width: 250px;
 }
+.weeklist_offset {
+	font-weight: bold;
+}
 /* @end */

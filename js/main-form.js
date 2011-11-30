@@ -115,7 +115,7 @@ $(document).ready(function() {
 	    } 
 	    else 
 	    {
-	    	var timestamp = $("#mtime").val();
+	    	var timestamp = $("#time").val();
 	    }
 	    
 	    $.ajax({
@@ -144,7 +144,7 @@ $(document).ready(function() {
 		separator:':',
 		step: 5});
 		
-	$("#time").mask("99:99",{placeholder: " "});
+	$("#time").mask("99:99",{placeholder: "0"});
 		
 	
 });

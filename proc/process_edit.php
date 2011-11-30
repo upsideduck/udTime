@@ -13,8 +13,8 @@
 	
 	
 	//Sanitize the POST values
-    $starttime = strtotime(clean($_REQUEST["start_date"]) . " " . clean($_REQUEST["start_hour"]) . ":" . clean($_REQUEST["start_min"]) . ":" . clean($_REQUEST["start_sec"]));
-    $endtime = strtotime(clean($_POST["end_date"]) . " " . clean($_REQUEST["end_hour"]) . ":" . clean($_REQUEST["end_min"]) . ":" . clean($_REQUEST["end_sec"]));
+    $starttime = strtotime(clean($_REQUEST["start_date"]) . " " . clean($_REQUEST["start_time"]));
+    $endtime = strtotime(clean($_POST["end_date"]) . " " . clean($_REQUEST["end_time"]));
     $comment = clean($_REQUEST["comment"]);    
     $type = clean($_REQUEST["type"]);
     $action = clean($_REQUEST["a"]);
