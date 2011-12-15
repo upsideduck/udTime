@@ -9,7 +9,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <script type="text/javascript" src="js/jquery.js"></script>
-<script type="text/javascript" src="js/jquery-ui.js"></script>
+<script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
 <?php
 switch (__SCRIPT_NAME__) {
 	case "index" :
@@ -26,8 +26,10 @@ switch (__SCRIPT_NAME__) {
 ?>
 <link href="css/main.css" rel="stylesheet" type="text/css" />
 <link href="css/objects.css" rel="stylesheet" type="text/css" />
+<link href="css/jquery-ui-1.8.16.custom.css" rel="stylesheet" type="text/css" />
 <title>UDTime</title>
 </head>
-<body class="main_boy">
-<img src="images/logo.png" class="logo">
+<body>
+<div class="page">
+<div class="header"><div id="logo">&nbsp;</div></div>
 <div class="pagebody">

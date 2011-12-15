@@ -1,5 +1,7 @@
 $(document).ready(function() {
 	
+	$("#mainform_submit").button();
+	
 	$("#free_choices").hide();
 	$("#work_choices").hide();
 	$("#break_choices").hide();
@@ -44,8 +46,8 @@ $(document).ready(function() {
 	   	var starttime = $(xml).find("starttime").text();   	
 	   	var allbreaktime = $(xml).find("allBreakTime").text();   
 	   	var comment =  $(xml).find("comment").text(); 
-	   	var time = 10;	
-	   	
+	   	var time = 10;
+	  	   	
 	   	switch (type){
 	   		case '':
 	   			$("#free_choices").show()
@@ -56,7 +58,8 @@ $(document).ready(function() {
 	   			$("#script").val("proc/process_newperiod.php");
 	   			clearInterval(main_timer);
 	   			$("#period_description").text("User free");
-	   			$("#comment").text(comment);
+	   			$("#comment_header").text("Comment: ");
+	   			$("#comment").val(comment);
 	   			$("#now").attr('checked', true );
 	   			break;
 	   		case 'work':
@@ -66,7 +69,8 @@ $(document).ready(function() {
 	   			$("#break_choices").hide();
 	   			$("#script").val("proc/process_ongoingperiod.php");
 	   			$("#period_description").text("User working");
-	   			$("#comment").text(comment);
+	   			$("#comment").val(comment);
+	   			$("#comment_header").text("Work comment: ");
 	   			clearInterval(main_timer);
 	   			$("#clock").text(updateClock(starttime, allbreaktime));
 	   			main_timer = setInterval(function()
@@ -83,8 +87,9 @@ $(document).ready(function() {
 	   			$("#break_choices").show();
 	   			$("#break_choices input:radio:first").attr('checked', true);
 	   			$("#script").val("proc/process_endbreak.php");
-	   			$("#period_description").text("User on break");
-	   			$("#comment").text("");
+	   			$("#period_description").text("User on break"); 				   			
+	   			$("#comment_header").text("Break comment: ");
+	   			$("#comment").val("");
 	   			clearInterval(main_timer);
 	   			$("#clock").text(updateClock(starttime, allbreaktime));
 	   			main_timer = setInterval(function()

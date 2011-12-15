@@ -86,8 +86,9 @@ function goOnBreak($comment, $timestamp) {
 	}
 	
 	
-    $sql1 = "INSERT INTO breakdb (member_id, parent_id, starttime, comment) VALUES (".$_SESSION['SESS_MEMBER_ID'].", ".$_SESSION['SESS_ACTIVE_PERIOD'].", $timestamp,  '$comment')";
+    $sql1 = "INSERT INTO breakdb (member_id, parent_id, starttime) VALUES (".$_SESSION['SESS_MEMBER_ID'].", ".$_SESSION['SESS_ACTIVE_PERIOD'].", $timestamp)";
     $sql2 = "UPDATE userdb SET activeperiod = $next_increment, activetype = 'break' WHERE member_id = ".$_SESSION['SESS_MEMBER_ID'];
+	$sql3 = "UPDATE ".$savedActiveType."db SET comment = '$comment' WHERE member_id = ".$_SESSION['SESS_MEMBER_ID'] ." AND id =  $savedActivePeriod";
     $_SESSION['SESS_ACTIVE_PERIOD'] = $next_increment;
     $_SESSION['SESS_ACTIVE_TYPE'] = "break";
             
