@@ -13,27 +13,27 @@ require_once(__SITE_BASE__ . 'func/func_misc.php');
     echo "<input type='hidden' name='script' value='' id='script'/> \n";
     echo "<div id='free_choices'>";
     echo "<label>
-          <input type='radio' name='type' value='work' id='type' checked/>
+          <input type='radio' name='type' value='work' id='type1' checked/>
           Work	
          </label>";
 	echo "</div>";             
 	echo "<div id='work_choices'>";
 	echo "<label>
-	     <input type='radio' name='type' value='break' id='type'/>
+	     <input type='radio' name='type' value='break' id='type2'/>
 	     Go on break	
 	     </label><br />";
 	echo "<label>
-	     <input type='radio' name='type' value='work' id='type'/>
+	     <input type='radio' name='type' value='work' id='type3'/>
 	     End current active period
 	     </label>";     
 	echo "</div>";
 	echo "<div id='break_choices'>";
 	echo "<label>
-	     <input type='radio' name='type' value='break' id='type'/>
+	     <input type='radio' name='type' value='break' id='type4'/>
 	     End break	
 	     </label><br />";
 	echo "<label>
-	     <input type='radio' name='type' value='work' id='type'/>
+	     <input type='radio' name='type' value='work' id='type5'/>
 	     Go home from work
 	     </label>";     
 	echo "</div>"; 

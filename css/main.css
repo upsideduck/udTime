@@ -77,13 +77,17 @@ p.registerlink {
 	background-color: #f0f0f0;
 	  border-left: 2px solid #bababa;
 	  border-right: 2px solid #bababa;
-	  padding: 95px 25px 25px;
 	  height: 100%;
-	  margin-bottom: 0;
-	  margin-left: auto;
-	  margin-right: auto;
+	  padding: 60px 25px 25px;
+	  margin: -15px auto 0;
   }
-
+ .menu {
+ 	width: 600px;
+ 	
+ 	margin-left: auto;
+ 	margin-right: auto;
+	 padding-top: 70px;
+ }
 .footer {
 	border-top: 1px dashed #E6E8ED;
 	margin: 5px 0px;

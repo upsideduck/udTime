@@ -7,7 +7,7 @@
     require_once('includes/header.php');
    
 ?>
-<h1>My Profile </h1>
+<h1>My Profile</h1>
 <a href="index.php">Home</a> | <a href="profile.php">My Profile</a> | <a href="summary.php">Summary</a>
 <?php 
 	notification();

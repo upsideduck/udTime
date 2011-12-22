@@ -10,6 +10,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <script type="text/javascript" src="js/jquery.js"></script>
 <script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
+<script type="text/javascript" src="js/mainmenu.js"></script>
 <?php
 switch (__SCRIPT_NAME__) {
 	case "index" :
@@ -25,6 +26,7 @@ switch (__SCRIPT_NAME__) {
 }
 ?>
 <link href="css/main.css" rel="stylesheet" type="text/css" />
+<link href="css/mainmenu.css" rel="stylesheet" type="text/css" />
 <link href="css/objects.css" rel="stylesheet" type="text/css" />
 <link href="css/jquery-ui-1.8.16.custom.css" rel="stylesheet" type="text/css" />
 <title>UDTime</title>
@@ -32,4 +34,15 @@ switch (__SCRIPT_NAME__) {
 <body>
 <div class="page">
 <div class="header"><div id="logo">&nbsp;</div></div>
+<div class="menu">
+<?php 
+if(isset($_SESSION['SESS_MEMBER_ID'])) 
+{
+	include_once("includes/mainmenu.php");	
+}
+?>
+</div>
+
 <div class="pagebody">
+
+

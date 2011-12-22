@@ -1,18 +1,17 @@
-<html>
-<head>
-<script type="text/javascript" src="js/jquery.js"></script>
-<style type="text/css">
 
 ul.topnav {
 	list-style: none;
 	position: relative;
 	left: 80px;
 	padding: 0px;
-	margin: 0;
+	margin: 0 0 5px 10px;
 	float: left;
 	background-color: #6493d2;
-	-moz-box-shadow: 0 0 5px #000000;
-	-webkit-box-shadow: 0 0 5px #000000;
+-moz-box-shadow: 0 1px 1px #000;
+ -webkit-box-shadow: 0 1px 1px #000;
+ box-shadow: 0 1px 1px #000;
+ z-index: 1;
+ clear: both;
 }
 ul.topnav li {
 	height: 37px;
@@ -55,7 +54,7 @@ ul.topnav li .rightsep {
     margin-top: 8px;
 }
 ul.topnav li:first-child .leftsep {
-	background:url(images/leftmenuend.png) no-repeat left center; 
+	background:url(../images/leftmenuend.png) no-repeat left center; 
 	left: -21px; 
 	height: 100%;
 	border: 0px;
@@ -64,7 +63,7 @@ ul.topnav li ul.subnav li .leftsep {
 	display: none;    
 }   
 ul.topnav li:last-child .rightsep {
-	background:url(images/rightmenuend.png) no-repeat right center; 
+	background:url(../images/rightmenuend.png) no-repeat right center; 
 	left: 21px; 
 	height: 100%;
 	border: 0px;
@@ -76,7 +75,7 @@ ul.topnav li ul.subnav li .rightsep {
 }       
 ul.topnav li .hover {
 	/* mouseover image  */
-    background:url(images/downarrow.png) no-repeat center center;  
+   // background:url(../images/downarrow.png) no-repeat center center;  
     background-color: #c0c0c0;     
     opacity: 0.5;
    	/* must be postion absolute     */
@@ -94,7 +93,7 @@ ul.topnav li span { /*--Drop down trigger styles--*/
 	height: 40px;
 	float: left;
 	padding-right: 3px;
-	background: url(images/downarrow.png) no-repeat left center;
+	background: url(../images/downarrow.png) no-repeat left center;
 }
 ul.topnav li ul.subnav {
 	list-style: none;
@@ -124,56 +123,3 @@ html ul.topnav li ul.subnav li a {
 html ul.topnav li ul.subnav li:first-child a {
 	padding-left: 20px !important;
 }
-body {
-	margin: 0px;
-	background-color: #f0f0f0;
-}
-</style>
-<script type="text/javascript">
-$(document).ready(function(){
-
-	$("ul.subnav").parent().append("<span></span>"); //Only shows drop down trigger when js is enabled (Adds empty span tag after ul.subnav*)
-	$('ul.topnav li').append('<div class="leftsep"></div><div class="hover"></div><div class="rightsep"></div>');
-	$("ul.topnav li").hover( 
-		function() {  
-			$(this).find("ul.subnav").slideDown('fast').show(); //Drop down the subnav on clic      
-			$(this).children('.hover').stop(true, true).fadeIn('fast');     
-	    }, 
-	    function() {
-	        $(this).children('.hover').stop(true, true).fadeOut('fast');   
-	        $(this).find("ul.subnav").slideUp('fast'); //When the mouse hovers out of the subnav, move it back up     
-	    });
-
-});
-
-</script>
-</head>
-<body>
-<div class="container">
-<ul class="topnav">
-    <li><a href="#">Home</a></li>
-    <li>
-        <a href="#">Summary</a>
-        <ul class="subnav">
-            <li><a href="#">Sub Nav Link</a></li>
-            <li><a href="#">Sub Nav Link</a></li>
-            <li><a href="#">Sub Nav Link</a></li>
-            <li><a href="#">Sub Nav Link</a></li>	
-        </ul>
-    </li>
-    <li>
-        <a href="#">Profile</a>
-        <ul class="subnav">
-            <li><a href="#">Sub Nav Link</a></li>
-            <li><a href="#">Sub Nav Link</a></li>
-        </ul>
-    </li>
-</ul>
-</div>
-<?php
-$f = "max-lab"; 
-echo str_replace("-", "", $f);
-
- ?>
-</body>
-</html>
