@@ -173,7 +173,6 @@ $(document).ready(function(){
 <?php
 $f = "max-lab"; 
 echo str_replace("-", "", $f);
-
  ?>
 </body>
 </html>
