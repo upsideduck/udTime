@@ -1,5 +1,5 @@
 <ul class="topnav">
-    <li class="hover"><a href='index.php'>Home</a></li>
+    <li><a href='index.php'>Home</a></li>
     <li>
         <a href='summary.php'>Summary</a>
         <!--

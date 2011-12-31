@@ -14,7 +14,7 @@
 	
 	//Sanitize the POST values
 	$newUser['username'] = clean($_POST['username']);
-	$newUser['ww'] = (int)$_POST['workweek'];
+	$newUser['ww'] = (int)$_POST['dworkweek'];
 	$newUser['date'] = time();
 	$newUser['password'] = clean($_POST['password']);
 	$newUser['cpassword'] = clean($_POST['cpassword']);

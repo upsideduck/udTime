@@ -18,7 +18,7 @@
     </tr>
     <tr>
       <th>Work week </th>
-      <td><input name="workweek" type="text" class="textfield" id="workweek" /></td>
+      <td><input name="dworkweek" type="text" class="textfield" id="dworkweek" /></td>
     </tr>
     <tr>
       <th>Password</th>

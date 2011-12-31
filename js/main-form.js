@@ -2,10 +2,10 @@ $(document).ready(function() {
 	
 	$("#mainform_submit").button();
 	
-	$("#free_choices").hide();
-	$("#work_choices").hide();
-	$("#break_choices").hide();
-	$("#clock").text("0:00:00").hide();
+	$("#free_choices").hide().buttonset();
+	$("#work_choices").hide().buttonset();
+	$("#break_choices").hide().buttonset();
+	$("#clock").text("0:00:00");
 	
 	var main_timer;
 	var currenttime = new Date();
@@ -52,12 +52,13 @@ $(document).ready(function() {
 	   		case '':
 	   			$("#free_choices").show()
 	   			$("#free_choices input:radio:first").attr('checked', true);
+	   			$("#f_work").next().attr('aria-pressed', true).addClass("ui-state-active");
 	   			$("#work_choices").hide();
 	   			$("#break_choices").hide();
-	   			$("#clock").hide();
+				$("#clock").text("0:00:00");
 	   			$("#script").val("proc/process_newperiod.php");
 	   			clearInterval(main_timer);
-	   			$("#period_description").text("User free");
+	   			$("#mfheader").text("User free");
 	   			$("#comment_header").text("Comment: ");
 	   			$("#comment").val(comment);
 	   			$("#now").attr('checked', true );
@@ -66,9 +67,10 @@ $(document).ready(function() {
 	   			$("#free_choices").hide();
 	   			$("#work_choices").show();
 	   			$("#work_choices input:radio:first").attr('checked', true);
+	   			$("#w_break").next().attr('aria-pressed', true).addClass("ui-state-active");
 	   			$("#break_choices").hide();
 	   			$("#script").val("proc/process_ongoingperiod.php");
-	   			$("#period_description").text("User working");
+	   			$("#mfheader").text("User working");
 	   			$("#comment").val(comment);
 	   			$("#comment_header").text("Work comment: ");
 	   			clearInterval(main_timer);
@@ -86,8 +88,9 @@ $(document).ready(function() {
 	   			$("#work_choices").hide();
 	   			$("#break_choices").show();
 	   			$("#break_choices input:radio:first").attr('checked', true);
+	   			$("#b_break").next().attr('aria-pressed', true).addClass("ui-state-active");
 	   			$("#script").val("proc/process_endbreak.php");
-	   			$("#period_description").text("User on break"); 				   			
+	   			$("#mfheader").text("User on break"); 				   			
 	   			$("#comment_header").text("Break comment: ");
 	   			$("#comment").val("");
 	   			clearInterval(main_timer);

@@ -26,7 +26,7 @@ while($weeksReport = mysql_fetch_object($weeksResult)) {
 	if($weeksReport->holiday != 0) $holiday = " + <a href='summary.php?summary=week_list&w=$weeksReport->week&y=$weeksReport->year'>". timestampToTime($weeksReport->holiday)."</a>";
 	else $holiday = "";
 	
-	$diffstamp = ($weeksReport->holiday+$weeksReport->total - $user->workweek);
+	$diffstamp = ($weeksReport->holiday+$weeksReport->total - $weeksReport->worktime);
 	if ($active_week) {
 		$diff = "ongoing...";
 		$diffstamp = 0;

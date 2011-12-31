@@ -38,8 +38,10 @@
           $sql = "UPDATE weeksdb SET $day = $row[$day_num], total = $total WHERE id = " . $row[0]; 
           $resultIn = mysql_query($sql);
     } else {
-          $sql = "INSERT INTO weeksdb (member_id, year, week, $day, total) VALUES (".$_SESSION['SESS_MEMBER_ID'].", $year, $week, $periodTime, $periodTime)";
-          $resultIn = mysql_query($sql);
+		$resultdww = mysql_query("SELECT dworkweek FROM userdb WHERE member_id = " . $_SESSION['SESS_MEMBER_ID']);
+        $dww = mysql_result($resultdww,0,0);
+        $sql = "INSERT INTO weeksdb (member_id, year, week, $day, worktime, total) VALUES (".$_SESSION['SESS_MEMBER_ID'].", $year, $week, $periodTime, $dww, $periodTime)";
+        $resultIn = mysql_query($sql);
     }
     
     if ($resultIn) {
@@ -70,7 +72,7 @@
  	$result = mysql_query($sql);
  	$row = mysql_fetch_row($result); 
  	 if($row != null) {
- 	 	$sql = "INSERT INTO weeksdb (member_id, year, week, $day, total) VALUES (".$_SESSION['SESS_MEMBER_ID'].", $year, $week, 0, 0)";
+ 	 	$sql = "INSERT INTO weeksdb (member_id, year, week, $day, worktime, total) VALUES (".$_SESSION['SESS_MEMBER_ID'].", $year, $week, 0, $user->dworkweek,0)";
  	 	mysql_query($sql);
  	 }
  	
@@ -112,7 +114,7 @@
  *
  ********************************************************************/  
 function fetchWeeksSummary() {
-	$sql = "SELECT year,week,total,holiday FROM weeksdb WHERE member_id = " . $_SESSION['SESS_MEMBER_ID'] . " ORDER BY year,week ASC";
+	$sql = "SELECT year,week,total,holiday,worktime FROM weeksdb WHERE member_id = " . $_SESSION['SESS_MEMBER_ID'] . " ORDER BY year,week ASC";
 	
 	$result = mysql_query($sql);
 	return $result; 

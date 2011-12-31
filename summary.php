@@ -8,11 +8,10 @@ require_once(__SITE_BASE__."func/func_weeksdb.php");
 require_once(__SITE_BASE__.'func/func_fetch.php');
 require_once(__SITE_BASE__.'func/func_misc.php');
 require_once('includes/header.php');
-?>
-<h1 class="page_title">Summary</h1>
-<a href="index.php">Home</a> | <a href="profile.php">My Profile</a> | <a href="summary.php">Summary</a>	
-<p>
-<?php 
+
+echo "<h1 class='page_title'>Summary</h1>";
+//<a href="index.php">Home</a> | <a href="profile.php">My Profile</a> | <a href="summary.php">Summary</a>	
+echo "<p>";
 	notification();
 
 switch ($_REQUEST['summary']) {

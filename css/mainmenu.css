@@ -1,17 +1,15 @@
-
 ul.topnav {
+	font:13px;
 	list-style: none;
 	position: relative;
-	left: 80px;
+	right: 50px;
 	padding: 0px;
-	margin: 0 0 5px 10px;
-	float: left;
+	margin: 0;
+	float: right;
 	background-color: #6493d2;
--moz-box-shadow: 0 1px 1px #000;
- -webkit-box-shadow: 0 1px 1px #000;
- box-shadow: 0 1px 1px #000;
- z-index: 1;
- clear: both;
+	-moz-box-shadow: 0 1px 1px #000000;
+	-webkit-box-shadow: 0 1px 1px #000000;
+	z-index: 1	;
 }
 ul.topnav li {
 	height: 37px;
@@ -19,6 +17,8 @@ ul.topnav li {
 	margin: 0px;
 	padding-right: 10px;
 	position: relative; /*--Declare X and Y axis base for sub navigation--*/
+	cursor: pointer;
+
 }
 ul.topnav li a{
 	display: block;
@@ -28,12 +28,13 @@ ul.topnav li a{
 	padding-left: 20px;
 	padding-right: 5px;
 	color: #fff;
+	z-index: 200;
 }
-ul.topnav li:first-child a {
-	padding-left: 8px !important;
+ul.topnav li:first-child a { !important;            
+	z-index: 199999;
 }
 ul.topnav li:last-child {
-	padding-right: 0px !important;
+	padding-right: 3px !important;
 }
 ul.topnav li .leftsep {
  	position:absolute;           
@@ -54,6 +55,7 @@ ul.topnav li .rightsep {
     margin-top: 8px;
 }
 ul.topnav li:first-child .leftsep {
+	margin-left: 8px;
 	background:url(../images/leftmenuend.png) no-repeat left center; 
 	left: -21px; 
 	height: 100%;
@@ -68,25 +70,26 @@ ul.topnav li:last-child .rightsep {
 	height: 100%;
 	border: 0px;
 	margin: 0px !important;
-	
 }
 ul.topnav li ul.subnav li .rightsep {
 	display: none;    
 }       
 ul.topnav li .hover {
-	/* mouseover image  */
-   // background:url(../images/downarrow.png) no-repeat center center;  
-    background-color: #c0c0c0;     
-    opacity: 0.5;
+	/* mouseover image  */          
+    margin-left: 10px;             
+    float: none;    
+    background:url(../images/hovermenu.png) no-repeat center bottom;   
+    opacity: ;
    	/* must be postion absolute     */
  	position:absolute;           
     /*  width, height, left and top to fill the whole LI item   */
-    width:100%;    
-    height:100%;
+    width: 80%;    
+    height: 100%;
     /* display under the Anchor tag */
     z-index:0;      
     /* hide it by default   */
     display:none;   
+    cursor: pointer;
 }   
 ul.topnav li span { /*--Drop down trigger styles--*/
 	width: 10px;
@@ -122,4 +125,11 @@ html ul.topnav li ul.subnav li a {
 }
 html ul.topnav li ul.subnav li:first-child a {
 	padding-left: 20px !important;
+}
+body {
+	margin: 0px;
+	background-color: #f0f0f0;
+}
+ul.topnav li:first-child {
+	margin-left: -8px;
 }
