@@ -16,6 +16,7 @@
  *
  ********************************************************************/  
 function fetchPeriodsArray($timeArray) {
+	//var_dump($timeArray);
 	$sql = "SELECT * FROM workdb WHERE member_id = " . $_SESSION['SESS_MEMBER_ID'] . " AND starttime BETWEEN " . $timeArray['start'] ." AND " . $timeArray['end']." AND endtime IS NOT NULL ORDER BY starttime ASC";
 	$result = mysql_query($sql);
 	

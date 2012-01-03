@@ -111,12 +111,13 @@ p.registerlink {
 }	
 #result {
 	color: #FF9900;
+	padding: 5;
 }
 .notification_mainform {
-	
 	text-align: left;
 	padding-bottom: 10px;
 }
+
 /* @group main form */
 .mf {
 	width: 200px;
@@ -134,7 +135,7 @@ p.registerlink {
 /* @end */
 /* @group user pan */
 .userpan {
-	width: 320px;	
+	width: 320px;
 }
 .avatar{
 	margin-left: 7px;
@@ -310,3 +311,26 @@ p.registerlink {
 	font-weight: bold;
 }
 /* @end */
+
+.clearfix:after {
+	content: ".";
+	display: block;
+	clear: both;
+	visibility: hidden;
+	line-height: 0;
+	height: 0;
+}
+.clear {
+	clear: both;
+} 
+.clearfix {
+	display: inline-block;
+}
+ 
+html[xmlns] .clearfix {
+	display: block;
+}
+ 
+* html .clearfix {
+	height: 1%;
+}

@@ -20,6 +20,8 @@ ul.topnav li {
 	margin: 0px;
 	padding-right: 10px;
 	position: relative; /*--Declare X and Y axis base for sub navigation--*/
+	   cursor: pointer;
+
 }
 ul.topnav li a{
 	display: block;
@@ -29,9 +31,11 @@ ul.topnav li a{
 	padding-left: 20px;
 	padding-right: 5px;
 	color: #fff;
+	z-index: 200;
 }
 ul.topnav li:first-child a {
 	padding-left: 8px !important;
+	z-index: 199999;
 }
 ul.topnav li:last-child {
 	padding-right: 0px !important;
@@ -69,7 +73,6 @@ ul.topnav li:last-child .rightsep {
 	height: 100%;
 	border: 0px;
 	margin: 0px !important;
-	
 }
 ul.topnav li ul.subnav li .rightsep {
 	display: none;    
@@ -88,6 +91,7 @@ ul.topnav li .hover {
     z-index:0;      
     /* hide it by default   */
     display:none;   
+    cursor: pointer;
 }   
 ul.topnav li span { /*--Drop down trigger styles--*/
 	width: 10px;
@@ -133,7 +137,17 @@ body {
 $(document).ready(function(){
 
 	$("ul.subnav").parent().append("<span></span>"); //Only shows drop down trigger when js is enabled (Adds empty span tag after ul.subnav*)
-	$('ul.topnav li').append('<div class="leftsep"></div><div class="hover"></div><div class="rightsep"></div>');
+	$('ul.topnav li').prepend('<div class="leftsep"></div><div class="hover"></div><div class="rightsep"></div>');
+	//$('ul.topnav li').prepend('<div class="hover"></div>');
+	$('.hover').each(function(){
+		var link = $(this).parent().find("a").attr("href");
+		$(this).parent().click(
+		function()
+		{
+		    window.location = link;
+		    return false;
+		});
+	});
 	$("ul.topnav li").hover( 
 		function() {  
 			$(this).find("ul.subnav").slideDown('fast').show(); //Drop down the subnav on clic      
@@ -155,7 +169,7 @@ $(document).ready(function(){
     <li>
         <a href="#">Summary</a>
         <ul class="subnav">
-            <li><a href="#">Sub Nav Link</a></li>
+            <li><a href="http://www.google.com">Sub Nav Link</a></li>
             <li><a href="#">Sub Nav Link</a></li>
             <li><a href="#">Sub Nav Link</a></li>
             <li><a href="#">Sub Nav Link</a></li>	
@@ -170,9 +184,5 @@ $(document).ready(function(){
     </li>
 </ul>
 </div>
-<?php
-$f = "max-lab"; 
-echo str_replace("-", "", $f);
- ?>
 </body>
 </html>

@@ -17,7 +17,7 @@ if($user->offset != 0)
 	$all_weeks_totals += $user->offset; 
 }
 while($weeksReport = mysql_fetch_object($weeksResult)) {
-	if(date("W-y") != $weeksReport->week."-".$weeksReport->year) $status = "<img src='images/check.png' height='10'>\n";
+	if(date("W-y") !=  str_pad($weeksReport->week, 2, "0", STR_PAD_LEFT)."-".$weeksReport->year) $status = "<img src='images/check.png' height='10'>\n";
 	else {
 		$status = "";
 		$active_week = true;

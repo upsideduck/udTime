@@ -10,7 +10,8 @@
 	require_once('../func/func_end.php');
 	require_once('../func/func_misc.php');
 	
-	$xml_output .= xmlIntro();
+
+	$xml_output = xmlIntro();
 	require_once("../api/api_endbreak.php");
 	$xml_output .= xmlOutro();
 	

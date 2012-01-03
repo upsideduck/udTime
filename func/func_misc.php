@@ -13,6 +13,7 @@
  ********************************************************************/ 
 function fetchWeekStartEndTime($week, $year) {
 	$timeArray = array("start"=>0,"end"=>0);
+	$week = str_pad($week, 2, "0", STR_PAD_LEFT); 
 	$timeArray["start"] = strtotime("20".$year."W".$week);
 	$timeArray["end"] = $timeArray["start"] + (60*60*24*7) - 1;
 	return $timeArray;

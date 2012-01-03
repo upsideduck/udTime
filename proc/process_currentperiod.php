@@ -8,7 +8,7 @@ require_once('../includes/config.php');
 require_once('../func/func_misc.php');
 require_once('../func/func_fetch.php');
 
-$xml_output .= xmlIntro();
+$xml_output = xmlIntro();
 require_once("../api/api_currentperiod.php");
 $xml_output .= xmlOutro();
 

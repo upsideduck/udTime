@@ -27,8 +27,7 @@
 		include_once("includes/resultpan.php");
 		echo "</div>\n";
 	}
-?>
-<?php
+
 	require_once('includes/footer.php');
 ?>
 

@@ -14,7 +14,7 @@ require_once('../includes/config.php');
 
 $action = clean($_REQUEST["action"]);
 
-$xml_output .= xmlIntro();
+$xml_output = xmlIntro();
 // Login always needed
 require_once("../api/api_login.php");
 

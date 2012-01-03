@@ -21,7 +21,8 @@ $weekTotals = mysql_fetch_row($weekTotalsResult);
 	
 echo "<div><a href='".$_SERVER['PHP_SELF']."?summary=week_view&w=".$_REQUEST['w']."&y=".$_REQUEST['y']."'>Graphic view</a></div>";
 	
-echo "<div class='total_list'>Total work time this week: <br>".timestampToTime($weekTotals[12])."</div>";
+echo "<div class='total_list'>Time to work this week: <br>".timestampToTime($weekTotals[12])."</div>";
+echo "<div class='total_list'>Time worked: <br>".timestampToTime($weekTotals[13])."</div>";
 echo "<div class='holiday_list'>Vacation this week: <a href='edit.php?type=holiday&w=".$_REQUEST['w']."&y=".$_REQUEST['y']."&a=new'><img width='15px'src='images/edit.png'></a><br>".timestampToTime($weekTotals[11])."</div>";
 
 

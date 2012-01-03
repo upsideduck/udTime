@@ -145,4 +145,19 @@ function uploadAvatar(){
 		
 	}
 }
+/********************************************************************
+ *
+ *	getProfile - get all profile info
+ *			 
+ *	Incomming: 
+ *
+ *	Outgoing : profile object
+ *
+ ********************************************************************/
+function getProfile(){
+	$resultuser = mysql_query("SELECT * FROM userdb WHERE username = '". $_SESSION['SESS_USERNAME']."'");
+	return $profile = mysql_fetch_object($resultuser);
+}
+
+
 ?>

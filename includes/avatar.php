@@ -9,7 +9,7 @@
     if(true) {        //connect to the db
        
         // get the image from the db
-        $sql = "SELECT avatar FROM userdb WHERE member_id=".$_SESSION['SESS_MEMBER_ID'];
+        $sql = "SELECT avatar FROM userdb WHERE member_id=".$_GET['MID'];
  
         // the result of the query
         $result = mysql_query("$sql") or die("Invalid query: " . mysql_error());
