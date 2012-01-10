@@ -16,9 +16,9 @@
  *
  ********************************************************************/  
 function fetchPeriodsArray($timeArray) {
-	//var_dump($timeArray);
 	$sql = "SELECT * FROM workdb WHERE member_id = " . $_SESSION['SESS_MEMBER_ID'] . " AND starttime BETWEEN " . $timeArray['start'] ." AND " . $timeArray['end']." AND endtime IS NOT NULL ORDER BY starttime ASC";
 	$result = mysql_query($sql);
+	if(!$result) return null;
 	
 	while($periodsOfTimeArray = mysql_fetch_assoc($result)) {
 		$thisPeriod = array();
@@ -187,5 +187,55 @@ function fetchHoliday($inWeek, $inYear) {
 	}
 	return $return;
 }
-
+/********************************************************************
+ *
+ *	fetchWorkAndBreakTime - returns work and breaks for timearray
+ *
+ *	Incomming: timearray 
+ *
+ *	Outgoing : work and break array
+ * 		
+ *		   
+ *
+ ********************************************************************/ 
+function fetchWorkAndBreakTime($timearray) {
+	$worktime = 0;
+	$breaktime = 0;
+	$periods = fetchPeriodsArray($timearray);
+	if($periods[0] != null) {
+		foreach($periods[0] as $period) {
+			$worktime += $period[0]["endtime"] - $period[0]["starttime"];
+			if (count($period) > 0) {
+				unset($period[0]);
+				foreach($period as $break){
+					$breaktime += $break["endtime"] - $break["starttime"];
+				}
+			}
+		}
+	}
+	return array("worktime" => $worktime-$breaktime, "breaktime" => $breaktime);
+}
+/********************************************************************
+ *
+ *	fetchProjects - returns all projects
+ *
+ *	Incomming:  
+ *
+ *	Outgoing : array with projects
+ * 		
+ *		   
+ *
+ ********************************************************************/ 
+function fetchProjects() {
+	$sql = "SELECT * FROM projectdb WHERE member_id = {$_SESSION['SESS_MEMBER_ID']} ORDER BY name ASC";
+	$result = mysql_query($sql);
+	
+	if (!$result) return null;
+	
+	$return = array();
+	while($arr = mysql_fetch_assoc($result)){
+		$return[] = $arr;	
+	}
+	return $return;
+}
 ?>

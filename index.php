@@ -21,10 +21,13 @@
 		include_once("includes/main_form.php");
 		echo "</div>\n";
 		echo "<div id='userContainer'>\n";
-		include_once("includes/userpan.php");
+		include_once("includes/pans/userpan.php");
+		echo "</div>\n";
+		echo "<div id='projectsContainer'>\n";
+		include_once("includes/pans/projectspan.php");
 		echo "</div>\n";
 		echo "<div id='resultContainer'>\n";
-		include_once("includes/resultpan.php");
+		include_once("includes/pans/resultpan.php");
 		echo "</div>\n";
 	}
 

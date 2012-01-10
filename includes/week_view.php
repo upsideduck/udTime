@@ -1,5 +1,5 @@
 <?php
-$timeArray = fetchWeekStartEndTime($_REQUEST['w'], $_REQUEST['y']);
+$timeArray = fetchStartEndTime("week",$_REQUEST['y'],0,0,$_REQUEST['w']);
 
 $return = fetchPeriodsArray($timeArray);
 

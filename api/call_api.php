@@ -7,6 +7,7 @@ require_once('../func/func_start.php');
 require_once('../func/func_end.php');
 require_once('../func/func_user.php');
 require_once('../func/func_fetch.php');
+require_once('../func/func_projects.php');
 require_once('../func/func_misc.php');
 require_once('../func/func_session.php');
 require_once('../func/func_weeksdb.php');
@@ -41,6 +42,12 @@ if (isset($_SESSION['SESS_MEMBER_ID']))
 			break;
 		case "updateholiday":
 			require_once("../api/api_holiday.php");
+			break;
+		case "newproject":
+			require_once("../api/api_newproject.php");
+			break;
+		case "attachproject":
+			require_once("../api/api_attachproject.php");
 			break;
 		default:
 			break;

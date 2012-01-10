@@ -64,7 +64,7 @@
  ********************************************************************/  
  function updateWeekInBook($week, $year) { 
  	
- 	$timeArray = fetchWeekStartEndTime($week, $year);
+ 	$timeArray = fetchStartEndTime("week",$year,0,0,$week);
  	$fetchedPeriodArray = fetchPeriodsArray($timeArray);
  	
  	//Check if instance exist in database weeksdb

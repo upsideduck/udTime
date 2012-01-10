@@ -56,6 +56,7 @@ function endWork($comment, $timestamp) {
 	  	
 	  	$_SESSION['SESS_ACTIVE_PERIOD'] = null;
 	  	$_SESSION['SESS_ACTIVE_TYPE'] = null;
+	  	$_SESSION['SESS_ACTIVE_PROJECT'] = null;
 	 	
 	 	if ($success1 && $success2) {
 			$result_arr[0] = true;

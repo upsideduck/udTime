@@ -7,8 +7,7 @@ require_once(__SITE_BASE__."func/func_weeksdb.php");
 require_once(__SITE_BASE__."func/func_fetch.php");
 require_once(__SITE_BASE__."func/func_misc.php");
 
-$timeArray = fetchWeekStartEndTime($_REQUEST['w'], $_REQUEST['y']);
-
+$timeArray = $timeArray = fetchStartEndTime("week",$_REQUEST['y'],0,0,$_REQUEST['w']);
 $return = fetchPeriodsArray($timeArray);
 
 $allPeriods = $return[0];

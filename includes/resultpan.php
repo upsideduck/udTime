@@ -1,1 +1,0 @@
-<div id="result" class="notification_mainform"></div>

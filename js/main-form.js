@@ -1,6 +1,7 @@
 $(document).ready(function() {
 	
 	$("#mainform_submit").button();
+	$("#result").hide();
 	
 	$("#free_choices").hide().buttonset();
 	$("#work_choices").hide().buttonset();
@@ -9,25 +10,31 @@ $(document).ready(function() {
 	
 	var main_timer;
 	var currenttime = new Date();
+	var checkboxsaved;
 	
 	checkStatus();
 	
 	function onSuccessExec(xml) {
-		$("#result").empty();
+		
+		var notificationtype = "";
+		var messages = [];
+		
 		if ($("result", xml).attr("success") == "true")
 		{ 
-			$(".notification_mainform").css("color", "#5a7800");
+			notificationtype = "result";
 			checkStatus();
-	
 		}
 		else
 		{
-			$(".notification_mainform").css("color", "#f90");
+			$(checkboxsaved).prop('checked', true);
+			notificationtype = "error";
 		}
+		
 		$(xml).find("message").each(function()
 		{
-		    $("#result").append($(this).text() + "<br />");
+		   	messages.push($(this).text());
 		});
+		$("#result").showNotification(notificationtype,messages);
 	}
 	
 	function checkStatus() {
@@ -108,14 +115,16 @@ $(document).ready(function() {
 	
 	
 	$("#mainForm").submit(function(event) {
+		//$("#result").hide();
 	    /* stop form from submitting normally */
 	    event.preventDefault();
 	    
 	    var type = $("input[name='type']:checked").val(),
 	    	comment = $("input#comment").val(),
 	    	url = $("input#script").val();
-	    	
-	    	$("input[name='type']").prop('checked', false);
+	    
+	    checkboxsaved = "#"+$("input[name='type']:checked").attr("id");	
+	    $("input[name='type']").prop('checked', false);
 	    	
 	    if($("#now").attr('checked')) 
 	    {
@@ -145,14 +154,13 @@ $(document).ready(function() {
 	$("#time").click(function(){ 
 		$("#now").prop('checked', false );
 	}); 
-	$("#time").timePicker({
+	/*$("#time").timePicker({
 		startTime: new Date(0,0,0,currenttime.getHours()-2,Math.round(currenttime.getMinutes()/10)*10,0),  // Using string. Can take string or Date object.
 		endTime: new Date(0,0,0,currenttime.getHours()+2,Math.round(currenttime.getMinutes()/10)*10,0),  // Using Date object.
 		show24Hours: true,
 		separator:':',
 		step: 5});
-		
+		*/
+	$("#time").timepicker({});
 	$("#time").mask("99:99",{placeholder: "0"});
-		
-	
 });

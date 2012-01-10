@@ -28,7 +28,7 @@ require_once(__SITE_BASE__ . 'func/func_misc.php');
 	     <label for='b_work'>Go home</label>";     
 	echo "</div>"; 
 	echo "<div class='mftime'><input type='checkbox' id='now' checked>Now or: <input type='text' id='time' size='10' value=''/></div>";
-    echo "<div id='mfcomment'><span id='comment_header'>Comment: </span>
+    echo "<div id='mfcomment'><span id='comment_header'>Comment: </span> <br \>
           <input type='textbox' name='comment' value='' id='comment'>
           </div>
           <input type='submit' name='button' id='mainform_submit' value='Set' /> \n

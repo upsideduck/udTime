@@ -1,24 +1,72 @@
 <?php
 /********************************************************************
  *
- *	fetchWeekStartEndTime - returns array of two arrays with periods
+ *	fetchStartEndTime - returns array of two arrays with periods
  *						in defined timeperiod
  *
- *	Incomming: $week, $year 
+ *	Incomming: $type - year, month, day, week, today, 
+ * 					   yesterday, thisweek, lastweek,
+ *					   thismonth, lastmonth
+ *			   $year
+ *			   $month
+ *			   $day
+ *			   $week 
  *
  *	Outgoing : $timeArray
  * 		keys : start - timestamp beginning
  *	   		   end   - timestamp out 
  *
  ********************************************************************/ 
-function fetchWeekStartEndTime($week, $year) {
+function fetchStartEndTime($type, $year = null, $month = null, $day = null, $week = null) {
 	$timeArray = array("start"=>0,"end"=>0);
-	$week = str_pad($week, 2, "0", STR_PAD_LEFT); 
-	$timeArray["start"] = strtotime("20".$year."W".$week);
-	$timeArray["end"] = $timeArray["start"] + (60*60*24*7) - 1;
+	$week = str_pad($week, 2, "0", STR_PAD_LEFT);
+	$year = str_pad($year, 4, "20", STR_PAD_LEFT);
+	switch ($type) {
+		case ("year"): 
+			$timeArray["start"] = mktime(0, 0, 0, 1, 1, $year);
+			$timeArray["end"] =  mktime(0, 0, 0-1, 1, 1, $year+1);
+			break;
+		case ("month"):
+			$timeArray["start"] = mktime(0, 0, 0, $month, 1, $year);
+			$timeArray["end"] =  mktime(0, 0, 0-1, $month+1, 1, $year); 
+			break;
+		case ("day"): 
+			$timeArray["start"] = mktime(0, 0, 0, $month, $day, $year);
+			$timeArray["end"] =  mktime(0, 0, 0-1, $month, $day+1, $year); 
+			break;
+		case ("week"):
+			$timeArray["start"] = strtotime($year."W".$week);
+			$timeArray["end"] = $timeArray["start"] + (60*60*24*7) - 1; 
+			break;
+		case ("today"):
+			$timeArray["start"] = mktime(0, 0, 0, date("m"), date("d"), date("Y"));
+			$timeArray["end"] =  mktime(0, 0, 0-1, date("m"), date("d")+1, date("Y"));
+			break;	
+		case ("yesterday"):
+			$timeArray["start"] = mktime(0, 0, 0, date("m"), date("d")-1, date("Y"));
+			$timeArray["end"] =  mktime(0, 0, 0-1, date("m"), date("d"), date("Y"));
+			break;
+		case ("thisweek"):
+			$timeArray["start"] = strtotime(date("Y")."W".date("W"));
+			$timeArray["end"] = $timeArray["start"] + (60*60*24*7) - 1; 
+			break;
+		case ("lastweek"):
+			$timeArray["start"] = strtotime(date("Y")."W".date("W"))-(60*60*24*7);
+			$timeArray["end"] = $timeArray["start"] + (60*60*24*7) - 1; 
+			break;
+		case ("thismonth"):
+			$timeArray["start"] = mktime(0, 0, 0, date("m"), 1, date("Y"));
+			$timeArray["end"] =  mktime(0, 0, 0-1, date("m")+1, 1, date("Y"));
+			break;
+		case ("lasmonth"):
+			$timeArray["start"] = mktime(0, 0, 0, date("m")-1, 1, date("Y"));
+			$timeArray["end"] =  mktime(0, 0, 0-1, date("m"), 1, date("Y"));
+			break;
+		default:
+			break;
+	}
 	return $timeArray;
 }
-
 /********************************************************************
  *
  *	clean - Sanitize values received from the form. 
