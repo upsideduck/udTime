@@ -58,6 +58,7 @@ function attachProject($period_id,$project_id) {
 		
 	if($project_id == "none"){
 		$sql1 = "UPDATE workdb SET project_id = NULL WHERE id = {$period_id}";
+
 	}else{
 		$indb = mysql_query("SELECT name FROM projectdb WHERE id = {$project_id} AND member_id = {$_SESSION['SESS_MEMBER_ID']}");
 		$rows = mysql_num_rows($indb);
@@ -65,15 +66,20 @@ function attachProject($period_id,$project_id) {
 			$result_arr[0] = false;
 			$result_arr[] = 'No project found with that id';
 			return $result_arr;
+		} else {
+			$pname = mysql_result($indb, 0);
 		}
 		$sql1 = "UPDATE workdb SET project_id = {$project_id} WHERE id = {$period_id}";
 	}
 	
 	$success1 = mysql_query($sql1);
 	
-	if ($success1) {
+	if ($success1 && $project_id != "none") {
 		$result_arr[0] = true;
-		$result_arr[] = 'Project added to period';
+		$result_arr[] = 'Project '.$pname.' set to period';
+	} elseif($success1 && $project_id == "none") {
+		$result_arr[0] = true;
+		$result_arr[] = 'Project removed';
 	} else {
 	  	$result_arr[0] = false;
 		$result_arr[] = 'Something went wrong with the db';

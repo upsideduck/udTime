@@ -145,13 +145,20 @@ function fetchBreakPeriod($breakId) {
 function fetchCurrentPeriod() {
 	$pid = $_SESSION['SESS_ACTIVE_PERIOD'];
 	$type = $_SESSION['SESS_ACTIVE_TYPE'];
-	
+
 	switch ($type) {
 		case "work":
-			$sql = sprintf("SELECT * FROM workdb WHERE id = %d", $pid);
+			$sql = "SELECT w.id, w.member_id, w.starttime, w.endtime, w.comment, IF( name IS NOT NULL , name,  'none' ) AS project
+					FROM workdb w
+					LEFT JOIN projectdb ON w.project_id = projectdb.id
+					WHERE w.id = {$pid}";
 			break;
 		case "break":
-			$sql = sprintf("SELECT * FROM breakdb WHERE id = %d", $pid);
+			$sql = "SELECT b.id, b.parent_id, b.member_id, b.starttime, b.endtime, b.comment, IF( name IS NOT NULL , name,  'none' ) AS project
+ 					FROM breakdb b
+ 					LEFT JOIN workdb ON b.parent_id = workdb.id
+ 					LEFT JOIN projectdb ON workdb.project_id = projectdb.id
+ 					WHERE b.id = {$pid}";
 			break;
 		default:
 			$sql = "";

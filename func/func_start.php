@@ -94,10 +94,11 @@ function goOnBreak($comment, $timestamp) {
             
     $success1 = mysql_query($sql1);
     $success2 = mysql_query($sql2);
+    $success3 = mysql_query($sql3);
    
-    if ($success1 && $success2) {
+    if ($success1 && $success2 && $success3) {
     	 $result_arr[0] = true;
-    	 $result_arr[] = 'Break started';
+    	 $result_arr[] = "Break started";
     } else {
     	 $result_arr[0] = false;
     	 $result_arr[] = 'Something when wrong';

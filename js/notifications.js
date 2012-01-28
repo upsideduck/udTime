@@ -11,7 +11,12 @@
     	}
     	else
     	{ 
-    		$(this).empty().attr("class","ui-state-error ui-corner-all").append("<span class='ui-icon ui-icon-alert' style='float: left; margin-right: .3em;'></span>"+content+"<span class='close_button'><img src='images/delete.png' width='20px' height='20px'></span>").show();
+    	    var messagePart = "<ul class='notificationList'>";
+    		$.each(content, function(index, value) {
+      	 		messagePart = messagePart + "<li>" + value + "</li>";
+      	 		
+  			});
+    		$(this).empty().attr("class","ui-state-error ui-corner-all").append("<span class='ui-icon ui-icon-alert' style='float: left; margin-right: .3em;'></span><span class='close_button'><img src='images/delete.png' width='20px' height='20px'></span>"+messagePart).show();
     		$(".close_button",this).click(function() {
   				$(this).parent().removeClass("ui-state-error").hide();
 			});
@@ -23,8 +28,14 @@
     		$(".ui-icon").after("<span>"+content+"</span>");
     	}
     	else
-    	{ 
- 			$(this).empty().attr("class","ui-state-highlight ui-corner-all").append("<span class='ui-icon ui-icon-info' style='float: left; margin-right: .3em;'></span><span>"+content+"</span><span class='close_button'><img src='images/delete.png' width='20px' height='20px'></span>").show();
+    	{ 	
+    		var messagePart = "<ul class='notificationList'>";
+    		$.each(content, function(index, value) {
+      	 		messagePart = messagePart + "<li>" + value + "</li>";
+      	 		
+  			});
+  			messagePart += "</ul>"
+ 			$(this).empty().attr("class","ui-state-highlight ui-corner-all").append("<span class='ui-icon ui-icon-info' style='float: left; margin-right: .3em;'></span><span class='close_button'><img src='images/delete.png' width='20px' height='20px'></span>"+messagePart).show();
   	    	$(".close_button",this).click(function() {
   				$(this).parent().removeClass("ui-state-highlight").empty().hide();
 			});

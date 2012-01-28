@@ -16,7 +16,6 @@ function start_session($data) {
 	$_SESSION['SESS_USERNAME'] = $member['username'];
 	$_SESSION['SESS_ACTIVE_PERIOD'] = $member['activeperiod'];	
 	$_SESSION['SESS_ACTIVE_TYPE'] = $member['activetype'];	
-	$_SESSION['SESS_ACTIVE_PROJECCT'] = $member['activeproject'];	
 		
 }
 

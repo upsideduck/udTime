@@ -4,7 +4,7 @@ $(document).ready(function() {
 	$("#result").hide();
 	
 	$("#free_choices").hide().buttonset();
-	$("#work_choices").hide().buttonset();
+    $("#work_choices").hide().buttonset();
 	$("#break_choices").hide().buttonset();
 	$("#clock").text("0:00:00");
 	
@@ -15,7 +15,6 @@ $(document).ready(function() {
 	checkStatus();
 	
 	function onSuccessExec(xml) {
-		
 		var notificationtype = "";
 		var messages = [];
 		
@@ -48,12 +47,19 @@ $(document).ready(function() {
 	}
 	
 	function typeFetched (xml) {
-	
+		var project = $(xml).find("project").text();
 	   	var type = $(xml).find("type").text();  
 	   	var starttime = $(xml).find("starttime").text();   	
 	   	var allbreaktime = $(xml).find("allBreakTime").text();   
 	   	var comment =  $(xml).find("comment").text(); 
 	   	var time = 10;
+	   	
+	   	if(project == "") project = "none";	 
+	   	
+	   	$('#mainForm input[type="radio"]').each(function(){
+      		$(this).checked = false;  
+      		$(this).next().attr('aria-pressed', false).removeClass("ui-state-active");
+  		});
 	  	   	
 	   	switch (type){
 	   		case '':
@@ -67,6 +73,7 @@ $(document).ready(function() {
 	   			clearInterval(main_timer);
 	   			$("#mfheader").text("User free");
 	   			$("#comment_header").text("Comment: ");
+	   			$("#mf_project").text(project);
 	   			$("#comment").val(comment);
 	   			$("#now").attr('checked', true );
 	   			break;
@@ -80,6 +87,7 @@ $(document).ready(function() {
 	   			$("#mfheader").text("User working");
 	   			$("#comment").val(comment);
 	   			$("#comment_header").text("Work comment: ");
+	   			$("#mf_project").text(project);
 	   			clearInterval(main_timer);
 	   			$("#clock").text(updateClock(starttime, allbreaktime));
 	   			main_timer = setInterval(function()
@@ -100,6 +108,7 @@ $(document).ready(function() {
 	   			$("#mfheader").text("User on break"); 				   			
 	   			$("#comment_header").text("Break comment: ");
 	   			$("#comment").val("");
+	   			$("#mf_project").text(project);
 	   			clearInterval(main_timer);
 	   			$("#clock").text(updateClock(starttime, allbreaktime));
 	   			main_timer = setInterval(function()
@@ -112,7 +121,6 @@ $(document).ready(function() {
 	   			break;
 		}
 	}
-	
 	
 	$("#mainForm").submit(function(event) {
 		//$("#result").hide();
@@ -163,4 +171,18 @@ $(document).ready(function() {
 		*/
 	$("#time").timepicker({});
 	$("#time").mask("99:99",{placeholder: "0"});
+	setInterval(function()
+	   				{
+	   					checkForUpdate();
+	   				}
+	   				, 1000);
+	function checkForUpdate() {
+	if(updateMainForm) {
+		updateMainForm = false;
+		checkStatus();	
+	}
+	
+}
 });
+
+var updateMainForm = false;

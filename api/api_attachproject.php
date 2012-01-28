@@ -6,14 +6,17 @@
  *
  *	Requires: 		func_misc.php
  *					func_projects.php
+ *					func_start.php
+ *					func_end.php
+ *					func_weekdb.php
  *	
- *	Post values:	$period_id, $project_id
+ *	Post values:	$period_id
+ *					$project_id
+ *					$action - update, add, newperiod
  *
  *	Output:			$output_xml - $result_arr as xml
  *
  ************************************************************************/
-
-require_once("../func/func_projects.php");
 	
 $result_arr = null;
 
@@ -30,7 +33,53 @@ if($_REQUEST['period_id'] == null) {
 	$period_id = clean($_REQUEST['period_id']);
 }
 
-$result_arr = attachProject($period_id,$project_id);
-$xml_output .= resultXMLoutput($result_arr, "attachproject");
+$action = clean($_REQUEST['action']);
+switch($action) {
+	case("update"):
+		$xml_output .= resultXMLoutput(attachProject($period_id,$project_id), "attachproject");
+		break;
+	case("add"):
+		$xml_output .= resultXMLoutput(attachProject($period_id,$project_id), "attachproject");
+		break;
+	case("newperiod"):
+		$timestamp = date("U");
+		if($_SESSION['SESS_ACTIVE_TYPE'] == "work") {
+				$result_arr = endWork("NOCHANGE",$timestamp);
+			$xml_output .= resultXMLoutput($result_arr, "endwork");
+			if(!$result_arr[0]) break;
+			$result_arr = goWork("work", "",$timestamp);
+			$xml_output .= resultXMLoutput($result_arr, "newperiod");
+			if(!$result_arr[0]) break;
+			$xml_output .= resultXMLoutput(attachProject($_SESSION['SESS_ACTIVE_PERIOD'],$project_id), "attachproject");
+		} elseif ($_SESSION['SESS_ACTIVE_TYPE'] == "break") {
+			$result_arr1 = endBreak("NOCHANGE",$timestamp);
+			$result_arr2 = endWork("NOCHANGE",$timestamp);
+			$result_arr[0] = $result_arr1[0] * $result_arr2[0];
+			unset($result_arr1[0]);
+			unset($result_arr2[0]);
+			foreach ($result_arr1 as $s) {
+				$result_arr[] = $s;
+			}
+			foreach ($result_arr2 as $s) {
+				$result_arr[] = $s;
+			} 		
+			$xml_output .= resultXMLoutput($result_arr, "endwork");
+			if(!$result_arr[0]) break;
+			$result_arr = goWork("work", "",$timestamp);
+			$xml_output .= resultXMLoutput($result_arr, "newperiod");
+			if(!$result_arr[0]) break;
+			$xml_output .= resultXMLoutput(attachProject($_SESSION['SESS_ACTIVE_PERIOD'],$project_id), "attachproject");
+		} else {
+			$result_arr[0] = false;
+			$result_arr[] = 'No active period';
+			$xml_output .= resultXMLoutput($result_arr, "attachproject");
+		}
+		break;
+	default:
+		$result_arr[0] = false;
+		$result_arr[] = 'No action given';
+		$xml_output .= resultXMLoutput($result_arr, "attachproject");
+		break;
+}
 
  ?>

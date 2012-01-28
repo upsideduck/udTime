@@ -29,6 +29,17 @@ a:hover {
 	display: compact;
 	float: right;
 }
+.notificationList {
+
+	padding-left: 20px;
+
+	list-style-type: none;
+
+	margin: 0px;
+
+	list-style-position: outside;
+
+}
 .err {
 	color: #FF9900;
 }
@@ -96,7 +107,9 @@ p.registerlink {
 	margin: 5px 0px;
 	padding: 5px 0px 3px;
 }
-
+.content-container{
+margin: 5px;
+}
 #formContainer {
 	margin: 10px;
 	float: left;
@@ -139,7 +152,7 @@ p.registerlink {
 /* @group main form */
 .mf {
 	width: 200px;
-	height: 240px;
+	height: 250px;
 }
 
 .mftime {
@@ -151,11 +164,16 @@ p.registerlink {
 	padding-top: 5px;
 	padding-bottom: 5px;
 }
+.mf_header{
+	
+	font-weight: bold;
+	
+}
 /* @end */
 /* @group user pan */
 .userpan {
 	width: 340px;
-	height: 240px;
+	height: 250px;
 }
 .avatar{
 	margin-left: 7px;

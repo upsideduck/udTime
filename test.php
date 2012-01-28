@@ -71,11 +71,30 @@ $(document).ready(function(){
 		});
 	}
 	
+	$("#project-assign-dialog").dialog({
+		resizable: false,		
+		height:140,
+		modal: true,
+		buttons: {
+			"Change": function() {
+				$( this ).dialog( "close" );
+			},			
+			"New period": function() {
+				$( this ).dialog( "close" );
+			},
+			Cancel: function() {
+				$( this ).dialog( "close" );
+			}
+		}
+	});
+	
 });
 </script>
 
 <body>
-
+<div id="project-assign-dialog" title="Assign project">
+	<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>A project is already assigned to this work-period. Do you want to change the project for this work-period or start a new work-period for the this project?</p>
+</div>
 <div id="projects">
 <span class="projectlist" id="p_none">none</span>
 <?php
