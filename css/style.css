@@ -1,0 +1,52 @@
+.cssbox, .cssbox_body, .cssbox_head, .cssbox_head h3 {
+background: transparent url(../images/thrashbg.png) no-repeat bottom right;
+}
+
+.cssbox {
+padding-right: 15px;
+	display: table;
+}
+
+/* set the top-right image */
+.cssbox_head {
+background-position: top right;
+margin-right: -15px; /* pull the right image over on top of border */
+padding-right: 40px; /* right-image-gap + right-inside padding */
+}
+
+/* set the top-left image */
+.cssbox_head h3 {
+background-position: top left;
+margin: 0px; /* reset main site styles*/
+border: 0; /* ditto */
+padding: 15px 0px 5px 20px; /* padding-left = image gap + interior padding ... no padding-right */
+height: auto !important;
+height: 1%;
+	font-weight: bold;
+	direction: ltr;
+	font-size: 1.2em;
+}
+
+/* set the lower-left corner image */
+.cssbox_body {
+background-position: bottom left;
+margin-right: 5px;
+	padding-bottom: 15px;
+	padding-left: 20px;
+	padding-right: 0px;
+}
+
+.under_header {
+	z-index: auto;
+	position: relative;
+	right: 7px;
+	padding-left: 5px;
+	width: 100%;
+	padding-right: 8px;
+	background: #d1d1d1 scroll;
+	font-weight: bold;
+}
+
+#current_time {
+	border-top: 1px solid #000;
+}

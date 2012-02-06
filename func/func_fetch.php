@@ -164,6 +164,7 @@ function fetchCurrentPeriod() {
 			$sql = "";
 			break;
 	}
+	
 	if ($sql != "") 
 	{
 		$result = mysql_query($sql);

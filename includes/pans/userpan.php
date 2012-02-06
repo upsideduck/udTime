@@ -7,7 +7,7 @@ require_once(__SITE_BASE__ . 'func/func_fetch.php');
 	$today = fetchWorkAndBreakTime(fetchStartEndTime("today"));
 	$thisweek = fetchWorkAndBreakTime(fetchStartEndTime("thisweek"));
 	$thismonth = fetchWorkAndBreakTime(fetchStartEndTime("thismonth"));
- 
+
     echo "<div class='ui-widget ui-widget-content ui-corner-all userpan clearfix'>";
     echo "<div class='ui-widget-header ui-corner-all'>User</div>";
 	echo "<div class='content-container'>";

@@ -50,20 +50,24 @@ $(document).ready(function(){
 	
 	function successAddProject(xml) {
 
+		var messages = [];
+		$(xml).find("message").each(function()
+		{
+		   	messages.push($(this).text());
+		});
 		if ($("result", xml).attr("success") == "true")
 		{ 
 			var notificationtype = "result";
-			var messages = [];
-			$(xml).find("message").each(function()
-			{
-			   	messages.push($(this).text());
-			});
 
+			
 			$("#p_add").before("<span class='projectlist' id='p_"+messages[1]+"'>"+messages[2]+"</span>");
-			$("#p_"+messages[1]).click(function()
+			var pid = messages[1];
+			$("#p_"+pid).click(function()
 							{
-								projectclicked(messages[1]);
+								latestProjectClicked = pid;
+								projectclicked(pid);
 							});
+			messages.splice(1,2);
 		}
 		else
 		{
@@ -71,7 +75,7 @@ $(document).ready(function(){
 		}
 			
 		$("#p_add").show();
-		$("#result").showNotification(notificationtype,messages[0]);
+		$("#result").showNotification(notificationtype,messages);
 	}
 	
 	function addProject(pname){
