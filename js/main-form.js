@@ -53,7 +53,11 @@ $(document).ready(function() {
 	   	var allbreaktime = $(xml).find("allBreakTime").text();   
 	   	var comment =  $(xml).find("comment").text(); 
 	   	var time = 10;
+<<<<<<< HEAD
 
+=======
+	   	
+>>>>>>> parent of 86fefc5... Clean up problems
 	   	if(project == "") project = "none";	 
 	   	
 	   	$('#mainForm input[type="radio"]').each(function(){

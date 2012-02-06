@@ -164,7 +164,10 @@ function fetchCurrentPeriod() {
 			$sql = "";
 			break;
 	}
+<<<<<<< HEAD
 	
+=======
+>>>>>>> parent of 86fefc5... Clean up problems
 	if ($sql != "") 
 	{
 		$result = mysql_query($sql);

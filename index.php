@@ -1,6 +1,9 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 <<<<<<< HEAD
+>>>>>>> parent of 86fefc5... Clean up problems
+=======
 >>>>>>> parent of 86fefc5... Clean up problems
 <?php
 	define(__SCRIPT_NAME__,"index");
@@ -39,7 +42,10 @@
 ?>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> parent of 86fefc5... Clean up problems
 =======
 <html>
 <head>
@@ -65,4 +71,7 @@
 </body>
 </html>
 >>>>>>> First commit
+<<<<<<< HEAD
+>>>>>>> parent of 86fefc5... Clean up problems
+=======
 >>>>>>> parent of 86fefc5... Clean up problems

@@ -50,6 +50,7 @@ $(document).ready(function(){
 	
 	function successAddProject(xml) {
 
+<<<<<<< HEAD
 		var messages = [];
 		$(xml).find("message").each(function()
 		{
@@ -68,6 +69,22 @@ $(document).ready(function(){
 								projectclicked(pid);
 							});
 			messages.splice(1,2);
+=======
+		if ($("result", xml).attr("success") == "true")
+		{ 
+			var notificationtype = "result";
+			var messages = [];
+			$(xml).find("message").each(function()
+			{
+			   	messages.push($(this).text());
+			});
+
+			$("#p_add").before("<span class='projectlist' id='p_"+messages[1]+"'>"+messages[2]+"</span>");
+			$("#p_"+messages[1]).click(function()
+							{
+								projectclicked(messages[1]);
+							});
+>>>>>>> parent of 86fefc5... Clean up problems
 		}
 		else
 		{
@@ -75,7 +92,11 @@ $(document).ready(function(){
 		}
 			
 		$("#p_add").show();
+<<<<<<< HEAD
 		$("#result").showNotification(notificationtype,messages);
+=======
+		$("#result").showNotification(notificationtype,messages[0]);
+>>>>>>> parent of 86fefc5... Clean up problems
 	}
 	
 	function addProject(pname){
