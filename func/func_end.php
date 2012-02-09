@@ -99,18 +99,25 @@ function endBreak($comment, $timestamp) {
 	    if($break->starttime > $timestamp) {
 	    	$result_arr[0] = false;
 	    	$result_arr[] = 'Break cannot end before it starts';
+	    	$result_arr[] = 'Break start: '.$break->starttime.' Break end: '.$timestamp;
 	    	return $result_arr;
 	    }
 	      
 	    $sql1 = "UPDATE breakdb SET endtime = $timestamp {$ext} WHERE id = ".$_SESSION['SESS_ACTIVE_PERIOD'];
-	    $sql2 = "UPDATE userdb SET activeperiod = $break->parent_id, activetype = 'work' WHERE member_id = ".$_SESSION['SESS_MEMBER_ID'];
 	    $success1 = mysql_query($sql1);
-	    $success2 = mysql_query($sql2);
-	    $_SESSION['SESS_ACTIVE_PERIOD'] = $break->parent_id;
-	    $_SESSION['SESS_ACTIVE_TYPE'] = "work";
-	    if ($success1 && $success2) {
-   		 	 $result_arr[0] = true;
-		 	 $result_arr[] = 'Break ended';
+
+	    if ($success1) {
+			$sql2 = "UPDATE userdb SET activeperiod = $break->parent_id, activetype = 'work' WHERE member_id = ".$_SESSION['SESS_MEMBER_ID'];
+	    	if($success2 = mysql_query($sql2)){
+	    		$_SESSION['SESS_ACTIVE_PERIOD'] = $break->parent_id;
+	   			$_SESSION['SESS_ACTIVE_TYPE'] = "work";
+   		 		$result_arr[0] = true;
+		 		$result_arr[] = 'Break ended';
+	    	} else {
+	    		$result_arr[0] = false;
+		  	 	$result_arr[] = 'Something when updating user status';
+	  		}	
+	 		
 	    } else {
 	    	 $result_arr[0] = false;
 		  	 $result_arr[] = 'Something when wrong when ending break';

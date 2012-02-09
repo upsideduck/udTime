@@ -21,8 +21,8 @@ $result_arr = null;
 $type = clean($_REQUEST['type']);
 $comment = clean($_REQUEST['comment']);
 if ( $_REQUEST['timestamp'] == "") $timestamp = date("U");
-elseif (strlen($_POST['timestamp']) == 5) $timestamp = strtotime($_POST['timestamp']);
-else $timestamp = clean($_REQUEST['timestamp']);
+elseif (strlen($_REQUEST['timestamp']) == 5) $timestamp = strtotime($_REQUEST['timestamp']);
+else $timestamp = $_REQUEST['timestamp'];
   
 if($type == "break" || $type == "work") {
 	      	
