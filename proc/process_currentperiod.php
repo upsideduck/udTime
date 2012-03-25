@@ -9,7 +9,7 @@ require_once('../func/func_misc.php');
 require_once('../func/func_fetch.php');
 
 // check if something has been change outside this session
-if(isset($_SESSION["SESS_ACTIVE_PERIOD"]) && $user->activeperiod != $_SESSION["SESS_ACTIVE_PERIOD"]) updateSession($user);
+if($user->activeperiod != $_SESSION["SESS_ACTIVE_PERIOD"]) updateSession($user);
 
 $xml_output = xmlIntro();
 require_once("../api/api_currentperiod.php");
