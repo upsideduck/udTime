@@ -29,6 +29,8 @@ if($result_arr[0]) {
 	$qry="SELECT * FROM userdb WHERE username='$username' AND password='".md5($password)."'";
 	$result=mysql_query($qry);
 	start_session($result);
+	$resultuser = mysql_query("SELECT member_id,username,timezone,dworkweek,activeperiod,activetype,offset FROM userdb WHERE username = '". $_SESSION['SESS_USERNAME']."'");
+	$user = mysql_fetch_object($resultuser);
 }
 
  ?>

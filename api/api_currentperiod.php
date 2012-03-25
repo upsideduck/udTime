@@ -41,10 +41,11 @@ if($_SESSION['SESS_ACTIVE_TYPE'] != "") {
 }else{
 	$result_arr[0] = false;
 	$result_arr[] = "No active period";
+	$rarray = array("member_id" => $_SESSION['SESS_MEMBER_ID']);		// We need this for main form to now current user id for event control
 }
 
 $xml_output .= resultXMLoutput($result_arr, "currentperiod");
 
-if($result_arr[0]) $xml_output .= arrayXMLoutput($rarray);
+$xml_output .= arrayXMLoutput($rarray);
 
 ?>

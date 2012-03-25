@@ -175,7 +175,7 @@ function arrayXMLoutput($rarray) {
 	foreach (array_keys($rarray) as $key) {
 		$local_xml_output .= "\t\t<$key>".$rarray[$key]."</$key>\n";
 	} 
-	$local_xml_output .= "\t</period>";
+	$local_xml_output .= "\t</period>\n";
 	return $local_xml_output;
 }
 /********************************************************************

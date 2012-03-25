@@ -44,17 +44,15 @@ if($type == "break" || $type == "work") {
 				$result_arr[] = $s;
 			} 		
 			$xml_output .= resultXMLoutput($result_arr, "endwork");
-			break;   
-		default:
-			$result_arr[0] = false;
-			$result_arr[] = "Type call not valid";
-			$xml_output .= resultXMLoutput($result_arr, "undefined");
-			break;	 		
+			break;   		
 	}
+} elseif($user->activetype == "break") {	
+	$result_arr = endBreak($comment,$timestamp);
+    $xml_output .= resultXMLoutput($result_arr, "endbreak");
 } else {
 	$result_arr[0] = false;
 	$result_arr[] = "Type call not valid";
-	$xml_output .= resultXMLoutput($result_arr, "undefined");
+	$xml_output .= resultXMLoutput($result_arr, $user->activetype);
 	
 }
 ?>

@@ -11,6 +11,7 @@ $(document).ready(function() {
 	var main_timer;
 	var currenttime = new Date();
 	var checkboxsaved;
+	var userid;
 	
 	checkStatus();
 	
@@ -21,7 +22,7 @@ $(document).ready(function() {
 		if ($("result", xml).attr("success") == "true")
 		{ 
 			notificationtype = "result";
-			checkStatus();
+			//checkStatus();
 		}
 		else
 		{
@@ -53,6 +54,11 @@ $(document).ready(function() {
 	   	var allbreaktime = $(xml).find("allBreakTime").text();   
 	   	var comment =  $(xml).find("comment").text(); 
 	   	var time = 10;
+	   	if(userid != $(xml).find("member_id").text() && userid == null){
+	   		userid = $(xml).find("member_id").text();
+	   		lpStart();
+	   	}
+	   	
 
 	   	if(project == "") project = "none";	 
 	   	
@@ -171,18 +177,63 @@ $(document).ready(function() {
 		*/
 	$("#time").timepicker({});
 	$("#time").mask("99:99",{placeholder: "0"});
-	setInterval(function()
-	   				{
-	   					checkForUpdate();
-	   				}
-	   				, 1000);
-	function checkForUpdate() {
-	if(updateMainForm) {
-		updateMainForm = false;
-		checkStatus();	
+	
+	function statsFetched(xml) {
+		if ($("result", xml).attr("success") == "true")
+		{ 
+			var type = $(xml).find("period > type").text();
+			
+			if($("#up"+type).length) {
+				var time = parseInt($(xml).find("worktime").text());
+				
+  				var Hours = Math.floor(time/60/60);
+  				var Minutes = Math.floor((time - Hours*60*60)/60);
+  				var Seconds = (time - Hours*60*60 - Minutes*60);
+
+  				// Pad the minutes and seconds with leading zeros, if required
+  				Hours = ( Hours < 10 ? "0" : "" ) + Hours;
+  				Minutes = ( Minutes < 10 ? "0" : "" ) + Minutes;
+				Seconds = ( Seconds < 10 ? "0" : "" ) + Seconds;
+  
+  				// Compose the string for display
+  				var TimeString = Hours + ":" + Minutes + ":" + Seconds;
+				$("#up"+type).text(TimeString);
+			}
+		}
+		
+
 	}
 	
-}
+	function lpOnComplete(data) {
+    	if(data != null) {
+    		if(data.event == "period updated") checkStatus();
+    		if(data.event == "period ended") {
+    			var stattypes = ["today","thisweek","thismonth"];
+    			$.each(stattypes, function(i,val){
+    			$.ajax({
+	      			 type: "POST",
+	      			 data: { type : val },
+	       			 url: "proc/process_statistics.php",
+	       			 dataType: "xml",
+	       			 success: statsFetched
+	    			});
+	    		});
+    			checkStatus();
+    		}
+    	}
+    	
+    	// do more processing
+    	lpStart();
+	};
+ 
+	function lpStart() {
+		$.ajax({
+		   type: "POST",
+		   url: "events.php",
+		   data: {id: userid},
+		   dataType: "json",
+		   success: lpOnComplete
+		});
+	};
+	
 });
-
-var updateMainForm = false;

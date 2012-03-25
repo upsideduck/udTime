@@ -124,16 +124,20 @@ $(document).ready(function(){
 								   	messages.push($(this).text());
 								});
 
-			   				if ($("result", xml).attr("success") == "true")
+			   				if ($("result", xml).attr("success") == "true" && (action == "update" || action == "add"))
 							{ 
 								var notificationtype = "result";
 								var pname = messages[0].split(" ")[1];
 								if(messages[0] == "Project removed") pname = "none";
 								if($("#mf_project").length) {
-									//$("#mf_project").text(pname);
-									updateMainForm = true;
+									$("#mf_project").text(pname);
 								}
 
+							}
+							else if ($("result", xml).attr("success") == "true" && action == "newperiod")
+							{ 
+								var notificationtype = "result";
+								
 							}
 							else
 							{

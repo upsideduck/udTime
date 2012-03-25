@@ -23,16 +23,40 @@ if (isset($_SESSION['SESS_MEMBER_ID']))
 {	
 	switch ($action) {
 		case "newperiod":
+			require_once("../api/api_newperiod.php");	
+			require_once("../api/api_currentperiod.php");
+			break;
+		case "startwork":
+			$_REQUEST['type'] = "work";
 			require_once("../api/api_newperiod.php");
+			require_once("../api/api_currentperiod.php");
+			break;
+		case "endwork":
+			$_REQUEST['type'] = "work";
+			if($user->activetype == "break")
+				require_once("../api/api_endbreak.php");
+			else
+				require_once("../api/api_ongoingperiod.php");
 			break;
 		case "currentperiod":
 			require_once("../api/api_currentperiod.php");
 			break;
 		case "ongoingperiod":
 			require_once("../api/api_ongoingperiod.php");
+			require_once("../api/api_currentperiod.php");
 			break;
 		case "endbreak":
 			require_once("../api/api_endbreak.php");
+			require_once("../api/api_currentperiod.php");
+			break;
+		case "startbreak":
+			$_REQUEST['type'] = "break";
+			require_once("../api/api_ongoingperiod.php");
+			require_once("../api/api_currentperiod.php");
+			break;
+		case "endbreak":
+			require_once("../api/api_endbreak.php");
+			require_once("../api/api_currentperiod.php");
 			break;
 		case "weekupdate":
 			require_once("../api/api_update_week.php");
@@ -48,6 +72,9 @@ if (isset($_SESSION['SESS_MEMBER_ID']))
 			break;
 		case "attachproject":
 			require_once("../api/api_attachproject.php");
+			break;
+		case "statistics":			// type
+			require_once("../api/api_statisitcs.php");
 			break;
 		default:
 			break;

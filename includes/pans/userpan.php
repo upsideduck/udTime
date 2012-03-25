@@ -18,9 +18,9 @@ require_once(__SITE_BASE__ . 'func/func_fetch.php');
 	echo "<div class='profiletag'><span class='profilehead'>Work week: </span>".timestampToTime($profile->dworkweek)." </div>";
 	echo "<div class='profiletag'><span class='profilehead'>Offset: </span>".timestampToTime($profile->offset)." </div>";
 	echo "<div class='clear border-top'></div>";
-	echo "<div class='profiletag'><span class='profilehead'>Today: </span>".timestampToTime($today['worktime'])."</div>";
-	echo "<div class='profiletag'><span class='profilehead'>This week: </span>".timestampToTime($thisweek['worktime'])."</div>";
-	echo "<div class='profiletag'><span class='profilehead'>This month: </span>".timestampToTime($thismonth['worktime'])."</div>";
+	echo "<div class='profiletag'><span class='profilehead'>Today: </span><span id='uptoday'>".timestampToTime($today['worktime'])."</span></div>";
+	echo "<div class='profiletag'><span class='profilehead'>This week: </span><span id='upthisweek'>".timestampToTime($thisweek['worktime'])."</span></div>";
+	echo "<div class='profiletag'><span class='profilehead'>This month: </span><span id='upthismonth'>".timestampToTime($thismonth['worktime'])."</span></div>";
  	echo "</div>";
 	echo "</div>";
 ?>
