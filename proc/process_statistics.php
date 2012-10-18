@@ -6,6 +6,7 @@
 	require_once('../includes/config.php');
 	require_once('../func/func_fetch.php');
 	require_once('../func/func_misc.php');
+	require_once('../func/func_stats.php');
 	
 	$xml_output .= xmlIntro();
 	require_once("../api/api_statisitcs.php");

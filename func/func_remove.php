@@ -64,4 +64,103 @@ function removeWork($id) {
 	}
 	return $result_arr;
 }
+/********************************************************************
+ *
+ *	removeFreeDay
+ *
+ *	Incomming: $id - id of freeDay 
+ *
+*	Outgoing : $result_arr
+*		key  : 0 - true-> success, false -> error
+*			   1.. - Message
+*		  	
+ ********************************************************************/ 
+function removeFreeDay($id) {
+	$result_arr[0] = true;
+	$sql = "SELECT * FROM timeoff WHERE id = $id";
+	$result1 = mysql_query($sql);
+	$timeoff = mysql_fetch_object($result1);
+
+	if($timeoff){
+	
+		$sql2 = "DELETE FROM timeoff WHERE id = $id";
+		$result2 = mysql_query($sql2);
+		if($result2){
+				
+			$month = date("m",strtotime($timeoff->date));
+			$week = date("W",strtotime($timeoff->date));
+			$year = date("Y",strtotime($timeoff->date));
+			
+			if(timespan::updateWeekStats($year,$week) == false){
+				$result_arr[0] = false;
+				$result_arr[] = "Week stats not updated";
+			}
+			
+			if(timespan::updateMonthStats($year,$month) == false){
+				$result_arr[0] = false;
+				$result_arr[] = "Month stats not updated";
+			}
+
+			if($result_arr[0]) $result_arr[] = "Freeday removed";
+			
+		}else{
+			$result_arr[0] = false;
+			$result_arr[] = "Freeday not deletet";
+		}
+	}else{
+		$result_arr[0] = false;
+		$result_arr[] = "Freeday not found";
+	}
+	return $result_arr;
+}
+
+/********************************************************************
+ *
+ *	removeVacationDay
+ *
+ *	Incomming: $id - id of vacationDay 
+ *
+*	Outgoing : $result_arr
+*		key  : 0 - true-> success, false -> error
+*			   1.. - Message
+*		  	
+ ********************************************************************/ 
+function removeVacationDay($id) {
+
+	$result_arr[0] = true;
+	$sql = "SELECT * FROM vacationdays WHERE id = $id";
+	$result1 = mysql_query($sql);
+	$vacationday = mysql_fetch_object($result1);
+	if($vacationday){
+		
+		$sql2 = "DELETE FROM vacationdays WHERE id = $id";
+		$result2 = mysql_query($sql2);
+		if($result2){
+				
+			$month = date("m",strtotime($vacationday->date));
+			$week = date("W",strtotime($vacationday->date));
+			$year = date("Y",strtotime($vacationday->date));
+			
+			if(timespan::updateWeekStats($year,$week) == false){
+				$result_arr[0] = false;
+				$result_arr[] = "Week stats not updated";
+			}
+			
+			if(timespan::updateMonthStats($year,$month) == false){
+				$result_arr[0] = false;
+				$result_arr[] = "Month stats not updated";
+			}
+			
+			if($result_arr[0]) $result_arr[] = "Vacation day removed";
+			
+		}else{
+			$result_arr[0] = false;
+			$result_arr[] = "Vacation day not deletet";
+		}
+	}else{
+		$result_arr[0] = false;
+		$result_arr[] = "Vacation day not found";
+	}
+	return $result_arr;
+}
 ?>

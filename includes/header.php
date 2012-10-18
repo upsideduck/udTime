@@ -23,6 +23,9 @@ switch (__SCRIPT_NAME__) {
 	case "edit" :
 		include("includes/headers/head_edit.php");
 		break;
+	case "profile" :
+		include("includes/headers/head_profile.php");
+		break;
 }
 ?>
 <link href="css/main.css" rel="stylesheet" type="text/css" />

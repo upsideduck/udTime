@@ -1,15 +1,11 @@
 <ul class="topnav">
     <li><a href='index.php'>Home</a></li>
     <li>
-        <a href='summary.php'>Summary</a>
-        <!--
+        <a href='#'>Summary</a>
         <ul class="subnav">
-            <li><a href="#">Sub Nav Link</a></li>
-            <li><a href="#">Sub Nav Link</a></li>
-            <li><a href="#">Sub Nav Link</a></li>
-            <li><a href="#">Sub Nav Link</a></li>	
+            <li><a href="summary.php?summary=week_totals">Week totals</a></li>
+            <li><a href="summary.php?summary=month_totals">Month totals</a></li>
         </ul>
-        -->
     </li>
     <li>
         <a href='profile.php'>Profile</a>

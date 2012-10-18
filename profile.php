@@ -8,10 +8,15 @@
    
 
 echo "<h1>My Profile</h1>";
-//<a href="index.php">Home</a> | <a href="profile.php">My Profile</a> | <a href="summary.php">Summary</a>
-	notification();
-	
+
+	echo "<h2>Upload avatar</h2>";
 	include_once("includes/avatarupload.php");
-	
-      require_once('includes/footer.php');
+	echo "<h2>Update stats</h2>";
+	include_once("includes/full_stats_update.php");
+    
+	echo "<div id='resultContainer'>\n";
+	include_once("includes/pans/resultpan.php");
+	echo "</div>\n";
+
+    require_once('includes/footer.php');
 ?>

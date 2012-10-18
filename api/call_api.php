@@ -3,6 +3,7 @@
 //Start session
 session_start();
 
+require_once('../includes/config.php');
 require_once('../func/func_start.php');
 require_once('../func/func_end.php');
 require_once('../func/func_user.php');
@@ -10,8 +11,8 @@ require_once('../func/func_fetch.php');
 require_once('../func/func_projects.php');
 require_once('../func/func_misc.php');
 require_once('../func/func_session.php');
+require_once('../func/func_remove.php');
 require_once('../func/func_weeksdb.php');
-require_once('../includes/config.php');
 
 $action = clean($_REQUEST["action"]);
 
@@ -64,8 +65,11 @@ if (isset($_SESSION['SESS_MEMBER_ID']))
 		case "allweeksupdate":
 			require_once("../api/api_update_all_weeks.php");
 			break;
-		case "updateholiday":
-			require_once("../api/api_holiday.php");
+		case "setvacation":
+			require_once("../api/api_setvacation.php");
+			break;
+		case "setfreedays":
+			require_once("../api/api_setfreedays.php");
 			break;
 		case "newproject":
 			require_once("../api/api_newproject.php");
@@ -75,6 +79,9 @@ if (isset($_SESSION['SESS_MEMBER_ID']))
 			break;
 		case "statistics":			// type
 			require_once("../api/api_statisitcs.php");
+			break;
+		case "fetchperiods":			// type
+			require_once("../api/api_fetchperiods.php");
 			break;
 		default:
 			break;

@@ -16,15 +16,6 @@ $(document).ready(function() {
 		 }); 
 	});
 	
-	function colorcode() {
-		$(".weeklist_diff").each(function(){
-			if($(this).text().charAt(0) == "-") $(this).addClass("neg");
-			else $(this).addClass("pos");
-		});
-		if($("#weeklist_alltotals").text().charAt(0) == "-") $("#weeklist_alltotals").addClass("neg");
-		else $("#weeklist_alltotals").addClass("pos");
-	}
-	
 	function onSuccessExec(xml) {
 		$("#result").empty();
 		if ($("result", xml).attr("success") == "true")

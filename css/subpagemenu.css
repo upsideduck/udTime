@@ -1,0 +1,43 @@
+
+#button {
+	height: 25px;
+	width: 148px;
+	margin: auto;
+	z-index: 30;
+	position: relative;
+	top: 24;
+	left: 226;	
+}
+
+#button_image{
+	background-image: url(../images/button.png);
+	background-repeat: no-repeat;
+	width: 148px;
+	line-height: 25px;
+	color: white;
+	padding-left: 30px;
+}
+
+.the_menu {
+	background-color: #6493d2;
+	color: #f2f2f2;	
+	display:none;
+	width:148px;
+	margin:0; 
+	padding:0; 
+	list-style:none;
+	padding-bottom: 10px;
+}
+
+.the_menu li {
+	padding-left: 10px;
+}
+
+.the_menu li a {
+color: #f2f2f2;
+text-decoration: none;
+}
+
+.the_menu li a:hover {
+color: #f2f2f2;
+}

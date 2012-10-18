@@ -20,7 +20,7 @@
 function fetchStartEndTime($type, $year = null, $month = null, $day = null, $week = null) {
 	$timeArray = array("start"=>0,"end"=>0);
 	$week = str_pad($week, 2, "0", STR_PAD_LEFT);
-	$year = str_pad($year, 4, "20", STR_PAD_LEFT);
+	if(strlen($year == 2)) $year = str_pad($year, 4, "20", STR_PAD_LEFT);
 	switch ($type) {
 		case ("year"): 
 			$timeArray["start"] = mktime(0, 0, 0, 1, 1, $year);
@@ -169,13 +169,13 @@ function resultXMLoutput($result_arr, $task) {
  *	Outgoing : $xml_output
  *
  ********************************************************************/ 
-function arrayXMLoutput($rarray) {
+function arrayXMLoutput($rarray, $mainkey = "period") {
 	$local_xml_output = "";
-	$local_xml_output .= "\t<period>\n";
+	$local_xml_output .= "\t<{$mainkey}>\n";
 	foreach (array_keys($rarray) as $key) {
 		$local_xml_output .= "\t\t<$key>".$rarray[$key]."</$key>\n";
 	} 
-	$local_xml_output .= "\t</period>\n";
+	$local_xml_output .= "\t</{$mainkey}>\n";
 	return $local_xml_output;
 }
 /********************************************************************
@@ -188,16 +188,40 @@ function arrayXMLoutput($rarray) {
  *
  ********************************************************************/ 
 function timestampToTime($timestamp) {
-	
+	if($timestamp < 0) {
+		$neg = true;
+		$timestamp = abs($timestamp);
+	}
     $hours = intval(floor($timestamp / 3600));
-    if ($hours < 10) $hours = "0$hours"; 
+    if ($hours < 10) $hours = "0{$hours}"; 
     $timestamp = $timestamp % 3600;
     $minutes = intval(floor($timestamp / 60)); 
     if ($minutes < 10) $minutes = "0$minutes";
     $timestamp = $timestamp % 60;
     $seconds = $timestamp;
     if ($seconds < 10) $seconds = "0$seconds";
-	return "$hours:$minutes:$seconds";
+    
+    if($neg) return "-$hours:$minutes:$seconds";
+	else return "$hours:$minutes:$seconds";
+}
+
+/********************************************************************
+ *
+ *	timestampToDecTime - Transform timestamp to H:Dec(min) format
+ *
+ *	Incomming : $timestamp
+ *		
+ *	Outgoing : $time_string
+ *
+ ********************************************************************/ 
+function timestampToDecTime($timestamp) {
+	
+	$hours = floor($timestamp/60/60);
+	$min = floor(($timestamp - $hours*60*60)/60);
+	$sec = $timestamp- $hours*60*60 - $min*60;
+	$mmin = Round($min/60*100,0) < 10 ? 0 . Round($min/60*100,0) : Round($min/60*100,0);
+    
+	return "$hours.$mmin";
 }
 /********************************************************************
  *
@@ -227,4 +251,46 @@ function updateSession($member) {
 	$_SESSION['SESS_ACTIVE_TYPE'] = $member->activetype;
 
 	}
+/********************************************************************
+ *
+ *	workingdaysmonth - working days of month
+ *
+ *	Incomming : $month,$year)
+ *		
+ *	Outgoing : days or false
+ *
+ ********************************************************************/ 
+function workingdaysmonth($month,$year) {
+	if(is_numeric($month) && is_numeric($year)) { //need to be a numbers
+		if($month > 12) {
+			return false;
+		}
+		
+		$statsstartdateresult = mysql_query("SELECT statsstartdate FROM userdb WHERE member_id = ". $_SESSION['SESS_MEMBER_ID']);
+		$statsstartdate = mysql_result($statsstartdateresult,0);
+		
+		$sstatsyear = date("Y",$statsstartdate);
+		$sstatsmonth = date("m",$statsstartdate);
+		$sstatsday = date("d",$statsstartdate);
+		
+		//Check if set "start of stats calculation" is before current month, if not use that as basis
+		if(mktime(0,0,0,$month,1,$year) < mktime(0,0,0,$sstatsmonth,$sstatsday,$sstatsyear)){
+			$start = mktime(0,0,0,$sstatsmonth,$sstatsday,$sstatsyear);
+		}else{
+			$start = mktime(0,0,0,$month,1,$year);
+		}
+		$end = ($month ==12) ? mktime(0,0,0,1,1,$year+1):
+		mktime(0,0,0,$month+1,1,$year);
+		$bet = ($end - $start)/86400;
+		$days = 0;
+		for($i=0;$i<$bet;$i++) {
+			$newday = date("w",($start + ($i*86400))); // increment day of week
+			if($newday != 0 && $newday != 6) { // if not sat. or sun.
+				$days++; // increment days
+			}
+		}
+		return $days;
+	}
+	return false;
+}
 ?>

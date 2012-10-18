@@ -57,6 +57,17 @@ th {
 	text-align: left;
 }
 
+.oddrowcolor{
+	background-color: #e0e0e0;
+}
+
+.weekendrowcolor{
+	background-color: #f6d9d9;
+}
+
+weekendrowcolor{
+	
+}
 p.registerlink {
     
       text-align: center;
@@ -140,6 +151,9 @@ margin: 5px;
 #add_project{
 	margin: 
 }
+.bheader{
+	font-weight:bold; 
+}
 /* @group notifications */
 .close_button{
 	right: -23px;
@@ -214,7 +228,10 @@ margin: 5px;
 	color: #000;
 }
 
-
+.list_header{
+	font-size: 2em;
+	margin-bottom: 10px;
+}
 .week_container {
 	width: 100%;
 	height: 80%;
@@ -275,23 +292,75 @@ margin: 5px;
 }
 
 .week_container_list {
-	display: block;
+	display: table;
+	width: 100%;
 }
 
 .day_header_list {
+	padding-right: 5px;
+	display: table-cell;
 	font-weight: bold;
 }
 
 .day_container_list {
-	display: table-cell;
+	display: table-row;
 	padding-right: 10px;
 }
 
-/* @end */
+.week_totals_list{
+	padding-right: 10px;
+	display: table-cell;	
+}
 
+/* @end */
+.subpage_container{
+	width: 600px;	
+}
+.subpage_week{
+	width: 440px;
+	float: left;
+	padding-right: 0px;
+}
+.subpage_month{
+	width: 440px;
+	float: left;
+	padding-right: 0px;
+}
+.subpage_menu{
+	float: right;
+	width: 148px;
+	padding-left: 10px;
+	padding-right: 2px;
+}
+.subpage_menu_list{
+	list-style: none;
+	margin: 0px;
+	padding: 0px;
+	margin-bottom: 10px;
+	vertical-align
+}
+.subpage_menu_list a{
+	color: #f2f2f2;
+	text-decoration: none;
+}
+.subpage_menu_style{
+	background: #6493d2; /* for non-css3 browsers */
+
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#6493d2', endColorstr='#7face6'); /* for IE */
+	background: -webkit-gradient(linear, left top, left bottom, from(#6493d2), to(#7face6)); /* for webkit browsers */
+	background: -moz-linear-gradient(top,  #6493d2,  #7face6); /* for firefox 3.6+ */ 
+	box-shadow: 2px 2px 2px #888888;
+	padding: 15px;
+	-moz-border-radius: 15px;	
+	border-radius: 10px;
+	color: #f2f2f2;
+	//border: 1px solid black;
+}
 /* @group list view */
 
  .work_list {
+ 	display: table-cell;
+ 	padding-right: 5px;
  	list-style-type: none;
  	padding-left: 0px;
  }
@@ -303,7 +372,9 @@ margin: 5px;
  }
  
  .work_item_list {
- 	
+ 	padding-left: 5px;
+	padding-right: 5px;
+	border-left: 1px dashed #c0c0c0;
  }
  
  .break_item_list {
@@ -347,6 +418,98 @@ margin: 5px;
 }
 .weeklist_offset {
 	font-weight: bold;
+
+}
+.week_totals_list{
+	padding-left: 5px;
+	padding-right: 5px;
+	border-left: 1px dashed #c0c0c0;
+}
+.month_container_list {
+	display: table;
+	}
+.monthlist_item{
+	display: table-row;
+}
+.monthlist_date{
+	display: table-cell;
+	padding-right: 5px;
+	border-right: 1px dashed #c0c0c0;
+}
+.monthlist_day{
+	display: table-cell;
+	padding-left: 5px;
+	padding-right: 15px;
+	border-right: 1px dashed #c0c0c0;
+	
+}
+.monthlist_timestamp{
+	display: table-cell;
+	padding-left: 5px;
+	padding-right: 5px;
+	border-right: 1px dashed #c0c0c0;
+}
+.monthlist_starttime{
+	display: table-cell;
+	padding-left: 5px;
+	padding-right: 5px;
+	border-right: 1px dashed #c0c0c0;
+}
+.monthlist_breaks{
+	display: table-cell;
+	padding-right: 5px;
+	padding-left: 5px;
+	border-right: 1px dashed #c0c0c0;
+}
+.monthlist_endtime{
+	display: table-cell;
+	padding-right: 5px;
+	padding-left: 5px;	
+	border-right: 1px dashed #c0c0c0;
+}
+.monthlist_timeoff{
+	display: table-cell;
+	padding-right: 5px;
+	padding-left: 5px;	
+	border-right: 1px dashed #c0c0c0;
+}
+.monthlist_vacation{
+	display: table-cell;
+	padding-right: 5px;	
+	padding-left: 5px;
+	border-right: 1px dashed #c0c0c0;
+}
+.monthist_holiday{
+	display: table-cell;
+	padding-right: 5px;
+	padding-left: 5px;
+	border-right: 1px dashed #c0c0c0;
+}
+.monthlist_diff{
+	display: table-cell;
+	padding-right: 5px;
+	padding-left: 5px;
+	border-right: 1px dashed #c0c0c0;
+}
+.monthlist_status{
+	padding-left: 5px;
+	display: table-cell;
+	padding-right: 5px;	
+}
+
+#monthlist_alltotals {
+	border-top: 1px solid #000000;
+	margin-top: 5px;
+	width: 250px;
+}
+.monthlist_offset {
+	font-weight: bold;
+
+}
+.monthlist_worktime{
+	padding-left: 5px;
+	display: table-cell;
+	padding-right: 5px;	
 }
 /* @end */
 
@@ -379,7 +542,10 @@ margin: 5px;
 .clearfix {
 	display: inline-block;
 }
- 
+#calendar {
+	width: 600px;
+	margin: 0 auto;
+}
 html[xmlns] .clearfix {
 	display: block;
 }

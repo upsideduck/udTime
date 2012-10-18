@@ -9,7 +9,7 @@ ul.topnav {
 	background-color:#6493d2;
 	-moz-box-shadow:0 1px 1px #000;
 	-webkit-box-shadow:0 1px 1px #000;
-	z-index:1
+	z-index:50
 }
 
 ul.topnav li {

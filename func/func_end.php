@@ -20,7 +20,7 @@ function endWork($comment, $timestamp) {
 	    $next_increment = $row['Auto_increment'];
 	  
 	    // only allow end if it is after period has started
-  	 	$sql_req1 = "SELECT starttime FROM workdb WHERE id = ".$_SESSION['SESS_ACTIVE_PERIOD'];
+  	 	$sql_req1 = "SELECT starttime,endtime FROM workdb WHERE id = ".$_SESSION['SESS_ACTIVE_PERIOD'];
  		$result_req1 = mysql_query($sql_req1);
 	  	$activeWorkInfo = mysql_fetch_array($result_req1);
 	  	if($activeWorkInfo['starttime'] > $timestamp) {
@@ -62,6 +62,8 @@ function endWork($comment, $timestamp) {
 	  		$_SESSION['SESS_ACTIVE_PROJECT'] = null;
 			$result_arr[0] = true;
 		  	$result_arr[] = 'Work ended '.date("H:i:s",$activeWorkInfo['starttime'])." - ".date("H:i:s",$timestamp).", including ".$nrOfBreaks." breaks";
+		  	$stats_result = timespan::updateStats(new timespan($activeWorkInfo['starttime'], $timestamp));
+		  	if($stats_result[0] == false) $result_arr[] = $stats_result[1];
  		} else {
 	 		$result_arr[0] = false;
 	 		$result_arr[] = 'Something went wrong when ending work';

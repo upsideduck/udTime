@@ -67,7 +67,13 @@ function updatePeriod($type, $id, $newStartTime, $newEndTime, $newComment, $topT
 		$new_week["year"] = Date("y", $oldStartTime);
 		
 		updateWeekInBook($new_week["week"], $new_week["year"]);
-		if($old_week != $new_week) updateWeekInBook($old_week["week"], $old_week["year"]);
+		
+	  	timespan::updateStats(new timespan($newStartTime, $newEndTime));
+		if($old_week != $new_week) {
+			timespan::updateStats(new timespan($oldStartTime, $oldStartTime+1));
+			updateWeekInBook($old_week["week"], $old_week["year"]);
+		}
+		
 	}
 	
 	return $result_arr;
@@ -130,7 +136,7 @@ function addPeriod($type,$newStartTime, $newEndTime, $newComment) {
 			$week = Date("W", $newStartTime);
 			$year = Date("y", $newStartTime);
 			
-			addNewWorkPeriodToBook($next_increment);
+			timespan::updateStats(new timespan($newStartTime,$newEndTime));
 		}
 	}
 	

@@ -6,12 +6,10 @@
 	
 	//Include database connection details
 	require_once('../includes/config.php');
-	require_once('../func/func_weeksdb.php');
-	require_once('../func/func_fetch.php');
 	require_once('../func/func_misc.php');
 	
 	$xml_output .= xmlIntro();
-	require_once("../api/api_update_all_weeks.php");
+	require_once("../api/api_full_stats_update.php");
 	$xml_output .= xmlOutro();
 	
 	header('Content-type: text/xml'); 
