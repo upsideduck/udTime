@@ -98,6 +98,21 @@ $(document).ready(function() {
 					   			timeInt = parseInt(endtime.text()) - parseInt(starttime.text());
 					   			$(this).find('break').each(function() {
 					   				timeInt = timeInt - parseInt($(this).find('>endtime').text()) + parseInt($(this).find('>starttime').text());
+					   				var starttime = $(this).find('>starttime');
+					   				var endtime = $(this).find('>endtime');
+					   				var id = $(this).find('id');
+
+					   				events.push({
+							   			title: "Break",
+							   			start: starttime.text(),
+							   			end:  endtime.text(),
+							   			color: "red",
+							   			itemid: id.text(),
+							   			type: "break",
+							   			allDay: false,
+							   			className: "break"
+							   		});
+					   				
 					   			});
 					   			
 					   			var timeHour = Math.floor(timeInt/60/60);

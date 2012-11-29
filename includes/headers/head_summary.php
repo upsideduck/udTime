@@ -10,7 +10,7 @@
 		case "week_cal":
 			echo "<link rel='stylesheet' type='text/css' href='css/subpagemenu.css' />";
 			echo "<link rel='stylesheet' type='text/css' href='css/fullcalendar.css' />";
-			echo "<script type='text/javascript' src='js/fullcalendar.min.js'></script>";
+			echo "<script type='text/javascript' src='js/fullcalendar.js'></script>";
 			echo "<script type='text/javascript' src='js/prototype.getweek.js'></script>";
 			echo "<script type='text/javascript' src='js/summary_week_cal.js'></script>";
 			break;
