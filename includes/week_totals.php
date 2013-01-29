@@ -2,7 +2,7 @@
 
 //Start session
 if(!isset($_SESSION['SESS_MEMBER_ID'])) session_start();
-require_once($_SERVER["DOCUMENT_ROOT"]."/time/includes/config.php");
+require_once("includes/config.php");
 require_once(__SITE_BASE__."func/func_weeksdb.php");
 require_once(__SITE_BASE__."func/func_fetch.php");
 require_once(__SITE_BASE__."func/func_misc.php");
