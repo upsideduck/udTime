@@ -2,7 +2,11 @@ $(document).ready(function() {
 	
 	var year = $(this).getUrlParam("y");
 	var month = $(this).getUrlParam("m");
-	
+
+	var d = new Date();	
+	if(year == null) year = d.getFullYear();
+	if(month == null) month = d.getMonth()+1;
+
 	$("#vac_sdate").datepicker({
 		dateFormat: 'yy-mm-dd',
 		showWeek: true,
@@ -13,6 +17,7 @@ $(document).ready(function() {
 		firstDay: 1
 	});
 	$("#vac_sdate").mask("9999-99-99",{placeholder: "0"});
+
 	$("#vac_edate").datepicker({
 		dateFormat: 'yy-mm-dd',
 		showWeek: true,
