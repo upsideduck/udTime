@@ -18,6 +18,7 @@ $(document).ready(function() {
 			center: 'title',
 			right: ''
 		},
+		firstDay:1,
 		defaultView: 'agendaWeek',
 		columnFormat: {
 			week: 'ddd',
