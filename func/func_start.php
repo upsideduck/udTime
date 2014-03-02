@@ -30,6 +30,7 @@ function goWork($type, $comment, $timestamp) {
 		  if ($success1 && $success2) {
 		 	 $result_arr[0] = true;
 		 	 $result_arr[] = 'Work period started';
+		 	 //messageRedis();
 		  } else {
 		  	 $result_arr[0] = false;
 		  	 $result_arr[] = 'Something went wrong with the db';
@@ -58,7 +59,7 @@ function goWork($type, $comment, $timestamp) {
  *
  ********************************************************************/
 function goOnBreak($comment, $timestamp) {  
-    
+
 	$qShowStatus = "SHOW TABLE STATUS LIKE 'breakdb'";
 
     $qShowStatusResult 	= mysql_query($qShowStatus) or die ( "Query failed: " . mysql_error() . "<br/>" . $qShowStatus );
@@ -73,6 +74,11 @@ function goOnBreak($comment, $timestamp) {
 	$sql0 = "SELECT starttime FROM ".$savedActiveType."db WHERE id = ".$savedActivePeriod;
 	$result0 = mysql_query($sql0);
 	$savedActivePeriodInfo = mysql_fetch_array($result0);
+	if($savedActiveType == "break"){
+		$result_arr[0] = false;
+		$result_arr[] = 'Cannot break from a break';
+		return $result_arr;
+	}
 	if($savedActivePeriodInfo['starttime'] > $timestamp) {
 		$result_arr[0] = false;
 		$result_arr[] = 'Break cannot start before actual period';
@@ -99,6 +105,7 @@ function goOnBreak($comment, $timestamp) {
     if ($success1 && $success2 && $success3) {
     	 $result_arr[0] = true;
     	 $result_arr[] = "Break started";
+    	 //messageRedis();
     } else {
     	 $result_arr[0] = false;
     	 $result_arr[] = 'Something when wrong';

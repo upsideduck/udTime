@@ -111,75 +111,6 @@ function notification() {
 }
 /********************************************************************
  *
- *	xmlIntro - starting of xml output
- *
- *	Incomming : 
- *		
- *	Outgoing : $xml_output
- *
- ********************************************************************/ 
-function xmlIntro() {
-	$xml_output = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
-	$xml_output .= "<udtime>\n";
-	return $xml_output;
-}
-/********************************************************************
- *
- *	xmlOutro - end of xml output
- *
- *	Incomming : 
- *		
- *	Outgoing : $xml_output
- *
- ********************************************************************/ 
-function xmlOutro() {
-	$xml_output = "</udtime>\n";
-	return $xml_output;
-}
-/********************************************************************
- *
- *	resultXMLoutput - Take result_arr and transform into xml code
- *
- *	Incomming : $result_arr
- *		key  : 0 - true-> success, false -> error
- *			   1.. - Message
- *
- *	Outgoing : $xml_output
- *
- ********************************************************************/ 
-function resultXMLoutput($result_arr, $task) {
-	$local_xml_output = "";
-	if($result_arr[0]) $local_xml_output .= "\t<result success=\"true\" action=\"$task\">\n";
-	else $local_xml_output .= "\t<result success=\"false\" action=\"$task\">\n";
-	unset($result_arr[0]);
-	foreach ($result_arr as $s) {
-		$local_xml_output .= "\t\t<message>".$s."</message>\n";
-	} 
-	$local_xml_output .= "\t</result>\n";
-	//header('Content-type: text/xml'); 
-	return $local_xml_output;
-}
-/********************************************************************
- *
- *	arrayXMLoutput - Take array and transform into xml code
- *
- *	Incomming : $rarray
- *		key  : ….
- *
- *	Outgoing : $xml_output
- *
- ********************************************************************/ 
-function arrayXMLoutput($rarray, $mainkey = "period") {
-	$local_xml_output = "";
-	$local_xml_output .= "\t<{$mainkey}>\n";
-	foreach (array_keys($rarray) as $key) {
-		$local_xml_output .= "\t\t<$key>".$rarray[$key]."</$key>\n";
-	} 
-	$local_xml_output .= "\t</{$mainkey}>\n";
-	return $local_xml_output;
-}
-/********************************************************************
- *
  *	timestampToTime - Transform timestamp to readable format
  *
  *	Incomming : $timestamp
@@ -293,4 +224,36 @@ function workingdaysmonth($month,$year) {
 	}
 	return false;
 }
+/********************************************************************
+ *
+ *	messageRedis - 
+ *
+ *	Incomming : 
+ *		
+ *	Outgoing : 
+ *
+ ********************************************************************/ 
+function messageRedis() {
+	$redis = new Credis_Client('doop.johanadell.com');
+	$redis->publish('udtime', json_encode(array("uid"=>$_SESSION['SESS_MEMBER_ID'],"msg"=>"My message")));
+}
+
+/********************************************************************
+ *
+ *	lookupTable - 
+ *
+ *	Incomming : type 
+ *		
+ *	Outgoing : 
+ *
+ ********************************************************************/ 
+function lookupTable($type) {
+	$lookupresult = mysql_query("SELECT * FROM lookup WHERE type = '{$type}'");
+	$lookup_arr= array();
+	while ($obj = mysql_fetch_object($lookupresult)) {
+	    $lookup_arr[] = $obj;
+	}
+	return $lookup_arr;
+}
+
 ?>

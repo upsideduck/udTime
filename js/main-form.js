@@ -1,11 +1,19 @@
 $(document).ready(function() {
 	
-	$("#mainform_submit").button();
-	$("#result").hide();
+	/*var socket = io.connect('http://doop.johanadell.com:8181');
+	socket.emit('subscribe-id', $("#uid").val());
+	socket.on('udtime-msg', function (data) {
+		//alert("Got Redis");
+		checkStatus();
+	});*/	
+
 	
-	$("#free_choices").hide().buttonset();
-    $("#work_choices").hide().buttonset();
-	$("#break_choices").hide().buttonset();
+	$("#mainform_submit").button();
+	//$("#result").hide();
+	
+	$("#free_choices").hide();
+    $("#work_choices").hide();
+	$("#break_choices").hide();
 	$("#clock").text("0:00:00");
 	
 	var main_timer;
@@ -22,11 +30,12 @@ $(document).ready(function() {
 		if ($("result", xml).attr("success") == "true")
 		{ 
 			notificationtype = "result";
-			//checkStatus();
+			checkStatus();
+			updateOtherClientsViaRedis();
 		}
 		else
 		{
-			$(checkboxsaved).prop('checked', true);
+			//$(checkboxsaved).prop('checked', true);
 			notificationtype = "error";
 		}
 		
@@ -43,7 +52,20 @@ $(document).ready(function() {
 		   type: "POST",
 		   url: "proc/process_currentperiod.php",
 		   dataType: "xml",
-		   success: typeFetched
+		   success: typeFetched,
+		});
+	}
+	
+	function updateOtherClientsViaRedis() {
+	
+		$.ajax({
+		   type: "GET",
+		   url: "proc/process_messageredis.php",
+		   dataType: "xml",
+		   success: function(){
+			    //alert('Redis sent');
+			  },
+				
 		});
 	}
 	
@@ -56,22 +78,22 @@ $(document).ready(function() {
 	   	var time = 10;
 	   	if(userid != $(xml).find("member_id").text() && userid == null){
 	   		userid = $(xml).find("member_id").text();
-	   		lpStart();
+	   		//lpStart();
 	   	}
 	   	
 
 	   	if(project == "") project = "none";	 
 	   	
-	   	$('#mainForm input[type="radio"]').each(function(){
+	   	/*$('#mainForm input[type="radio"]').each(function(){
       		$(this).checked = false;  
       		$(this).next().attr('aria-pressed', false).removeClass("ui-state-active");
-  		});
+  		});*/
 	  	   	
 	   	switch (type){
 	   		case '':
 	   			$("#free_choices").show()
-	   			$("#free_choices input:radio:first").attr('checked', true);
-	   			$("#f_work").next().attr('aria-pressed', true).addClass("ui-state-active");
+	   			$("#f_work").addClass("active");
+	   			$("#checkedValue").val($("#f_work").val());
 	   			$("#work_choices").hide();
 	   			$("#break_choices").hide();
 				$("#clock").text("0:00:00");
@@ -81,14 +103,14 @@ $(document).ready(function() {
 	   			$("#comment_header").text("Comment: ");
 	   			$("#mf_project").text(project);
 	   			$("#comment").val(comment);
-	   			$("#now").attr('checked', true );
+	   			$("#now").prop('checked', true );
 	   			break;
 	   		case 'work':
 	   			$("#free_choices").hide();
 	   			$("#work_choices").show();
-	   			$("#work_choices input:radio:first").attr('checked', true);
-	   			$("#w_break").next().attr('aria-pressed', true).addClass("ui-state-active");
+	   			$("#w_break").addClass("active");
 	   			$("#break_choices").hide();
+	   			$("#checkedValue").val($("#w_break").val());
 	   			$("#script").val("proc/process_ongoingperiod.php");
 	   			$("#mfheader").text("User working");
 	   			$("#comment").val(comment);
@@ -102,14 +124,14 @@ $(document).ready(function() {
 	   				}
 	   				, 1000);
    				$("#clock").show();
-   				$("#now").attr('checked', true );
+   				$("#now").prop('checked', true );
 	   			break;
 	   		case 'break':
 	   			$("#free_choices").hide();
 	   			$("#work_choices").hide();
 	   			$("#break_choices").show();
-	   			$("#break_choices input:radio:first").attr('checked', true);
-	   			$("#b_break").next().attr('aria-pressed', true).addClass("ui-state-active");
+	   			$("#checkedValue").val($("#b_break").val());
+	   			$("#b_break").addClass("active");
 	   			$("#script").val("proc/process_endbreak.php");
 	   			$("#mfheader").text("User on break"); 				   			
 	   			$("#comment_header").text("Break comment: ");
@@ -123,24 +145,28 @@ $(document).ready(function() {
 	   				}
 	   				, 1000);
 	   			$("#clock").show();
-	   			$("#now").attr('checked', true );
+	   			$("#now").prop('checked', true );
 	   			break;
 		}
 	}
+	$(".checkedValue .btn").click(function() {
+	    // whenever a button is clicked, set the hidden helper
+	    $("#checkedValue").val($(this).val());
+	}); 
 	
 	$("#mainForm").submit(function(event) {
 		//$("#result").hide();
 	    /* stop form from submitting normally */
 	    event.preventDefault();
 	    
-	    var type = $("input[name='type']:checked").val(),
+	    var type = $("#checkedValue").val(),
 	    	comment = $("input#comment").val(),
 	    	url = $("input#script").val();
 	    
-	    checkboxsaved = "#"+$("input[name='type']:checked").attr("id");	
-	    $("input[name='type']").prop('checked', false);
+	    //checkboxsaved = "#"+$("button[name='type'] .active").attr("id");	
+	    //$("input[name='type']").prop('checked', false);
 	    	
-	    if($("#now").attr('checked')) 
+	    if($("#now").prop('checked')) 
 	    {
 	    	var timestamp = "";
 	    } 
@@ -168,6 +194,12 @@ $(document).ready(function() {
 	$("#time").click(function(){ 
 		$("#now").prop('checked', false );
 	}); 
+	$("#timepicker").datetimepicker({
+		 pickDate: false,            // disables the date picker
+		 pickTime: true,            // disables de time picker
+		 pick12HourFormat: false,   // enables the 12-hour format time picker
+		 pickSeconds: false,         // disables seconds in the time picker
+	});
 	/*$("#time").timePicker({
 		startTime: new Date(0,0,0,currenttime.getHours()-2,Math.round(currenttime.getMinutes()/10)*10,0),  // Using string. Can take string or Date object.
 		endTime: new Date(0,0,0,currenttime.getHours()+2,Math.round(currenttime.getMinutes()/10)*10,0),  // Using Date object.
@@ -175,8 +207,8 @@ $(document).ready(function() {
 		separator:':',
 		step: 5});
 		*/
-	$("#time").timepicker({});
-	$("#time").mask("99:99",{placeholder: "0"});
+	//$("#time").timepicker({});
+	$("#time").inputmask({mask:"99:99",placeholder: "0"});
 	
 	function statsFetched(xml) {
 		if ($("result", xml).attr("success") == "true")
@@ -204,7 +236,7 @@ $(document).ready(function() {
 
 	}
 	
-	function lpOnComplete(data) {
+	/*function lpOnComplete(data) {
     	if(data != null) {
     		if(data.event == "period updated") checkStatus();
     		if(data.event == "period ended") {
@@ -234,6 +266,6 @@ $(document).ready(function() {
 		   dataType: "json",
 		   success: lpOnComplete
 		});
-	};
+	};*/
 	
 });

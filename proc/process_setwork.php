@@ -10,18 +10,14 @@
 	require_once('../func/func_edit.php');
 	require_once('../func/func_fetch.php');	
 	
+	$output = new output();
 	
-	//Sanitize the POST values
-    $starttime = strtotime(clean($_REQUEST["start_time"]));
-    $endtime = strtotime(clean($_REQUEST["end_time"]));
-    $comment = clean($_REQUEST["comment"]);    
-  
-    $xml_output .= xmlIntro();
-	$xml_output .= resultXMLoutput(addPeriod("work", $starttime, $endtime, $comment), "setwork");
-	$xml_output .= xmlOutro();
+	require_once("../api/api_setwork.php");
+
 	
 	header('Content-type: text/xml'); 
-	echo $xml_output;
+	echo $output->outputToXml();
  	
  	session_write_close();
 ?>
+

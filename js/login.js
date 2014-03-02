@@ -1,6 +1,5 @@
 $(document).ready(function() {
 
-  $("#loading").hide();
  /* attach a submit handler to the form */
   $("#loginForm").submit(function(event) {
     /* stop form from submitting normally */
@@ -19,11 +18,6 @@ $(document).ready(function() {
     });
   });
   
-  $("#loading").ajaxStart(function(){
-      $(this).fadeIn("slow");;
-   }).ajaxStop(function(){
-      $(this).fadeOut('slow');
-   });
 });
 
 
@@ -31,14 +25,18 @@ function onSuccExecLogin( xml ) {
 	$("#result").empty();
 	if ($("result", xml).attr("success") == "true")
 	{ 
-		location.reload();
+		window.location.href = "index.php";
 	}
 	else
 	{
-  	$(xml).find("message").each(function()
-		  {
-		    $("#result").append($(this).text() + "<br />");
-		  });
+  		var notificationtype = "error";
+		var messages = [];
+		
+		$(xml).find("message").each(function()
+		{
+			messages.push($(this).text());
+		});
+		$("#result").showNotification(notificationtype,messages);
 	}
 }
-	  
+	 

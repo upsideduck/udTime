@@ -1,9 +1,8 @@
 <?php
 
 //Start session
-if(!isset($_SESSION['SESS_MEMBER_ID'])) session_start();
+/*if(!isset($_SESSION['SESS_MEMBER_ID'])) session_start();
 require_once("includes/config.php");
-require_once(__SITE_BASE__."func/func_weeksdb.php");
 require_once(__SITE_BASE__."func/func_fetch.php");
 require_once(__SITE_BASE__."func/func_misc.php");
 
@@ -33,10 +32,10 @@ foreach($weekStats as $week) {
 		$active_week = true;
 	}
 	
-	if($week['vacation'] != 0) $vacation = " + <a href='summary.php?summary=week_view&w={$week['week']}&y=${$week['year']}'>". timestampToTime($week['vacation'])."</a>";
-	else $vacation = "";
+	if($week['asworktime'] != 0) $asworktime = " + <a href='summary.php?summary=week_view&w={$week['week']}&y=${$week['year']}'>". timestampToTime($week['asworktime'])."</a>";
+	else $asworktime = "";
 	
-	$diffstamp = ($week['vacation']+$week['worked'] - $week['towork'] + $week['timeoff']);
+	$diffstamp = ($week['asworktime']+$week['worked'] - $week['towork'] - $week['againstworktime']);
 	if ($active_week) {
 		$diff = "ongoing...";
 		$diffstamp = 0;
@@ -52,9 +51,48 @@ echo timestampToTime($all_weeks_totals);
 echo "</div>";
 echo "</div>";
 echo "<div class='subpage_menu'>";
-echo "<ul class='subpage_menu_list subpage_menu_style'><li class='bheader'>Actions</li><ul class='subpage_menu_list'><li><a href='#' id='subpage_menu_add_vac'>Add Vacation</a></li><li><a href='#' id='subpage_menu_add_free'>Add Time off</a></li><li><a href='#' id='subpage_menu_add_work'>Add work</a></li></ul></ul>";
+echo "<ul class='subpage_menu_list subpage_menu_style'><li class='bheader'>Actions</li><ul class='subpage_menu_list'><li><a href='#' id='subpage_menu_add_vac'>Add asworktime</a></li><li><a href='#' id='subpage_menu_add_free'>Add Time off</a></li><li><a href='#' id='subpage_menu_add_work'>Add work</a></li><li><a href='#' id='subpage_menu_add_break'>Add break</a></li></ul></ul>";
 echo "</div>";
 echo "</div>";
 echo "<div class='clear'></div>";
-include("includes/add_forms.php");
+*/
 ?>
+<div class='row'>
+<div class='span10 offset2 marketing'>
+<h1>Summary</h1>
+<p id='sumsubheader' class='marketing-byline'>Weeks stats</p>
+</div></div>
+<div class="row">
+<div class="span6 offset3">
+<?php include_once("includes/pans/resultpan.php"); ?>
+</div>
+</div>
+<div class="row">
+<table id="weekTotals" class="table table-striped span6 offset3">
+<tr>
+	<th>
+		Year
+	</th>	
+	<th>
+		Week
+	</th>
+	<th>
+		Worked
+	</th>
+	<th>
+		Difference
+	</th>
+	<th>
+		Total difference
+	</th>
+	<th>
+	</th>
+</table>
+</div>
+<div class='row'>
+<div class='span10 offset1'>
+<div class="pagination pagination-centered">
+<ul id="paginationwt"></ul>
+</div>
+</div>
+</div>

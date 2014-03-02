@@ -28,7 +28,7 @@ function colorcode(type) {
 		if($(this).text().charAt(0) == "-") $(this).addClass("neg");
 		else $(this).addClass("pos");
 	});
-	if($("#"+type+"list_alltotals").text().charAt(0) == "-") $("#"+type+"list_alltotals").addClass("neg");
-	else $("#"+type+"list_alltotals").addClass("pos");
+	if($("#"+type+"list_alltotals").text().charAt(0) == "-") $("#"+type+"list_alltotals").attr("class","neg");
+	else $("#"+type+"list_alltotals").attr("class","pos");
 	
 }

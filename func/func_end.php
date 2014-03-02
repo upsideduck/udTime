@@ -53,9 +53,7 @@ function endWork($comment, $timestamp) {
 	  	
 	  	$success1 = mysql_query($sql1);
 	  	$success2 = mysql_query($sql2);
-	  	
-	  	addNewWorkPeriodToBook($_SESSION['SESS_ACTIVE_PERIOD']);
-	 	
+	 	 	
 	 	if ($success1 && $success2) {
 	 		$_SESSION['SESS_ACTIVE_PERIOD'] = null;
 	  		$_SESSION['SESS_ACTIVE_TYPE'] = null;
@@ -63,6 +61,7 @@ function endWork($comment, $timestamp) {
 			$result_arr[0] = true;
 		  	$result_arr[] = 'Work ended '.date("H:i:s",$activeWorkInfo['starttime'])." - ".date("H:i:s",$timestamp).", including ".$nrOfBreaks." breaks";
 		  	$stats_result = timespan::updateStats(new timespan($activeWorkInfo['starttime'], $timestamp));
+		  	//messageRedis();
 		  	if($stats_result[0] == false) $result_arr[] = $stats_result[1];
  		} else {
 	 		$result_arr[0] = false;
@@ -115,6 +114,7 @@ function endBreak($comment, $timestamp) {
 	   			$_SESSION['SESS_ACTIVE_TYPE'] = "work";
    		 		$result_arr[0] = true;
 		 		$result_arr[] = 'Break ended';
+		 		//messageRedis();
 	    	} else {
 	    		$result_arr[0] = false;
 		  	 	$result_arr[] = 'Something when updating user status';

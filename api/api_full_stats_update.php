@@ -9,13 +9,13 @@
 /*	
 /*	Post values:	
 /*
-/*	Output:			$xml_output - $result_arr as xml
+/*	Output:			
 /*
 /************************************************************************/
 $result_arr = null;
 
 $regiserspan = new timespan($user->statsstartdate, time());
 $result_arr = timespan::updateStats($regiserspan);
-$xml_output .= resultXMLoutput($result_arr, "fullstatsupdate");
+$output->results['fullstatsupdate'] = $result_arr;
 
 ?>

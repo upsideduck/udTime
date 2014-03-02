@@ -8,7 +8,6 @@
 	require_once('../includes/config.php');
 	require_once('../func/func_misc.php');
 	require_once('../func/func_remove.php');
-	require_once('../func/func_weeksdb.php');	
 	require_once('../func/func_fetch.php');
 	
 	$result_arr = array();

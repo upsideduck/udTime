@@ -9,12 +9,12 @@
 	require_once('../func/func_misc.php');
 	require_once('../func/func_start.php');
 	
-	$xml_output .= xmlIntro();
+	$output = new output();
 	require_once("../api/api_newperiod.php");
-	$xml_output .= xmlOutro();
-	
-	echo $xml_output;
- 	
- 	session_write_close();
+
+	header('Content-type: text/xml'); 
+	echo  $output->outputToXml();
+
+	session_write_close();
  	exit();
 ?>

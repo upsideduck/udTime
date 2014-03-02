@@ -1,322 +1,222 @@
+
 <?php
-	require_once('auth.php');
-    require_once("includes/config.php");
-    require_once("func/func_misc.php");
-    include("includes/header.php");
-?>
-<script type="text/javascript" src="js/jquery.qtip-1.0.0-rc3.min.js"></script>
-<script type="text/javascript" src="js/jquery.getUrlParam.js"></script>
-<script type="text/javascript" src="js/jquery.maskedinput-1.3.min.js"></script>
-<link rel='stylesheet' type='text/css' href='css/fullcalendar.css' />
-<script type='text/javascript' src='js/fullcalendar.min.js'></script>
-<script type='text/javascript'>
+/**
+ * Array2XML: A class to convert array in PHP to XML
+ * It also takes into account attributes names unlike SimpleXML in PHP
+ * It returns the XML in form of DOMDocument class for further manipulation.
+ * It throws exception if the tag name or attribute name has illegal chars.
+ *
+ * Author : Lalit Patel
+ * Website: http://www.lalit.org/lab/convert-php-array-to-xml-with-attributes
+ * License: Apache License 2.0
+ *          http://www.apache.org/licenses/LICENSE-2.0
+ * Version: 0.1 (10 July 2011)
+ * Version: 0.2 (16 August 2011)
+ *          - replaced htmlentities() with htmlspecialchars() (Thanks to Liel Dulev)
+ *          - fixed a edge case where root node has a false/null/0 value. (Thanks to Liel Dulev)
+ * Version: 0.3 (22 August 2011)
+ *          - fixed tag sanitize regex which didn't allow tagnames with single character.
+ * Version: 0.4 (18 September 2011)
+ *          - Added support for CDATA section using @cdata instead of @value.
+ * Version: 0.5 (07 December 2011)
+ *          - Changed logic to check numeric array indices not starting from 0.
+ * Version: 0.6 (04 March 2012)
+ *          - Code now doesn't @cdata to be placed in an empty array
+ * Version: 0.7 (24 March 2012)
+ *          - Reverted to version 0.5
+ * Version: 0.8 (02 May 2012)
+ *          - Removed htmlspecialchars() before adding to text node or attributes.
+ *
+ * Usage:
+ *       $xml = Array2XML::createXML('root_node_name', $php_array);
+ *       echo $xml->saveXML();
+ */
 
-	$(document).ready(function() {
-		
-		$(function() {
-			$( "#radio_set_type" ).buttonset();
-		});
-		
-		$("#time").mask("99:99:99",{placeholder: "0"});
-	
-		var year = $(this).getUrlParam("y");
-		var month = $(this).getUrlParam("m");
-		
-		var calendar = $('#calendar').fullCalendar({
-			header: {
-				left: 'prev,next today',
-				center: 'title',
-				right: ''
-			},
-			year: year,
-			month: month-1,
-			selectable: true,
-			selectHelper: true,
-			select: function(start, end, allDay) {
-				$("#starttimeform").text(start.toLocaleDateString());
-				$("#endtimeform").text(end.toLocaleDateString());
-				$("#add-dialog-form" ).dialog( "open" );
-				calendar.fullCalendar('unselect');
-			},
-			editable: true,
-			eventRender: function(event, element, view)
-			{
-				element.qtip({ content:  event.title+"<br>"+event.itemid });
-        	},
-		    events: function(start, end, callback) {
-		    	var date = $('#calendar').fullCalendar('getDate');
-		    	var month_int = date.getMonth()+1;
-		    	var year_int = date.getFullYear();
-		        $.ajax({
-				   type: "POST",
-				   url: "proc/process_fetchperiods.php",
-				   data: { m : month_int, y : year_int	 },
-				   dataType: "xml",
-				   success: function(xml){
-					   			var events = [];
-					   			$(xml).find('freeday').each(function() {
-						   			var date = $(this).find('date');
-						   			var id = $(this).find('id');
-						   			var timeStr = $(this).find('time');
-						   			var timeInt = parseInt(timeStr.text());
-						   			var timeHour = Math.floor(timeInt/60/60);
-						   			var timeMin = Math.floor((timeInt-timeHour*60*60)/60);
-						   			timeHour = ( timeHour < 10 ? "0" : "" ) + timeHour;
-						   			timeMin = ( timeMin < 10 ? "0" : "" ) + timeMin;
+class Array2XML {
 
-						   			events.push({
-							   			title: "Time off "+timeHour+":"+timeMin,
-							   			start: date.text(),
-							   			color: "green",
-							   			itemid: id.text(),
-							   			type: "freeday"
-							   		});
-							   	});
-							   	$(xml).find('vacationday').each(function() {
-						   			var date = $(this).find('date');
-						   			var id = $(this).find('id');
-						   			var timeStr = $(this).find('time');
-						   			var timeInt = parseInt(timeStr.text());
-						   			var timeHour = Math.floor(timeInt/60/60);
-						   			var timeMin = Math.floor((timeInt-timeHour*60*60)/60);
-						   			timeHour = ( timeHour < 10 ? "0" : "" ) + timeHour;
-						   			timeMin = ( timeMin < 10 ? "0" : "" ) + timeMin;
-						   			
-						   			events.push({
-							   			title: "Vacation "+timeHour+":"+timeMin,
-							   			start: date.text(),
-							   			color: "red",
-							   			itemid: id.text(),
-							   			type: "vacationday"
-							   		});
-							   	});
-					   			$(xml).find('period').each(function() {
-					   			    var timeInt = 0;
-						   			var starttime = $(this).find('>starttime');
-						   			var endtime = $(this).find('>endtime');
-						   			var id = $(this).find('id');
-						   			timeInt = parseInt(endtime.text()) - parseInt(starttime.text());
-						   			$(this).find('break').each(function() {
-						   				timeInt = timeInt - parseInt($(this).find('>endtime').text()) + parseInt($(this).find('>starttime').text());
-						   			});
-						   			
-						   			var timeHour = Math.floor(timeInt/60/60);
-						   			var timeMin = Math.floor((timeInt-timeHour*60*60)/60);
-						   			timeHour = ( timeHour < 10 ? "0" : "" ) + timeHour;
-						   			timeMin = ( timeMin < 10 ? "0" : "" ) + timeMin;
-						   			
-						   			events.push({
-							   			title: "Work "+timeHour+":"+timeMin,
-							   			start: starttime.text(),
-							   			end:  endtime.text(),
-							   			color: "blue",
-							   			itemid: id.text(),
-							   			type: "work"
-							   		});
-							   	});
-							   	refreshStats();	
-							   	callback(events);	
-							   	}
-				});
-				 
-		    }, 
-		    eventClick: function(calEvent, jsEvent, view) {
-		    	var type = calEvent.type;
-		    	if(type == "vacationday"){
-		    		$('#ui-dialog-title-detail-fv-dialog-form').text('Details of vacation');
-		       		$("#d_fv_itemid").val(calEvent.itemid);
-		       		$("#d_fv_type").val(calEvent.type);
-		       		$("#detail-fv-dialog-form" ).dialog( "open" );
-		       	}
-		       	else if(type == "freeday"){
-		    		$('#ui-dialog-title-detail-fv-dialog-form').text('Details of time off');
-			       	$("#d_fv_itemid").val(calEvent.itemid);
-		       		$("#d_fv_type").val(calEvent.type);
-		       		$("#detail-fv-dialog-form" ).dialog( "open" );
-		       	}
+    private static $xml = null;
+	private static $encoding = 'UTF-8';
 
-		   }
-		});
-		
-		function refreshStats(){
-			var date = $('#calendar').fullCalendar('getDate');
-		    var month_int = date.getMonth()+1;
-		    var year_int = date.getFullYear();
-			$.ajax({
-				type: "POST",
-				url: "proc/process_statistics.php",
-				data: { type : "month", month: month_int, year: year_int },
-				dataType: "xml",
-				success: function(xml){
-					if ($("result", xml).attr("success") == "true") { 
-						var towork = $(xml).find('towork');
-						var worked = $(xml).find('worked');
-						var vacation = $(xml).find('vacation');
-						var timeoff = $(xml).find('timeoff');
-						
-						var sumtowork = parseInt(towork.text()) - parseInt(timeoff.text());
-						var sumworked = parseInt(worked.text()) + parseInt(vacation.text());
-						
-						var timeHour, timeMin, timeSec;
-					
-						timeHour = Math.floor(sumtowork/60/60);
-						timeMin = Math.floor((sumtowork-timeHour*60*60)/60);
-						timeSec = Math.floor((sumtowork-timeHour*60*60 - timeMin*60)/60);
-						timeHour = ( timeHour < 10 ? "0" : "" ) + timeHour;
-						timeMin = ( timeMin < 10 ? "0" : "" ) + timeMin;
-						timeSec = ( timeSec < 10 ? "0" : "" ) + timeSec;
-						$("#towork").text(timeHour+":"+timeMin+":"+timeSec);
-						timeHour = Math.floor(sumworked/60/60);
-						timeMin = Math.floor((sumworked-timeHour*60*60)/60);
-						timeSec = Math.floor((sumworked-timeHour*60*60 - timeMin*60)/60);
-						timeHour = ( timeHour < 10 ? "0" : "" ) + timeHour;
-						timeMin = ( timeMin < 10 ? "0" : "" ) + timeMin;
-						timeSec = ( timeSec < 10 ? "0" : "" ) + timeSec;
-						$("#worked").text(timeHour+":"+timeMin+":"+timeSec);
-					}else{
-						$("#towork").text("Not available yet");
-						$("#worked").text("Not available yet");
-					}
-				}
-			 });
-		}
-		
+    /**
+     * Initialize the root XML node [optional]
+     * @param $version
+     * @param $encoding
+     * @param $format_output
+     */
+    public static function init($version = '1.0', $encoding = 'UTF-8', $format_output = true) {
+        self::$xml = new DomDocument($version, $encoding);
+        self::$xml->formatOutput = $format_output;
+		self::$encoding = $encoding;
+    }
 
-	});
+    /**
+     * Convert an Array to XML
+     * @param string $node_name - name of the root node to be converted
+     * @param array $arr - aray to be converterd
+     * @return DomDocument
+     */
+    public static function &createXML($node_name, $arr=array()) {
+        $xml = self::getXMLRoot();
+        $xml->appendChild(self::convert($node_name, $arr));
 
-</script>
-<style type='text/css'>
+        self::$xml = null;    // clear the xml node in the class for 2nd time use.
+        return $xml;
+    }
 
-	body {
-		margin-top: 40px;
-		text-align: center;
-		font-size: 14px;
-		font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
-		}
+    /**
+     * Convert an Array to XML
+     * @param string $node_name - name of the root node to be converted
+     * @param array $arr - aray to be converterd
+     * @return DOMNode
+     */
+    private static function &convert($node_name, $arr=array()) {
 
-	#calendar {
-		width: 600px;
-		margin: 0 auto;
-		}
+        //print_arr($node_name);
+        $xml = self::getXMLRoot();
+        $node = $xml->createElement($node_name);
 
-</style>
-	<script>
-$(function() {
-				
-		$( "#add-dialog-form" ).dialog({
-			autoOpen: false,
-			height: 240,
-			width: 350,
-			modal: true,
-			buttons: {
-				"Add event": function() {
-					var type = $("input[name='type']:checked").val(),
-					timeStr = $("input#time").val(),
-					starttime = Date.parse($("#starttimeform").text())/1000,
-					endtime = Date.parse($("#endtimeform").text())/1000+5;		//+5 to include next day 
-					
-					var timeArr = timeStr.split(":");
-					var time = parseInt(timeArr[0])*60*60+ parseInt(timeArr[1])*60+parseInt(timeArr[2]);
-					
-					$.ajax({
-					   type: "POST",
-					   url: "proc/process_"+type+".php",
-					   data: { starttime : starttime, endtime : endtime, time : time },
-					   dataType: "xml",
-					   success: function(xml){
-					 	  $( "#add-dialog-form" ).dialog( "close" );
-					 	  $("#calendar").fullCalendar( 'refetchEvents' )
-					   },
-					   error: function(xhr, textStatus, errorThrown){
-					       alert('Request failed');
-					       $( "#add-dialog-form" ).dialog( "close" );
-					       $("#calendar").fullCalendar( 'refetchEvents' )
-			
-					    }
-					});
+        if(is_array($arr)){
+            // get the attributes first.;
+            if(isset($arr['@attributes'])) {
+                foreach($arr['@attributes'] as $key => $value) {
+                    if(!self::isValidTagName($key)) {
+                        throw new Exception('[Array2XML] Illegal character in attribute name. attribute: '.$key.' in node: '.$node_name);
+                    }
+                    $node->setAttribute($key, self::bool2str($value));
+                }
+                unset($arr['@attributes']); //remove the key from the array once done.
+            }
 
-				},
-				Cancel: function() {
-					$( this ).dialog( "close" );
-				}
-			},
-			close: function() {
-				
-			}
-		});
+            // check if it has a value stored in @value, if yes store the value and return
+            // else check if its directly stored as string
+            if(isset($arr['@value'])) {
+                $node->appendChild($xml->createTextNode(self::bool2str($arr['@value'])));
+                unset($arr['@value']);    //remove the key from the array once done.
+                //return from recursion, as a note with value cannot have child nodes.
+                return $node;
+            } else if(isset($arr['@cdata'])) {
+                $node->appendChild($xml->createCDATASection(self::bool2str($arr['@cdata'])));
+                unset($arr['@cdata']);    //remove the key from the array once done.
+                //return from recursion, as a note with cdata cannot have child nodes.
+                return $node;
+            }
+        }
 
-		$( "#detail-fv-dialog-form" ).dialog({
-			autoOpen: false,
-			height: 160,
-			width: 350,
-			modal: true,
-			buttons: {
-				"Delete": function() {
-					var itemid = $("#d_fv_itemid").val();
-					var type = $("#d_fv_type").val();	
-					$.ajax({
-					   type: "POST",
-					   url: "proc/process_remove"+type+".php",
-					   data: { itemid : itemid },
-					   dataType: "xml",
-					   success: function(xml){
-					 	  $( "#detail-fv-dialog-form" ).dialog( "close" );
-					 	  $("#calendar").fullCalendar( 'refetchEvents' )
-					   },
-					   error: function(xhr, textStatus, errorThrown){
-					       alert('Request failed');
-					       $( "#detail-fv-dialog-form" ).dialog( "close" );
-					       $("#calendar").fullCalendar( 'refetchEvents' )
-			
-					    }
-					 });
+        //create subnodes using recursion
+        if(is_array($arr)){
+            // recurse to get the node for that key
+            foreach($arr as $key=>$value){
+                if(!self::isValidTagName($key)) {
+                    throw new Exception('[Array2XML] Illegal character in tag name. tag: '.$key.' in node: '.$node_name);
+                }
+                if(is_array($value) && is_numeric(key($value))) {
+                    // MORE THAN ONE NODE OF ITS KIND;
+                    // if the new array is numeric index, means it is array of nodes of the same kind
+                    // it should follow the parent key name
+                    foreach($value as $k=>$v){
+                        $node->appendChild(self::convert($key, $v));
+                    }
+                } else {
+                    // ONLY ONE NODE OF ITS KIND
+                    $node->appendChild(self::convert($key, $value));
+                }
+                unset($arr[$key]); //remove the key from the array once done.
+            }
+        }
 
-				},
-				Cancel: function() {
-					$( this ).dialog( "close" );
-				}
-			},
-			close: function() {
-				
-			}
-		});
+        // after we are done with all the keys in the array (if it is one)
+        // we check if it has any text value, if yes, append it.
+        if(!is_array($arr)) {
+            $node->appendChild($xml->createTextNode(self::bool2str($arr)));
+        }
 
-});
-	</script>
+        return $node;
+    }
 
+    /*
+     * Get the root XML node, if there isn't one, create it.
+     */
+    private static function getXMLRoot(){
+        if(empty(self::$xml)) {
+            self::init();
+        }
+        return self::$xml;
+    }
 
+    /*
+     * Get string representation of boolean value
+     */
+    private static function bool2str($v){
+        //convert boolean to text value.
+        $v = $v === true ? 'true' : $v;
+        $v = $v === false ? 'false' : $v;
+        return $v;
+    }
 
+    /*
+     * Check if the tag name or attribute name contains illegal characters
+     * Ref: http://www.w3.org/TR/xml/#sec-common-syn
+     */
+    private static function isValidTagName($tag){
+        $pattern = '/^[a-z_]+[a-z0-9\:\-\.\_]*[^:]*$/i';
+        return preg_match($pattern, $tag, $matches) && $matches[0] == $tag;
+    }
+}
+$books = array(
+    
+    'book' => array(
+        array(
+	        'author' => 'George Orwell',
+            'title' => '1984'
+        ),
+        array(
+            '@attributes' => array(
+                'author' => 'Isaac Asimov'
+            ),
+            'title' => array('@cdata'=>'Foundation'),
+            'price' => '$15.61'
+        ),
+        array(
+            '@attributes' => array(
+                'author' => 'Robert A Heinlein'
+            ),
+            'title' =>  array('@cdata'=>'Stranger in a Strange Land'),
+            'price' => array(
+                '@attributes' => array(
+                    'discount' => '10%'
+                ),
+                '@value' => '$18.00'
+            )
+        )
+    ),
+    'book2' => array(
+        array(
+	        'author' => 'George Orwell',
+            'title' => '1984'
+        ),
+        array(
+            '@attributes' => array(
+                'author' => 'Isaac Asimov'
+            ),
+            'title' => array('@cdata'=>'Foundation'),
+            'price' => '$15.61'
+        ),
+        array(
+            '@attributes' => array(
+                'author' => 'Robert A Heinlein'
+            ),
+            'title' =>  array('@cdata'=>'Stranger in a Strange Land'),
+            'price' => array(
+                '@attributes' => array(
+                    'discount' => '10%'
+                ),
+                '@value' => '$18.00'
+            )
+        )
+    )
+    
+);
+$xml = Array2XML::createXML('uddtime', $books);
+echo $xml->saveXML();
 
-<div id="add-dialog-form" title="Add vacation/time off">
-	<span id="starttimeform"></span> - <span id="endtimeform"></span>
-	<form>
-	<fieldset>
-		<label for="name">Set time per day</label><br>
-		<input type="text" name="name" id="time" class="text ui-widget-content ui-corner-all" value="0" /><br>
-		<div id="radio_set_type">
-			<label for='b_settimeoff'>Time off</label>
-			<input type='radio' name='type' value='setfreedays' id='b_settimeoff' checked/>
-		    <label for='b_setvacation'>Vacation</label> 
-			<input type='radio' name='type' value='setvacation' id='b_setvacation' />
-		</div>
-	</fieldset>
-	</form>
-</div>
-<div id="detail-fv-dialog-form" title="Details vacation/time off">
-	More info
-	<form>
-		<input type="hidden" id="d_fv_itemid" value="" />
-		<input type="hidden" id="d_fv_type" value="" />
-	</form>
-</div>
-<?php
-echo "<div id='calendar'></div>";
-echo "To Work this month: <span id='towork'></span> (incl holidays)<br />";
-echo "Time worked this month: <span id='worked'></span> (incl vacation)";
-
-$timesspan = new timespan("2012-01-01", "2012-06-06");
-echo("<pre>");	
-var_dump(workingdaysmonth($_GET['m'],$_GET['y']));
-
-require_once('includes/footer.php');
-?>
+	?>

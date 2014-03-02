@@ -6,16 +6,16 @@
 	
 	//Include database connection details
 	require_once('../includes/config.php');
-	require_once('../func/func_weeksdb.php');
 	require_once('../func/func_end.php');
 	require_once('../func/func_misc.php');
 	
 
-	$xml_output = xmlIntro();
+	$output = new output();
 	require_once("../api/api_endbreak.php");
-	$xml_output .= xmlOutro();
-	
-	echo $xml_output;
+
+	header('Content-type: text/xml'); 
+	echo  $output->outputToXml();
+
     session_write_close();
     exit();
 ?>

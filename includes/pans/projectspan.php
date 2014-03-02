@@ -1,4 +1,4 @@
-<div id="projectspan" class="ui-widget ui-widget-content ui-corner-all">
+<div id="projectspan">
 <span class="projectlist project" id="p_none">none</span>
 <?php
 	$projects = fetchProjects();	

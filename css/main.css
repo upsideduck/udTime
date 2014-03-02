@@ -1,30 +1,65 @@
 body {
-	font: 11px Verdana, Arial, Helvetica, sans-serif;
-	color: #666666;
+	padding-top: 60px;     
+	padding-bottom: 40px;
 	margin: 0;
-	background-color: #cecece;
 }
-.textfield {
-	font-size: 11px;
-	color: #333333;
-	background: #F7F7F7;
-	border: 1px solid #CCCCCC;
-	padding-left: 1px;
+            
+.thin{
+	font-weight: 200;
 }
-h1 {
-	color: #99CC00;
-	margin: 0px 0px 5px;
-	padding: 0px 0px 3px;
-	font: bold 18px Verdana, Arial, Helvetica, sans-serif;
-	border-bottom: 1px dashed #E6E8ED;
+.padded{
+	text-align: center;
+	padding:20px 0px
 }
-a {
-	color: #2D3954;
-	font-size: 11px;
+a, i {
+	color:black;
+	text-decoration: none !important;
 }
-a:hover {
-	color: #99CC00;
+.popover{
+	z-index: 9999 !important;
+	
 }
+/* Marketing section of Overview
+-------------------------------------------------- */
+
+.marketing {
+  color: #5a5a5a;
+}
+.marketing h1 {
+  margin: 10px 0 10px;
+  font-size: 60px;
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.marketing h2 {
+  font-weight: 200;
+  margin-bottom: 5px;
+}
+.marketing p {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.fc-header-title h2{
+  font-size: 30px;
+  font-weight: 300;
+  line-height: 1.25;
+  color: #999;
+}
+.marketing .marketing-byline {
+  margin-bottom: 40px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1.25;
+  color: #999;
+}
+.marketing-img {
+  display: block;
+  margin: 0 auto 30px;
+  max-height: 145px;
+}
+
+
 .notification {
 	display: compact;
 	float: right;
@@ -40,6 +75,112 @@ a:hover {
 	list-style-position: outside;
 
 }
+
+
+/* Jumbotrons
+-------------------------------------------------- */
+
+/* Base class
+------------------------- */
+.jumbotron {
+  position: relative;
+  margin-top: -20px;
+  margin-bottom: 10px;
+  padding: 60px 0;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0,0,0,.4), 0 0 30px rgba(0,0,0,.075);
+  background: #620d0A; /* Old browsers */
+  background: -moz-linear-gradient(45deg,  #a51217 0%, #2f0800 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left bottom, right top, color-stop(0%,#a51217), color-stop(100%,#2f0800)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(45deg,  #a51217 0%,#2f0800 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(45deg,  #a51217 0%,#2f0800 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(45deg,  #a51217 0%,#2f0800 100%); /* IE10+ */
+  background: linear-gradient(45deg,  #a51217 0%,#2f0800 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a51217', endColorstr='#2f0800',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+  -webkit-box-shadow: inset 0 3px 7px rgba(0,0,0,.2), inset 0 -3px 7px rgba(0,0,0,.2);
+     -moz-box-shadow: inset 0 3px 7px rgba(0,0,0,.2), inset 0 -3px 7px rgba(0,0,0,.2);
+          box-shadow: inset 0 3px 7px rgba(0,0,0,.2), inset 0 -3px 7px rgba(0,0,0,.2);
+}
+.jumbotron h1 {
+  font-size: 80px;
+  font-weight: bold;
+  letter-spacing: -1px;
+  line-height: 1;
+  padding-left: 20px;
+}
+.jumbotron p {
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1.25;
+  margin-bottom: 30px;
+  padding-left: 20px;
+}
+
+/* Link styles (used on .masthead-links as well) */
+.jumbotron a {
+  color: #fff;
+  color: rgba(255,255,255,.5);
+  -webkit-transition: all .2s ease-in-out;
+     -moz-transition: all .2s ease-in-out;
+          transition: all .2s ease-in-out;
+}
+.jumbotron a:hover {
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255,255,255,.25);
+}
+
+/* Pattern overlay
+------------------------- */
+.jumbotron .container {
+  position: relative;
+  z-index: 2;
+}
+.jumbotron:after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: url(../img/bs-docs-masthead-pattern.png) repeat center center;
+  opacity: .4;
+}
+@media
+only screen and (-webkit-min-device-pixel-ratio: 2),
+only screen and (   min--moz-device-pixel-ratio: 2),
+only screen and (     -o-min-device-pixel-ratio: 2/1) {
+
+  .jumbotron:after {
+    background-size: 150px 150px;
+  }
+
+}
+
+
+/* Subhead (other pages)
+------------------------- */
+.subhead {
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+.subhead h1 {
+  font-size: 60px;
+}
+.subhead p {
+  margin-bottom: 20px;
+}
+.subhead .navbar {
+  display: none;
+}
+
+.extended-badge {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    z-index: 1;
+}
 .err {
 	color: #FF9900;
 }
@@ -52,10 +193,10 @@ a:hover {
 .neg {
 	color: #FF9900;
 }
-th {
+/*th {
 	font-weight: bold;
 	text-align: left;
-}
+}*/
 
 .oddrowcolor{
 	background-color: #e0e0e0;
@@ -68,88 +209,44 @@ th {
 weekendrowcolor{
 	
 }
-p.registerlink {
-    
-      text-align: center;
-
-}
-.header {
-	background-image: -webkit-gradient(linear, left bottom, left top, from(#6493d2), from(#6493d2), to(rgb(195, 214, 232)));
-	background-image: -moz-linear-gradient(90deg, #6493d2 0%, #6493d2 0%, rgb(195, 214, 232) 100%);
-	height: 70px;
-	padding: 0;
-	width: 100%;
-	border-bottom-color: #dce7f1;
-	-moz-box-shadow: 0 0 5px #000000;
-	-webkit-box-shadow: 0 0 5px #000000;
-	box-shadow: 0 0 5px #000000;
-	z-index: 1;
-	position: absolute;
+#clock {
+	font-size: 60px;
+	text-align: center;
 }
 #logo {
-	text-align: center;
 	  width: 200px;
 	  height: 70px;
 	  background: url(../images/logo.png) no-repeat;
 	  margin: 0 auto;
   }
 
-.pagebody {
-	padding-right: 10px;
-	padding-left: 10px;
-	padding-bottom: 25px;
-	padding-top: 60px;
-	width: 600px;
-	background-color: #f0f0f0;
-	  border-left: 2px solid #bababa;
-	  border-right: 2px solid #bababa;
-	  height: 100%;
-	  margin: -45px auto 0;
-  }
-.menu {
- 	width: 600px;
- 	
- 	margin-left: auto;
- 	margin-right: auto;
-	 padding-top: 70px;
- }
-.footer {
-	border-top: 1px dashed #E6E8ED;
-	margin: 5px 0px;
-	padding: 5px 0px 3px;
-}
 .content-container{
-margin: 5px;
+
 }
 #formContainer {
-	margin: 10px;
-	float: left;
+
+
 }
 #userContainer {
-	margin: 10px;
-	float: left;
+padding-top: 10px;
 }
 #resultContainer {
-	margin: 10px;
-	clear: left;
+
 }	
 #projectsContainer {
-	margin: 10px;
-	clear: left;
+
 }
 #projectspan{
-	padding: 5px;
-	line-height: 25px;
+
 }
 #result {
-	padding: 10px;
+
 }
 .projectlist {
-	margin-right: 10px;
 	cursor: pointer;
 }
 #add_project{
-	margin: 
+
 }
 .bheader{
 	font-weight:bold; 
@@ -165,29 +262,23 @@ margin: 5px;
 /* @end */
 /* @group main form */
 .mf {
-	width: 200px;
-	height: 250px;
+
 }
 
 .mftime {
-	padding-top: 15px;
-	padding-bottom: 5px;
+line-height: 26px;
 }
 
 #mfcomment {
-	padding-top: 5px;
-	padding-bottom: 5px;
+
 }
 .mf_header{
-	
-	font-weight: bold;
-	
+
 }
 /* @end */
 /* @group user pan */
 .userpan {
-	width: 340px;
-	height: 250px;
+
 }
 .avatar{
 	margin-left: 7px;
@@ -212,11 +303,6 @@ margin: 5px;
 .profiletag {
 	padding-bottom: 3px;
 	padding-top: 3px;
-}
-.container {
-	text-align: center;
-	min-width: 500px;
-
 }
 
 .hf_tab {
@@ -467,13 +553,13 @@ margin: 5px;
 	padding-left: 5px;	
 	border-right: 1px dashed #c0c0c0;
 }
-.monthlist_timeoff{
+.monthlist_againstworktime{
 	display: table-cell;
 	padding-right: 5px;
 	padding-left: 5px;	
 	border-right: 1px dashed #c0c0c0;
 }
-.monthlist_vacation{
+.monthlist_asworktime{
 	display: table-cell;
 	padding-right: 5px;	
 	padding-left: 5px;
@@ -543,7 +629,7 @@ margin: 5px;
 	display: inline-block;
 }
 #calendar {
-	width: 600px;
+	width: 900px;
 	margin: 0 auto;
 }
 html[xmlns] .clearfix {

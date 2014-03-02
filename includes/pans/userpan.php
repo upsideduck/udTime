@@ -8,20 +8,26 @@ require_once(__SITE_BASE__ . 'func/func_fetch.php');
 	$thisweek = fetchWorkAndBreakTime(fetchStartEndTime("thisweek"));
 	$thismonth = fetchWorkAndBreakTime(fetchStartEndTime("thismonth"));
 
-    echo "<div class='ui-widget ui-widget-content ui-corner-all userpan clearfix'>";
-    echo "<div class='ui-widget-header ui-corner-all'>User</div>";
-	echo "<div class='content-container'>";
+
+	echo "<div class='row-fluid'><div class='span12'>";
+	echo "<b>User</b>";
+	echo "<table class='table  table-striped'>";
+	echo "<tr><th class='profiletag'><span class='profilehead'>Username: </span></th><td>$profile->username</td></tr>";
+	echo "<tr><th class='profiletag'><span class='profilehead'>Name: </span></th><td>$profile->firstname $profile->lastname</td></tr>";
+	echo "<tr><th class='profiletag'><span class='profilehead'>Register: </span></th><td>".Date("Y-m-d",$profile->registerdate)."</td></tr>";
+	echo "<tr><th class='profiletag'><span class='profilehead'>Work week: </span></th><td>".timestampToTime($profile->dworkweek)." </td></tr>";
+	echo "<tr><th class='profiletag'><span class='profilehead'>Offset: </span></th><td>".timestampToTime($profile->offset)." </td></tr>";
+	echo "</table>";
+	/*echo "<div class='span5'>";
 	echo "<img class='avatar' src='includes/avatar.php?MID=".$_SESSION['SESS_MEMBER_ID']."'>";
-	echo "<div class='profiletag'><span class='profilehead'>Username: </span>$profile->username</div>";
-	echo "<div class='profiletag'><span class='profilehead'>Name: </span>$profile->firstname $profile->lastname</div>";
-	echo "<div class='profiletag'><span class='profilehead'>Register: </span>".Date("Y-m-d",$profile->registerdate)."</div>";
-	echo "<div class='profiletag'><span class='profilehead'>Work week: </span>".timestampToTime($profile->dworkweek)." </div>";
-	echo "<div class='profiletag'><span class='profilehead'>Offset: </span>".timestampToTime($profile->offset)." </div>";
-	echo "<div class='clear border-top'></div>";
-	echo "<div class='profiletag'><span class='profilehead'>Today: </span><span id='uptoday'>".timestampToTime($today['worktime'])."</span></div>";
-	echo "<div class='profiletag'><span class='profilehead'>This week: </span><span id='upthisweek'>".timestampToTime($thisweek['worktime'])."</span></div>";
-	echo "<div class='profiletag'><span class='profilehead'>This month: </span><span id='upthismonth'>".timestampToTime($thismonth['worktime'])."</span></div>";
- 	echo "</div>";
-	echo "</div>";
+	echo "</div></div>";
+	echo "<div class='row-fluid'>"*/
+	echo "<b>Statisitcs</b>";
+	echo "<table class='table  table-striped'>";
+	echo "<tr><th class='profiletag'><span class='profilehead'>Today: </span></th><td><span id='uptoday'>".timestampToTime($today['worktime'])."</span></td></tr>";
+	echo "<tr><th class='profiletag'><span class='profilehead'>This week: </span></th><td><span id='upthisweek'>".timestampToTime($thisweek['worktime'])."</span></td></tr>";
+	echo "<tr><th class='profiletag'><span class='profilehead'>This month: </span></th><td><span id='upthismonth'>".timestampToTime($thismonth['worktime'])."</span></td></tr>";
+	echo "</table>";
+	echo "</div></div>"
 ?>
 </p>

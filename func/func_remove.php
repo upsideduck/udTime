@@ -19,7 +19,7 @@ function removeBreak($id) {
 	$result2 = mysql_query($sql2);
 	if($result2) {
 		$result_arr = array(0 => true, 1 => "Break removed");
-		updateWeekInBook(date("W", $break->starttime), date("y", $break->starttime));
+		timespan::updateStats(new timespan($break->starttime,$break->endtime));
 	} else { 
 		$result_arr = array(0 => false, 1 => "Break not removed");
 	}
@@ -44,20 +44,22 @@ function removeWork($id) {
 	
 	$sql2 = "DELETE FROM workdb WHERE id = $id";
 	$result2 = mysql_query($sql2);
+	$numberDelWork = mysql_affected_rows();
 	$sql3 = "DELETE FROM breakdb WHERE parent_id = $id";
 	$result3 = mysql_query($sql3);	
+	$numberDelBreak = mysql_affected_rows();
 	
+	timespan::updateStats(new timespan($work->starttime,$work->endtime));
+		
 	if($result2 && $result3) {
-		$result_arr = array(0 => true, 1 => "Work removed");
-		$result_arr[] = "Breaks removed";
-		updateWeekInBook(date("W", $work->starttime), date("y", $work->starttime));
+		$result_arr = array(0 => true, 1 => $numberDelWork." work periods removed");
+		$result_arr[] = $numberDelBreak." break periods removed";
 	} elseif ($result2 && !$result3) { 
-		$result_arr = array(0 => true, 1 => "Work removed");
+		$result_arr = array(0 => true, 1 => $numberDelWork." work periods removed");
 		$result_arr[] = "Breaks not removed";
-		updateWeekInBook(date("W", $work->starttime), date("y", $work->starttime));
 	} elseif (!$result2 && $result3) { 
 		$result_arr = array(0 => false, 1 => "Work not removed");
-		$result_arr[] = "Breaks removed";
+		$result_arr[] = $numberDelBreak." break periods removed";
 	} elseif (!$result2 && !$result3) { 
 		$result_arr = array(0 => false, 1 => "Work not removed");
 		$result_arr[] = "Breaks not removed";
@@ -66,30 +68,30 @@ function removeWork($id) {
 }
 /********************************************************************
  *
- *	removeFreeDay
+ *	removeagainstworktime
  *
- *	Incomming: $id - id of freeDay 
+ *	Incomming: $id - id of againstworktime 
  *
 *	Outgoing : $result_arr
 *		key  : 0 - true-> success, false -> error
 *			   1.. - Message
 *		  	
  ********************************************************************/ 
-function removeFreeDay($id) {
+function removeagainstworktime($id) {
 	$result_arr[0] = true;
-	$sql = "SELECT * FROM timeoff WHERE id = $id";
+	$sql = "SELECT * FROM againstworktime WHERE id = $id";
 	$result1 = mysql_query($sql);
-	$timeoff = mysql_fetch_object($result1);
+	$againstworktime = mysql_fetch_object($result1);
 
-	if($timeoff){
+	if($againstworktime){
 	
-		$sql2 = "DELETE FROM timeoff WHERE id = $id";
+		$sql2 = "DELETE FROM againstworktime WHERE id = $id";
 		$result2 = mysql_query($sql2);
 		if($result2){
 				
-			$month = date("m",strtotime($timeoff->date));
-			$week = date("W",strtotime($timeoff->date));
-			$year = date("Y",strtotime($timeoff->date));
+			$month = date("m",strtotime($againstworktime->date));
+			$week = date("W",strtotime($againstworktime->date));
+			$year = date("Y",strtotime($againstworktime->date));
 			
 			if(timespan::updateWeekStats($year,$week) == false){
 				$result_arr[0] = false;
@@ -101,45 +103,45 @@ function removeFreeDay($id) {
 				$result_arr[] = "Month stats not updated";
 			}
 
-			if($result_arr[0]) $result_arr[] = "Freeday removed";
+			if($result_arr[0]) $result_arr[] = "againstworktime removed";
 			
 		}else{
 			$result_arr[0] = false;
-			$result_arr[] = "Freeday not deletet";
+			$result_arr[] = "againstworktime not deletet";
 		}
 	}else{
 		$result_arr[0] = false;
-		$result_arr[] = "Freeday not found";
+		$result_arr[] = "againstworktime not found";
 	}
 	return $result_arr;
 }
 
 /********************************************************************
  *
- *	removeVacationDay
+ *	removeasworktime
  *
- *	Incomming: $id - id of vacationDay 
+ *	Incomming: $id - id of asworktime 
  *
 *	Outgoing : $result_arr
 *		key  : 0 - true-> success, false -> error
 *			   1.. - Message
 *		  	
  ********************************************************************/ 
-function removeVacationDay($id) {
+function removeasworktime($id) {
 
 	$result_arr[0] = true;
-	$sql = "SELECT * FROM vacationdays WHERE id = $id";
+	$sql = "SELECT * FROM asworktime WHERE id = $id";
 	$result1 = mysql_query($sql);
-	$vacationday = mysql_fetch_object($result1);
-	if($vacationday){
+	$asworktime = mysql_fetch_object($result1);
+	if($asworktime){
 		
-		$sql2 = "DELETE FROM vacationdays WHERE id = $id";
+		$sql2 = "DELETE FROM asworktime WHERE id = $id";
 		$result2 = mysql_query($sql2);
 		if($result2){
 				
-			$month = date("m",strtotime($vacationday->date));
-			$week = date("W",strtotime($vacationday->date));
-			$year = date("Y",strtotime($vacationday->date));
+			$month = date("m",strtotime($asworktime->date));
+			$week = date("W",strtotime($asworktime->date));
+			$year = date("Y",strtotime($asworktime->date));
 			
 			if(timespan::updateWeekStats($year,$week) == false){
 				$result_arr[0] = false;
@@ -151,15 +153,15 @@ function removeVacationDay($id) {
 				$result_arr[] = "Month stats not updated";
 			}
 			
-			if($result_arr[0]) $result_arr[] = "Vacation day removed";
+			if($result_arr[0]) $result_arr[] = "asworktime day removed";
 			
 		}else{
 			$result_arr[0] = false;
-			$result_arr[] = "Vacation day not deletet";
+			$result_arr[] = "asworktime day not deletet";
 		}
 	}else{
 		$result_arr[0] = false;
-		$result_arr[] = "Vacation day not found";
+		$result_arr[] = "asworktime day not found";
 	}
 	return $result_arr;
 }

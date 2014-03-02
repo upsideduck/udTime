@@ -8,12 +8,11 @@
 	require_once('../func/func_misc.php');
 	require_once('../func/func_stats.php');
 	
-	$xml_output .= xmlIntro();
+	$output = new output();
 	require_once("../api/api_statisitcs.php");
-	$xml_output .= xmlOutro();
-	
+
 	header('Content-type: text/xml'); 
-	echo $xml_output;
+	echo  $output->outputToXml();
 	session_write_close();
 	exit();
 

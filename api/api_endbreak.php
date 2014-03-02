@@ -6,13 +6,13 @@
 /*
 /*	Requires: 		func_end.php
 /*					func_misc.php
-/*					func_weeksdb.php
+/*					
 /*	
 /*	Post values:	type
 /*					comment
 /*					timestamp
 /*
-/*	Output:			$output_xml - $result_arr as xml
+/*	Output:			
 /*
 /************************************************************************/
 $result_arr = null;
@@ -29,7 +29,7 @@ if($type == "break" || $type == "work") {
 	switch ($type) {
 		case "break":                // end break
 	        $result_arr = endBreak($comment,$timestamp);
-	        $xml_output .= resultXMLoutput($result_arr, "endbreak");
+	        $output->results['endbreak'] = $result_arr;
 	        break;
 	    case "work":
 			$result_arr1 = endBreak($comment,$timestamp);
@@ -43,16 +43,16 @@ if($type == "break" || $type == "work") {
 			foreach ($result_arr2 as $s) {
 				$result_arr[] = $s;
 			} 		
-			$xml_output .= resultXMLoutput($result_arr, "endwork");
+			$output->results['endwork'] = $result_arr;
 			break;   		
 	}
 } elseif($user->activetype == "break") {	
 	$result_arr = endBreak($comment,$timestamp);
-    $xml_output .= resultXMLoutput($result_arr, "endbreak");
+    $output->results['endbreak'] = $result_arr;
 } else {
 	$result_arr[0] = false;
 	$result_arr[] = "Type call not valid";
-	$xml_output .= resultXMLoutput($result_arr, $user->activetype);
+	$output->results[$user->activetype] = $result_arr;
 	
 }
 ?>

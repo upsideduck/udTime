@@ -1,41 +1,73 @@
 <?php
 require_once('config.php');
 require_once(__SITE_BASE__ . 'func/func_misc.php');		
-
-       
-    echo("<div class='ui-widget ui-widget-content ui-corner-all mf'>");
-    echo "<div class='ui-widget-header ui-corner-all' id='mfheader'></div>";
-    echo "<div class='content-container'>";
-   	echo "<span id='period_description'></span>";
-    echo "<div id='clock'>&nbsp;</div>";
-    
-    echo "<form id='mainForm' name='mainForm' method='post' action=''> \n";
-    echo "<input type='hidden' name='script' value='' id='script'/> \n";
-    echo "<div id='free_choices'>";
-    echo "<input type='radio' name='type' value='work' id='f_work' checked/>	
-         <label for='f_work'>Work</label>";
-	echo "</div>";             
-	echo "<div id='work_choices'>";
-	echo "<input type='radio' name='type' value='break' id='w_break'/>
-	     <label for='w_break'>Go on break</label>";
-	echo "<input type='radio' name='type' value='work' id='w_work'/>
-	     <label for='w_work'>Go home</label>";     
-	echo "</div>";
-	echo "<div id='break_choices'>";
-	echo "<input type='radio' name='type' value='break' id='b_break'/>
-	     <label for='b_break'>End break</label>";
-	echo "<input type='radio' name='type' value='work' id='b_work'/>
-	     <label for='b_work'>Go home</label>";     
-	echo "</div>"; 
-	echo "<div class='mftime'><input type='checkbox' id='now' checked>Now or: <input type='text' id='time' size='10' value=''/></div>";
-    echo "<div id='mfcomment'><span id='comment_header'>Comment: </span> <br \>
-          <input type='textbox' name='comment' value='' id='comment'>
-          </div>";
-    echo "<div id='mfproject'><span>Project: </span><span id='mf_project'></span></div>";      
-    echo "<input type='submit' name='button' id='mainform_submit' value='Set' /> \n
-          <a href='edit.php?a=new&type=work'>Manual</a> \n
-          </form>";
- 	echo "</div>";
-	echo "</div>";
 ?>
-</p>
+    <form id='mainForm' name='mainForm' method='post' action=''> 
+    <input type='hidden' name='uid' value='<?php echo $_SESSION['SESS_MEMBER_ID']; ?>' id='uid'/> 
+    <div class='row-fluid'>
+    	<div class='span12'>
+    		<h1 id='clock' class="thin">&nbsp;</h1>
+    	</div>
+    </div>
+
+    <div class='row-fluid'>
+    	<div class='span12 padded'>
+		    <input type='hidden' name='script' value='' id='script'/> 
+		    <input type="hidden" id="checkedValue" value="" />
+			<div id="free_choices" class="btn-group checkedValue" data-toggle="buttons-radio">
+			<button type="button" name="type" value="work" id="f_work" class="btn btn-primary">Work</button>
+			</div>
+			<div id="work_choices" class="btn-group checkedValue" data-toggle="buttons-radio">
+			<button type="button" name="type" value="break" id="w_break" class="btn btn-danger">Go on break</button>
+			<button type="button" name="type" value="work" id="w_work" class="btn btn-primary">Go home</button>
+			</div>
+			<div id="break_choices" class="btn-group checkedValue" data-toggle="buttons-radio">
+			<button type="button" name="type" value="break" id="b_break" class="btn btn-danger">End break</button>
+			<button type="button" name="type" value="work" id="b_work" class="btn btn-primary">Go home</button>
+			</div>
+    	</div>
+    </div>
+    <div class='row-fluid'>
+    	<div class='span1'>
+			<input type='checkbox' id='now' checked>
+    	</div>
+		<div class='span11 mftime'>
+			Now or:
+		</div>
+    </div>
+    <div class='row-fluid'>
+			<div id="timepicker" class="input-append">
+			 	<input data-format="hh:mm" type="text" id="time" class="span5"></input>
+			    <span class="add-on">
+			    	<i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+			    </span>
+			</div>
+			<script type="text/javascript">
+			  $(function() {
+			    $('#timepicker').datetimepicker({
+			       xalanguage: 'pt-BR',
+			       pickDate: false,
+				   pickSeconds: false,
+			    });
+			  });
+			</script>
+    </div>
+    <div class='row-fluid'>
+    	<div class='span12'>
+		    <span id='comment_header'>Comment: </span>
+  	 	</div>
+    </div>
+    <div class='row-fluid'>
+	   	<input type='textbox' name='comment' value='' id='comment' class='span12'>
+    </div>
+    <div class='row-fluid'>
+    	<div class='span12'>
+		    <div id='mfproject'><span>Project: </span><span id='mf_project'></span></div>    
+	 	</div>
+    </div>  
+    <div class='row-fluid'>
+    	<div class='span12'>
+		    <input type='submit' name='button' id='mainform_submit' value='Set'  class="btn"/> <a href='edit.php?a=new&type=work'>Manual</a> 
+	    </div>
+    </div>
+    </form>

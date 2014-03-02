@@ -105,7 +105,7 @@ class timespan {
 	    return $workingDays;
 	}
 	
-	function setFreeDays($time = 0){
+	function setagainstworktime($time = 0, $type = 1){
 		
 		if($time == 0) {			//if no time for day set, use standard workday
 			$luser = mysql_fetch_object(mysql_query("SELECT dworkweek,daysinworkweek FROM userdb WHERE member_id = ". $_SESSION['SESS_MEMBER_ID']));
@@ -115,13 +115,13 @@ class timespan {
 		$days = $this->daysInSpan();
 		foreach($days as $day){
 			if(date('N', strtotime($day)) < 6){
-				if(mysql_num_rows(mysql_query("SELECT id FROM timeoff WHERE date = '{$day}' AND member_id = " . $_SESSION['SESS_MEMBER_ID'])) == 0){
-					if(mysql_num_rows(mysql_query("SELECT id FROM vacationdays WHERE date = '{$day}' AND member_id = " . $_SESSION['SESS_MEMBER_ID'])) == 0){
+				if(mysql_num_rows(mysql_query("SELECT id FROM againstworktime WHERE date = '{$day}' AND member_id = " . $_SESSION['SESS_MEMBER_ID'])) == 0){
+					//if(mysql_num_rows(mysql_query("SELECT id FROM asworktime WHERE date = '{$day}' AND member_id = " . $_SESSION['SESS_MEMBER_ID'])) == 0){
 						$resultarray[] = array(true, $day,"Day now set as day off");
-						mysql_query("INSERT INTO timeoff (member_id, date, time) VALUES (".$_SESSION['SESS_MEMBER_ID'].",'{$day}','{$time}')");
-					} else {
-						$resultarray[] = array(false, $day,"Day marked as vacation day");
-					}	
+						mysql_query("INSERT INTO againstworktime (member_id, date, time, type) VALUES (".$_SESSION['SESS_MEMBER_ID'].",'{$day}','{$time}', {$type})");
+					//} else {
+					//	$resultarray[] = array(false, $day,"Day marked as asworktime day");
+					//}	
 				} else {
 					$resultarray[] = array(false, $day,"Already marked as day off");
 				}
@@ -134,57 +134,61 @@ class timespan {
 		return $resultarray;
 	}
 	
-	function setVacationDays($time = 0){
+	function setasworktime($time = 0, $type = 1){
 		
 		if($time == 0) {			//if no time for day set, use standard workday
 			$luser = mysql_fetch_object(mysql_query("SELECT dworkweek,daysinworkweek FROM userdb WHERE member_id = ". $_SESSION['SESS_MEMBER_ID']));
 			$time = $luser->dworkweek/$luser->daysinworkweek; 
 		}
-		
 		$days = $this->daysInSpan();
 		foreach($days as $day){
 			if(date('N', strtotime($day)) < 6){
-				if(mysql_num_rows(mysql_query("SELECT id FROM vacationdays WHERE date = '{$day}' AND member_id = " . $_SESSION['SESS_MEMBER_ID'])) == 0){
-					if(mysql_num_rows(mysql_query("SELECT id FROM timeoff WHERE date = '{$day}' AND member_id = " . $_SESSION['SESS_MEMBER_ID'])) == 0){
-						$resultarray[] = array(true, $day,"Day now set as vacation");
-						mysql_query("INSERT INTO vacationdays (member_id, date, time) VALUES (".$_SESSION['SESS_MEMBER_ID'].",'{$day}','{$time}')");
-					} else {
-						$resultarray[] = array(false, $day,"Day is already marked as a day off");
-					}	
+				if(mysql_num_rows(mysql_query("SELECT id FROM asworktime WHERE date = '{$day}' AND member_id = " . $_SESSION['SESS_MEMBER_ID'])) == 0){
+					//if(mysql_num_rows(mysql_query("SELECT id FROM againstworktime WHERE date = '{$day}' AND member_id = " . $_SESSION['SESS_MEMBER_ID'])) == 0){
+						$resultarray[] = array(true, $day,"Day now set as asworktime");
+						mysql_query("INSERT INTO asworktime (member_id, date, time, type) VALUES (".$_SESSION['SESS_MEMBER_ID'].",'{$day}','{$time}',{$type})");
+					//} else {
+					//	$resultarray[] = array(false, $day,"Day is already marked as a day off");
+					//}	
 				} else {
-					$resultarray[] = array(false, $day,"Day already marked as vacation");
+					$resultarray[] = array(false, $day,"Day already marked as asworktime");
 				}
 			}else{
 				$resultarray[] = array(false, $day,"Weekend");
 			}
 			
-		}	
+		}
+
 		self::updateStats($this);
 		return $resultarray;
 	}
 	
-	function getFreeDays(){
+	function getagainstworktime(){
 		$startdate = date("Y-m-d", $this->starttime);
 		$enddate = date("Y-m-d", $this->endtime);
 		$resultarray = array('sum'=>0, 'days'=>array());
-		$result = mysql_query("SELECT * FROM timeoff WHERE member_id = {$_SESSION['SESS_MEMBER_ID']} AND date BETWEEN '{$startdate}' AND '{$enddate}' ORDER BY date ASC");
+		$result = mysql_query("SELECT * FROM againstworktime WHERE member_id = {$_SESSION['SESS_MEMBER_ID']} AND date BETWEEN '{$startdate}' AND '{$enddate}' ORDER BY date ASC");
 		while($row = mysql_fetch_array($result)) {
 			$resultarray['sum'] += $row['time'];
 			$resultarray['days'][$row['date']]['id'] = $row['id'];
-			$resultarray['days'][$row['date']]['time'] = $row['time'];
+			$resultarray['days'][$row['date']]['timestamp'] = $row['time'];
+			$resultarray['days'][$row['date']]['time'] = timestampToTime($row['time']);
+			$resultarray['days'][$row['date']]['type'] = $row['type'];
 		}
 		return $resultarray;
 	}
 
-	function getVacationDays(){
+	function getasworktime(){
 		$startdate = date("Y-m-d", $this->starttime);
 		$enddate = date("Y-m-d", $this->endtime);
 		$resultarray = array('sum'=>0, 'days'=>array());
-		$result = mysql_query("SELECT * FROM vacationdays WHERE member_id = {$_SESSION['SESS_MEMBER_ID']} AND date BETWEEN '{$startdate}' AND '{$enddate}' ORDER BY date ASC");
+		$result = mysql_query("SELECT * FROM asworktime WHERE member_id = {$_SESSION['SESS_MEMBER_ID']} AND date BETWEEN '{$startdate}' AND '{$enddate}' AND  member_id = ". $_SESSION['SESS_MEMBER_ID'] ."  ORDER BY date ASC");
 		while($row = mysql_fetch_array($result)) {
 			$resultarray['sum'] += $row['time'];
 			$resultarray['days'][$row['date']]['id'] = $row['id'];
-			$resultarray['days'][$row['date']]['time'] = $row['time'];
+			$resultarray['days'][$row['date']]['timestamp'] = $row['time'];
+			$resultarray['days'][$row['date']]['time'] = timestampToTime($row['time']);
+			$resultarray['days'][$row['date']]['type'] = $row['type'];
 		}
 		return $resultarray;
 	}
@@ -195,7 +199,7 @@ class timespan {
 		$startweek = date("W", $this->starttime);
 		$endyear = date("Y", $this->endtime);
 		$endweek = date("W", $this->endtime);
-		$result = mysql_query("SELECT * FROM weekstats WHERE STR_TO_DATE(CONCAT(CONCAT(year,week),' Monday'),'%X%V %W') BETWEEN STR_TO_DATE(CONCAT({$startyear},{$startweek},' Monday'),'%X%V %W')  AND STR_TO_DATE(CONCAT({$endyear},{$endweek},' Friday'),'%X%V %W') ORDER BY year, week ASC");
+		$result = mysql_query("SELECT * FROM weekstats WHERE STR_TO_DATE(CONCAT(CONCAT(year,week),' Monday'),'%X%V %W') BETWEEN STR_TO_DATE(CONCAT({$startyear},{$startweek},' Monday'),'%X%V %W')  AND STR_TO_DATE(CONCAT({$endyear},{$endweek},' Friday'),'%X%V %W') AND  member_id = ". $_SESSION['SESS_MEMBER_ID'] ." ORDER BY year, week ASC");
 		$resultarray = array();
 		while($row = mysql_fetch_assoc($result)) {
 			$resultarray[] = $row;
@@ -208,7 +212,7 @@ class timespan {
 		$startmonth = date("m", $this->starttime);
 		$endyear = date("Y", $this->endtime);
 		$endmonth = date("m", $this->endtime);
-		$result = mysql_query("SELECT * FROM monthstats WHERE STR_TO_DATE(CONCAT(year,' ',month,' 1'),'%Y %m %d') BETWEEN STR_TO_DATE(CONCAT({$startyear},' ',{$startmonth},' 1'),'%Y %m %d') AND LAST_DAY(STR_TO_DATE(CONCAT({$endyear},' ',{$endmonth}),'%Y %m')) ORDER BY year, month ASC");
+		$result = mysql_query("SELECT * FROM monthstats WHERE STR_TO_DATE(CONCAT(year,' ',month,' 1'),'%Y %m %d') BETWEEN STR_TO_DATE(CONCAT({$startyear},' ',{$startmonth},' 1'),'%Y %m %d') AND LAST_DAY(STR_TO_DATE(CONCAT({$endyear},' ',{$endmonth}),'%Y %m')) AND  member_id = ". $_SESSION['SESS_MEMBER_ID'] ." ORDER BY year, month ASC");
 		$resultarray = array();
 		if($result){
 			while($row = mysql_fetch_assoc($result)) {
@@ -258,21 +262,20 @@ class timespan {
 		$worktimeforweek = $workdaysforweek * ($workweek->dworkweek/$workweek->daysinworkweek);
 		
 	 	$weekworkbreaktime = fetchWorkAndBreakTime($weektimearray);
-		
 		$result = mysql_query("SELECT id FROM weekstats WHERE year = {$year} AND week = {$week} AND member_id = {$_SESSION['SESS_MEMBER_ID']}");
 		
 		$timespan = new static($weektimearray['start'],$weektimearray['end']);
-		$vacationdays = $timespan->getVacationDays();
-		$timeoff = $timespan->getFreeDays();
-		$weekworkbreaktime['vacation'] = $vacationdays['sum'];
-		
+		$asworktime = $timespan->getasworktime();
+		$againstworktime = $timespan->getagainstworktime();
+		$weekworkbreaktime['asworktime'] = $asworktime['sum'];
+	
 		if(mysql_num_rows($result) > 0){
-			$resultupdate = mysql_query("UPDATE weekstats SET towork = {$worktimeforweek}, timeoff = {$timeoff['sum']}, worked = {$weekworkbreaktime['worktime']},vacation = {$vacationdays['sum']} WHERE  year = {$year} AND week = {$week} AND member_id = {$_SESSION['SESS_MEMBER_ID']}");
+			$resultupdate = mysql_query("UPDATE weekstats SET towork = {$worktimeforweek}, againstworktime = {$againstworktime['sum']}, worked = {$weekworkbreaktime['worktime']},asworktime = {$asworktime['sum']} WHERE  year = {$year} AND week = {$week} AND member_id = {$_SESSION['SESS_MEMBER_ID']}");
 		}else{
-			$resultinsert = mysql_query("INSERT INTO weekstats (member_id,year,week,towork,timeoff,worked,vacation) VALUES ({$_SESSION['SESS_MEMBER_ID']},{$year},{$week},{$worktimeforweek},{$timeoff['sum']},{$weekworkbreaktime['worktime']},{$vacationdays['sum']})");
+			$resultinsert = mysql_query("INSERT INTO weekstats (member_id,year,week,towork,againstworktime,worked,asworktime) VALUES ({$_SESSION['SESS_MEMBER_ID']},{$year},{$week},{$worktimeforweek},{$againstworktime['sum']},{$weekworkbreaktime['worktime']},{$asworktime['sum']})");
 		}
 		if($resultupdate == true || $resultinsert == true){
-			return array('towork'=>$worktimeforweek, 'worked'=>$weekworkbreaktime['worktime'],'timeoff'=>$timeoff,'vacation'=>$vacationdays);
+			return array('towork'=>$worktimeforweek, 'worked'=>$weekworkbreaktime['worktime'],'againstworktime'=>$againstworktime,'asworktime'=>$asworktime);
 		}else{
 			return false;
 		}
@@ -292,17 +295,17 @@ class timespan {
 		$result = mysql_query("SELECT id FROM monthstats WHERE year = {$year} AND month = {$month} AND member_id = {$_SESSION['SESS_MEMBER_ID']}");
 		
 		$timespan = new static($monthtimearray['start'],$monthtimearray['end']);
-		$vacationdays = $timespan->getVacationDays();
-		$timeoff = $timespan->getFreeDays();
-		$monthworkbreaktime['vacation'] = $vacationdays['sum'];
+		$asworktime = $timespan->getasworktime();
+		$againstworktime = $timespan->getagainstworktime();
+		$monthworkbreaktime['asworktime'] = $asworktime['sum'];
 		
 		if(mysql_num_rows($result) > 0){
-			$resultupdate = mysql_query("UPDATE monthstats SET towork = {$worktimeformonth}, timeoff = {$timeoff['sum']}, worked = {$monthworkbreaktime['worktime']}, vacation = {$vacationdays['sum']} WHERE  year = {$year} AND month = {$month} AND member_id = {$_SESSION['SESS_MEMBER_ID']}");
+			$resultupdate = mysql_query("UPDATE monthstats SET towork = {$worktimeformonth}, againstworktime = {$againstworktime['sum']}, worked = {$monthworkbreaktime['worktime']}, asworktime = {$asworktime['sum']} WHERE  year = {$year} AND month = {$month} AND member_id = {$_SESSION['SESS_MEMBER_ID']}");
 		}else{
-			$resultinsert = mysql_query("INSERT INTO monthstats (member_id,year,month,towork,timeoff,worked,vacation) VALUES ({$_SESSION['SESS_MEMBER_ID']},{$year},{$month},{$worktimeformonth},{$timeoff['sum']},{$monthworkbreaktime['worktime']},{$vacationdays['sum']})");
+			$resultinsert = mysql_query("INSERT INTO monthstats (member_id,year,month,towork,againstworktime,worked,asworktime) VALUES ({$_SESSION['SESS_MEMBER_ID']},{$year},{$month},{$worktimeformonth},{$againstworktime['sum']},{$monthworkbreaktime['worktime']},{$asworktime['sum']})");
 		}
 		if($resultupdate == true || $resultinsert == true){
-			return array('towork'=>$worktimeformonth, 'worked'=>$monthworkbreaktime['worktime'],'timeoff'=>$timeoff,'vacation'=>$vacationdays);
+			return array('towork'=>$worktimeformonth, 'worked'=>$monthworkbreaktime['worktime'],'againstworktime'=>$againstworktime,'asworktime'=>$asworktime);
 		}else{
 			return false;
 		}

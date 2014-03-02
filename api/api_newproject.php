@@ -21,6 +21,6 @@ $result_arr = null;
 $pname = clean($_REQUEST['pname']);
 
 $result_arr = addProject($pname);
-$xml_output .= resultXMLoutput($result_arr, "newproject");
+$output->results['newproject'] = $result_arr;
 
  ?>

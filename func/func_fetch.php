@@ -15,24 +15,40 @@
  *							key 1 is first day and so on
  *
  ********************************************************************/  
-function fetchPeriodsArray($timeArray) {
-	$sql = "SELECT * FROM workdb WHERE member_id = " . $_SESSION['SESS_MEMBER_ID'] . " AND starttime BETWEEN " . $timeArray['start'] ." AND " . $timeArray['end']." AND endtime IS NOT NULL ORDER BY starttime ASC";
+function fetchPeriodsArray($timeArray, $periodId = null, $breakId = null) {
+	if($periodId != null) $sql = "SELECT * FROM workdb WHERE member_id = " . $_SESSION['SESS_MEMBER_ID'] . " AND id = {$periodId} ORDER BY starttime ASC";
+	elseif($breakId != null)  $sql = "SELECT * FROM breakdb WHERE member_id = " . $_SESSION['SESS_MEMBER_ID'] . " AND id = {$breakId} ORDER BY starttime ASC";
+	else $sql = "SELECT * FROM workdb WHERE member_id = " . $_SESSION['SESS_MEMBER_ID'] . " AND starttime BETWEEN " . $timeArray['start'] ." AND " . $timeArray['end']." AND endtime IS NOT NULL ORDER BY starttime ASC";
 	$result = mysql_query($sql);
+	
+	$return ="";
 	if(!$result) return null;
-	while($periodsOfTimeArray = mysql_fetch_assoc($result)) {
-		$thisPeriod = array();
-		$dayArray[date("N",$periodsOfTimeArray['starttime'])][] = count($allPeriods);
-		$thisPeriod[] = $periodsOfTimeArray;
-		$sql2 = "SELECT * FROM breakdb WHERE parent_id = ".$periodsOfTimeArray['id']." ORDER BY starttime ASC";
-		$result2 = mysql_query($sql2);
-		while($breaksOfPeriod = mysql_fetch_assoc($result2)) {
-			$thisPeriod[] = $breaksOfPeriod;
+	elseif($breakId == null){
+		while($periodsOfTimeArray = mysql_fetch_assoc($result)) {
+			$thisPeriod = array();
+			$dayArray[date("N",$periodsOfTimeArray['starttime'])][] = count($allPeriods);
+			$thisPeriod[] = $periodsOfTimeArray;
+			$sql2 = "SELECT * FROM breakdb WHERE parent_id = ".$periodsOfTimeArray['id']." ORDER BY starttime ASC";
+			$result2 = mysql_query($sql2);
+			while($breaksOfPeriod = mysql_fetch_assoc($result2)) {
+				$thisPeriod[] = $breaksOfPeriod;
+			}
+			$allPeriods[] = $thisPeriod; 
 		}
+		$return = $allPeriods;
+	}else{
+		$breakPeriodArray = mysql_fetch_assoc($result);
+		$thisPeriod = array();
+		$thisPeriod[1] = $breakPeriodArray;
+		$sql2 = "SELECT * FROM workdb WHERE id = ".$breakPeriodArray['parent_id']." ORDER BY starttime ASC";
+		$result2 = mysql_query($sql2);
+		$workOfPeriod = mysql_fetch_assoc($result2);
+		$thisPeriod[0] = $workOfPeriod;
 		$allPeriods[] = $thisPeriod; 
+		$return = $allPeriods;
 	}
-	$return = array();
-	$return[0] = $allPeriods;
-	$return[1] = $dayArray;
+	
+	
 	return $return;
 }
 
@@ -53,7 +69,7 @@ function fetchWorkPeriod($workId) {
 	$result_arr[0] = true;
 	$breaks_arr = array();
 	$return = array();
-	
+
 	if ($workId == '') {
 		$result_arr[0] = false;
 		$result_arr[] = "No period choosen";
@@ -78,7 +94,7 @@ function fetchWorkPeriod($workId) {
 	}
 	$sql2 = sprintf("SELECT * FROM breakdb WHERE parent_id = %d ORDER BY starttime ASC", $workPeriod->id);
 	$result2 = mysql_query($sql2); 
-	
+
 	while($break = mysql_fetch_object($result2)) {
 		$breaks_arr[] = $break;
 	}
@@ -102,7 +118,7 @@ function fetchWorkPeriod($workId) {
 function fetchBreakPeriod($breakId) {
 	$result_arr[0] = true;
 	$return = array();
-	
+
 	if ($breakId == '') {
 		$result_arr[0] = false;
 		$result_arr[] = "No period choosen";
@@ -125,7 +141,7 @@ function fetchBreakPeriod($breakId) {
 		$return[0] = $result_arr;
 		return $return; 
 	}
-	
+
 	$return[0] = $result_arr;
 	$return[1] = $breakPeriod;
 	return $return;
@@ -209,8 +225,8 @@ function fetchWorkAndBreakTime($timearray) {
 	$worktime = 0;
 	$breaktime = 0;
 	$periods = fetchPeriodsArray($timearray);
-	if($periods[0] != null) {
-		foreach($periods[0] as $period) {
+	if($periods != null) {
+		foreach($periods as $period) {
 			$worktime += $period[0]["endtime"] - $period[0]["starttime"];
 			if (count($period) > 0) {
 				unset($period[0]);
@@ -236,9 +252,9 @@ function fetchWorkAndBreakTime($timearray) {
 function fetchProjects() {
 	$sql = "SELECT * FROM projectdb WHERE member_id = {$_SESSION['SESS_MEMBER_ID']} ORDER BY name ASC";
 	$result = mysql_query($sql);
-	
+
 	if (!$result) return null;
-	
+
 	$return = array();
 	while($arr = mysql_fetch_assoc($result)){
 		$return[] = $arr;	

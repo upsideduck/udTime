@@ -36,21 +36,26 @@ if($_REQUEST['period_id'] == null) {
 $action = clean($_REQUEST['action']);
 switch($action) {
 	case("update"):
-		$xml_output .= resultXMLoutput(attachProject($period_id,$project_id), "attachproject");
+		$result_arr = attachProject($period_id,$project_id);
+		$output->results['attachproject'] = $result_arr;
 		break;
 	case("add"):
-		$xml_output .= resultXMLoutput(attachProject($period_id,$project_id), "attachproject");
+		$result_arr = attachProject($period_id,$project_id);
+		$output->results['attachproject'] = $result_arr;
 		break;
 	case("newperiod"):
 		$timestamp = date("U");
 		if($_SESSION['SESS_ACTIVE_TYPE'] == "work") {
-				$result_arr = endWork("NOCHANGE",$timestamp);
-			$xml_output .= resultXMLoutput($result_arr, "endwork");
+			$result_arr = endWork("NOCHANGE",$timestamp);
+			$output->results['endwork'] = $result_arr;
 			if(!$result_arr[0]) break;
+			
 			$result_arr = goWork("work", "",$timestamp);
-			$xml_output .= resultXMLoutput($result_arr, "newperiod");
+			$output->results['newperiod'] = $result_arr;
 			if(!$result_arr[0]) break;
-			$xml_output .= resultXMLoutput(attachProject($_SESSION['SESS_ACTIVE_PERIOD'],$project_id), "attachproject");
+			
+			$result_arr = attachProject($_SESSION['SESS_ACTIVE_PERIOD'],$project_id);
+			$output->results['attachproject'] = $result_arr;
 		} elseif ($_SESSION['SESS_ACTIVE_TYPE'] == "break") {
 			$result_arr1 = endBreak("NOCHANGE",$timestamp);
 			$result_arr2 = endWork("NOCHANGE",$timestamp);
@@ -63,22 +68,25 @@ switch($action) {
 			foreach ($result_arr2 as $s) {
 				$result_arr[] = $s;
 			} 		
-			$xml_output .= resultXMLoutput($result_arr, "endwork");
+			$output->results['endwork'] = $result_arr;
 			if(!$result_arr[0]) break;
+			
 			$result_arr = goWork("work", "",$timestamp);
-			$xml_output .= resultXMLoutput($result_arr, "newperiod");
+			$output->results['newperiod'] = $result_arr;
 			if(!$result_arr[0]) break;
-			$xml_output .= resultXMLoutput(attachProject($_SESSION['SESS_ACTIVE_PERIOD'],$project_id), "attachproject");
+			
+			$result_arr = attachProject($_SESSION['SESS_ACTIVE_PERIOD'],$project_id);
+			$output->results['attachproject'] = $result_arr;
 		} else {
 			$result_arr[0] = false;
 			$result_arr[] = 'No active period';
-			$xml_output .= resultXMLoutput($result_arr, "attachproject");
+			$output->results['attachproject'] = $result_arr;
 		}
 		break;
 	default:
 		$result_arr[0] = false;
 		$result_arr[] = 'No action given';
-		$xml_output .= resultXMLoutput($result_arr, "attachproject");
+		$output->results['attachproject'] = $result_arr;
 		break;
 }
 

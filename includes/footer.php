@@ -1,5 +1,12 @@
-<?php if ($_SESSION['SESS_MEMBER_ID']) echo "<div class='footer'><a href='logout.php'>Logout</a></div>"; ?>
-</div>
-</div>
+    <hr>
+
+    <footer>
+        <p>&copy; Upsideduck.com 2013</p>
+    </footer>
+
+</div> <!-- /container -->
+<?php include_once("includes/forms.php"); ?>
 </body>
 </html>
+
+

@@ -10,10 +10,12 @@
 <?php
       require_once('includes/header.php');
 ?>
-<h1>Logout </h1>
-<p align="center">&nbsp;</p>
-<h4 align="center" class="err">You have been logged out.</h4>
-<p align="center">Click here to <a href="index.php">Login</a></p>
+
+<div class='row'>
+<div class='span10 offset2 marketing'>
+<h1>Logout</h1>
+<p id='mfheader' class='marketing-byline'>You have been logged out</p> 
+</div></div>
 <?php
       require_once('includes/footer.php');
 ?>

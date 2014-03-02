@@ -23,13 +23,13 @@ $username = clean($_REQUEST['username']);
 $password = clean($_REQUEST['password']);
 
 $result_arr = loginUser($username,$password);	
-$xml_output .= resultXMLoutput($result_arr, "login");
+$output->results['login'] = $result_arr;
 
 if($result_arr[0]) {
 	$qry="SELECT * FROM userdb WHERE username='$username' AND password='".md5($password)."'";
 	$result=mysql_query($qry);
 	start_session($result);
-	$resultuser = mysql_query("SELECT member_id,username,timezone,dworkweek,activeperiod,activetype,offset FROM userdb WHERE username = '". $_SESSION['SESS_USERNAME']."'");
+	$resultuser = mysql_query("SELECT member_id,username,timezone,dworkweek,activeperiod,activetype,offset,registerdate,statsstartdate FROM userdb WHERE username = '". $_SESSION['SESS_USERNAME']."'");
 	$user = mysql_fetch_object($resultuser);
 }
 

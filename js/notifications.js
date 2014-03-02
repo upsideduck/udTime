@@ -5,41 +5,36 @@
       // THIS 
     },
     error : function( content ) {
-    	if($(this).parent().hasClass("ui-state-error")){
+    	/*if($(this).parent().hasClass("ui-state-error")){
        		$(".ui-icon").next().fadeOut(0);
     		$(".ui-icon").after("<span>"+content+"</span>");
     	}
     	else
-    	{ 
+    	{ */
     	    var messagePart = "<ul class='notificationList'>";
     		$.each(content, function(index, value) {
       	 		messagePart = messagePart + "<li>" + value + "</li>";
       	 		
   			});
-    		$(this).empty().attr("class","ui-state-error ui-corner-all").append("<span class='ui-icon ui-icon-alert' style='float: left; margin-right: .3em;'></span><span class='close_button'><img src='images/delete.png' width='20px' height='20px'></span>"+messagePart).show();
-    		$(".close_button",this).click(function() {
-  				$(this).parent().removeClass("ui-state-error").hide();
-			});
-		}
+  			messagePart += "</ul>";
+    		$(this).append('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>'+messagePart+'</div>');
+		//}
     },
     result : function( content ) {
-    	if($(this).parent().hasClass("ui-state-highlight")){
+    	/*if($(this).parent().hasClass("ui-state-highlight")){
     		$(".ui-icon").next().fadeOut(0);
     		$(".ui-icon").after("<span>"+content+"</span>");
     	}
     	else
-    	{ 	
-    		var messagePart = "<ul class='notificationList'>";
+    	{ */
+    	    var messagePart = "<ul class='notificationList'>";
     		$.each(content, function(index, value) {
       	 		messagePart = messagePart + "<li>" + value + "</li>";
       	 		
   			});
-  			messagePart += "</ul>"
- 			$(this).empty().attr("class","ui-state-highlight ui-corner-all").append("<span class='ui-icon ui-icon-info' style='float: left; margin-right: .3em;'></span><span class='close_button'><img src='images/delete.png' width='20px' height='20px'></span>"+messagePart).show();
-  	    	$(".close_button",this).click(function() {
-  				$(this).parent().removeClass("ui-state-highlight").empty().hide();
-			});
-		}
+  			messagePart += "</ul>";
+    		$(this).append('<div class="alert alert-success"><button type="button" class="close" data-dismiss="alert">&times;</button>'+messagePart+'</div>');
+		//}
     }
   };
 

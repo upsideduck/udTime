@@ -1,26 +1,15 @@
 <?php
 
-if($_GET['CSV'] == "Y"){
-	 // send response headers to the browser
-     header( 'Content-Type: text/csv' );
-     $fp = fopen('php://output', 'w');
-	
-}
 
 $year = $_REQUEST['y'];
 $month = $_REQUEST['m'];
-$numdays = cal_days_in_month(CAL_GREGORIAN, $month, $year); 
-$timeArray = fetchStartEndTime("month",$year,$month);
-$return = fetchPeriodsArray($timeArray);
-$periodsArray = $return[0];
-$daysArray = array_fill(1,$numdays,null);
 
 $monthstats = timespan::updateMonthStats($year,$month);
 if(!$monthstats){
 	echo "Stats not able to be calulated! Contact webmaster.";
 	exit;
 }
-
+/*
 if($periodsArray){
 	foreach($periodsArray as $period){
 		$dayToAddTo = date("j",$period[0]["starttime"]);
@@ -37,7 +26,7 @@ $nextyear = date("Y", strtotime("{$year}-{$month} + 1 month"));
 echo "<div class='list_header'><a href='{$_SERVER['PHP_SELF']}?summary=month_view&m={$prevmonth}&y={$prevyear}'><<</a> {$year} ".date("M", mktime(0, 0, 0, $month, 10))." <a href='{$_SERVER['PHP_SELF']}?summary=month_view&m={$nextmonth}&y={$nextyear}'>>></a> </div>";
 echo "<div class='subpage_container'>";
 echo "<div class='subpage_month'>";
-echo "<div class='month_container_list'><div class='monthlist_item'><div class='monthlist_date bheader'>Date</div><div class='monthlist_day bheader'>Day</div><div class='monthlist_starttime bheader'>Start</div><div class='monthlist_breaks bheader'>Breaks</div><div class='monthlist_endtime bheader'>End</div><div class='monthlist_timeoff bheader'>Free time</div><div class='monthlist_vacation bheader'>Vacation</div></div>";
+echo "<div class='month_container_list'><div class='monthlist_item'><div class='monthlist_date bheader'>Date</div><div class='monthlist_day bheader'>Day</div><div class='monthlist_starttime bheader'>Start</div><div class='monthlist_breaks bheader'>Breaks</div><div class='monthlist_endtime bheader'>End</div><div class='monthlist_againstworktime bheader'>Free time</div><div class='monthlist_asworktime bheader'>asworktime</div></div>";
 
 $tocsvarray = array(); 
 
@@ -48,10 +37,10 @@ for($i = 1; $i <= $numdays; $i++){
 	elseif($i%2) $rowcolor = "oddrowcolor";
 	else $rowcolor = "evenrowcolor";
 	
-	if($vacationtimestamp = $monthstats['vacation']['days'][$year."-".$month."-".($i < 10 ? '0'.$i : $i)]['time']) $vacationtime = timestampToTime($vacationtimestamp);
-	else $vacationtime = "";
-	if($timeofftimestamp = $monthstats['timeoff']['days'][$year."-".$month."-".($i < 10 ? '0'.$i : $i)]['time']) $timeofftime = timestampToTime($timeofftimestamp);
-	else $timeofftime = "";
+	if($asworktimetimestamp = $monthstats['asworktime']['days'][$year."-".$month."-".($i < 10 ? '0'.$i : $i)]['time']) $asworktimetime = timestampToTime($asworktimetimestamp);
+	else $asworktimetime = "";
+	if($againstworktimetimestamp = $monthstats['againstworktime']['days'][$year."-".$month."-".($i < 10 ? '0'.$i : $i)]['time']) $againstworktimetime = timestampToTime($againstworktimetimestamp);
+	else $againstworktimetime = "";
 	
 	$periodsForDay = $daysArray[$i];
 	$numPeriodsForDay = count($periodsForDay);
@@ -71,13 +60,13 @@ for($i = 1; $i <= $numdays; $i++){
 				if($i2 < count($periodForDay)) $breaks .= "<br>";
 				
 				if($i2 == 1)
-					$tocsvarray[] = array($i,$day,$starttime,date("H:i",$periodForDay[$i2]['starttime']),date("H:i",$periodForDay[$i2]['endtime']),$endtime,$timeofftime,$vacationtime);
+					$tocsvarray[] = array($i,$day,$starttime,date("H:i",$periodForDay[$i2]['starttime']),date("H:i",$periodForDay[$i2]['endtime']),$endtime,$againstworktimetime,$asworktimetime);
 				else
 					$tocsvarray[] = array("","","",date("H:i",$periodForDay[$i2]['starttime']),date("H:i",$periodForDay[$i2]['endtime']),"","","");
 			}
 			
 			if($breaks == "") 
-				$tocsvarray[] = array($i,$day,$starttime,"","",$endtime,$timeofftime,$vacationtime);
+				$tocsvarray[] = array($i,$day,$starttime,"","",$endtime,$againstworktimetime,$asworktimetime);
 
 			
 			$worktime = timestampToDecTime($workTimePeriod);
@@ -86,45 +75,103 @@ for($i = 1; $i <= $numdays; $i++){
 			
 			
 			if($writedate){
-				echo "<div class='monthlist_item {$rowcolor}'><div class='monthlist_date'>{$i}</div><div class='monthlist_day'>{$day}</div><div class='monthlist_starttime'>{$starttime}</div><div class='monthlist_breaks'>{$breaks}</div><div class='monthlist_endtime'>{$endtime}</div><div class='monthlist_timeoff'>{$timeofftime}</div><div class='monthlist_vacation'>{$vacationtime}</div><div class='monthlist_worktime'>{$worktime}</div></div>";
+				echo "<div class='monthlist_item {$rowcolor}'><div class='monthlist_date'>{$i}</div><div class='monthlist_day'>{$day}</div><div class='monthlist_starttime'>{$starttime}</div><div class='monthlist_breaks'>{$breaks}</div><div class='monthlist_endtime'>{$endtime}</div><div class='monthlist_againstworktime'>{$againstworktimetime}</div><div class='monthlist_asworktime'>{$asworktimetime}</div><div class='monthlist_worktime'>{$worktime}</div></div>";
 				$writedate = false;
 			}else{
-				echo "<div class='monthlist_item {$rowcolor}'><div class='monthlist_date'></div><div class='monthlist_day'></div><div class='monthlist_starttime'>{$starttime}</div><div class='monthlist_breaks'>{$breaks}</div><div class='monthlist_endtime'>{$endtime}</div><div class='monthlist_timeoff'></div><div class='monthlist_vacation'></div><div class='monthlist_worktime'>{$worktime}</div></div>";	
+				echo "<div class='monthlist_item {$rowcolor}'><div class='monthlist_date'></div><div class='monthlist_day'></div><div class='monthlist_starttime'>{$starttime}</div><div class='monthlist_breaks'>{$breaks}</div><div class='monthlist_endtime'>{$endtime}</div><div class='monthlist_againstworktime'></div><div class='monthlist_asworktime'></div><div class='monthlist_worktime'>{$worktime}</div></div>";	
 			}
 			
 		}	
 	}else{
-		echo "<div class='monthlist_item {$rowcolor}'><div class='monthlist_date'>{$i}</div><div class='monthlist_day'>{$day}</div><div class='monthlist_starttime'></div><div class='monthlist_breaks'></div><div class='monthlist_endtime'></div><div class='monthlist_timeoff'>{$timeofftime}</div><div class='monthlist_vacation'>{$vacationtime}</div><div class='monthlist_worktime'></div></div>";
-		$tocsvarray[] = array($i,$day,"","","","",$timeofftime,$vacationtime);	
+		echo "<div class='monthlist_item {$rowcolor}'><div class='monthlist_date'>{$i}</div><div class='monthlist_day'>{$day}</div><div class='monthlist_starttime'></div><div class='monthlist_breaks'></div><div class='monthlist_endtime'></div><div class='monthlist_againstworktime'>{$againstworktimetime}</div><div class='monthlist_asworktime'>{$asworktimetime}</div><div class='monthlist_worktime'></div></div>";
+		$tocsvarray[] = array($i,$day,"","","","",$againstworktimetime,$asworktimetime);	
 	}
 			
  }
 
 
-echo "</div><div class='monthview_worked'>Worked time: ".timestampToDecTime($monthstats['worked']+$monthstats['vacation']['sum'])." (incl vacation)</div>";
+echo "</div><div class='monthview_worked'>Worked time: ".timestampToDecTime($monthstats['worked']+$monthstats['asworktime']['sum'])." (incl asworktime)</div>";
 
 //echo "<pre>";
 //var_dump($return);
 
 
-echo "<div class='monthview_worked'>Time to work: ".timestampToDecTime($monthstats['towork']-$monthstats['timeoff']['sum'])." (incl time off)</div>";
+echo "<div class='monthview_worked'>Time to work: ".timestampToDecTime($monthstats['towork']-$monthstats['againstworktime']['sum'])." (incl time off)</div>";
 
-echo "<div id='monthlist_alltotals'>".timestampToDecTime($monthstats['timeoff']['sum'] + $monthstats['worked'] + $monthstats['vacation']['sum'] - $monthstats['towork'] )."</div>";
+echo "<div id='monthlist_alltotals'>".timestampToDecTime($monthstats['againstworktime']['sum'] + $monthstats['worked'] + $monthstats['asworktime']['sum'] - $monthstats['towork'] )."</div>";
 echo "</div>";
 echo "<div class='subpage_menu'>";
-echo "<ul class='subpage_menu_list subpage_menu_style'><li class='bheader'>View</li><ul class='subpage_menu_list'><li><a href='summary.php?summary=month_view&m={$_GET['m']}&y={$_GET['y']}'>List</a></li><li><a href='summary.php?summary=month_cal&m={$_GET['m']}&y={$_GET['y']}'>Calendar</a></li></ul><li class='bheader'>Actions</li><ul class='subpage_menu_list'><li><a href='#' id='subpage_menu_add_vac'>Add Vacation</a></li><li><a href='#' id='subpage_menu_add_free'>Add Time off</a></li><li><a href='#' id='subpage_menu_add_work'>Add work</a></li></ul><li class='bheader'>Download</li><ul class='subpage_menu_list'><li><a href='download.php'>CSV</a></li></ul></ul>";
+echo "<ul class='subpage_menu_list subpage_menu_style'><li class='bheader'>View</li><ul class='subpage_menu_list'><li><a href='summary.php?summary=month_view&m={$_GET['m']}&y={$_GET['y']}'>List</a></li><li><a href='summary.php?summary=month_cal&m={$_GET['m']}&y={$_GET['y']}'>Calendar</a></li></ul><li class='bheader'>Actions</li><ul class='subpage_menu_list'><li><a href='#' id='subpage_menu_add_vac'>Add asworktime</a></li><li><a href='#' id='subpage_menu_add_free'>Add Time off</a></li><li><a href='#' id='subpage_menu_add_work'>Add work</a></li><li><a href='#' id='subpage_menu_add_break'>Add break</a></li></ul><li class='bheader'>Download</li><ul class='subpage_menu_list'><li><a href='".$_SERVER['REQUEST_URI']."&CSV=Y'>CSV</a></li></ul></ul>";
 echo "</div>";
 echo "</div>";
 echo "<div class='clear'></div>";
 
 
-$fp = fopen(__SITE_BASE__.'tmp/'.$_SESSION['SESS_MEMBER_ID'].'_month.csv', 'w');
-
-foreach ($tocsvarray as $fields) {
-    fputcsv($fp, $fields);
+if($_GET['CSV'] == "Y"){
+	$filename = __SITE_BASE__.'tmp/'.$_SESSION['SESS_MEMBER_ID'].'_month.csv';
+	
+	$fp = fopen($filename, 'w');
+	foreach ($tocsvarray as $fields) {
+	    fputcsv($fp, $fields);
+	}
+	fclose($fp);
+	printf("<script>location.href='download.php'</script>");
 }
 
-fclose($fp);
 include("includes/add_forms.php");
-
+*/
 ?>
+<input type="hidden" id="pageyear" value="<?php echo $year;?>" next="" prev="">
+<input type="hidden" id="pagemonth" value="<?php echo $month;?>" next="" prev="">
+<div class='row'>
+<div class='span6 offset2 marketing'>
+<h1>Summary</h1>
+<p><a href='#' id='goprev'><i class='icon-chevron-left'></i></a> <span id='sumsubheader' class='marketing-byline'>Month stats</span> <a href='#' id='gonext'><i class='icon-chevron-right'></i></a></p>
+</div>
+<div class='span2' style="margin-top:50px;">
+<a href="#" id="gocalendar"><i class="icon-calendar icon-2x pull-right"></i></a> <a href="#" id="golist"><i class="icon-list icon-2x pull-right"></i></a> <a href="#" id="gocsv"><i class="icon-download icon-2x pull-right"></i></a>
+</div>
+</div>
+<div class="row">
+<div class="span8 offset2">
+<?php include_once("includes/pans/resultpan.php"); ?>
+</div>
+</div>
+<div class="row">
+<table id="monthView" class="table table-striped span10 offset1">
+<tr>
+	<th>
+		Day
+	</th>	
+	<th>
+		Start
+	</th>
+	<th>
+		Breaks
+	</th>
+	<th>
+		End
+	</th>
+	<th>
+		Free time
+	</th>
+	<th>
+		asworktime
+	</th>
+	<th>
+		Worked time (dec)
+	</th>
+	<th>
+	</th>
+	<th>
+	</th>
+</tr>
+</table>
+</div>
+<div class="row">
+<div class="span5 offset1">
+<div class='monthview_worked'>Time to work: <span id="sumtowork">---</span> (incl time that reduces total work time)</div>
+<div class='monthview_worked'>Worked time: <span id="sumworked">---</span> (incl time that counts as work time)</div>
+<div id='monthlist_alltotals'></div>
+</div>
+</div>

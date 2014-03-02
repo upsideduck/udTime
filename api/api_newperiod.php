@@ -26,8 +26,6 @@ else $timestamp = clean($_POST['timestamp']);
 
 
 $result_arr = goWork($type, $comment, $timestamp);
-
-$xml_output .= resultXMLoutput($result_arr, "newperiod");
-
+$output->results['newperiod'] = $result_arr;
 
  ?>
