@@ -5,4 +5,4 @@
 <script type="text/javascript" src="js/bootstrap-datetimepicker.min.js"></script>
 <?php endif; ?>
 <link href="css/bootstrap-datetimepicker.min.css" rel="stylesheet" type="text/css" />
-<script src="http://doop.johanadell.com:8181/socket.io/socket.io.js"></script>
+<?php //<script src="http://doop.johanadell.com:8181/socket.io/socket.io.js"></script> ?>

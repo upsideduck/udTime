@@ -31,7 +31,7 @@ $(document).ready(function() {
 		{ 
 			notificationtype = "result";
 			checkStatus();
-			updateOtherClientsViaRedis();
+			//updateOtherClientsViaRedis();
 		}
 		else
 		{
