@@ -1,7 +1,12 @@
 <?php 
 //Sanitize the POST values
-    $starttime = strtotime(clean($_REQUEST["start_time"]));
-    $endtime = strtotime(clean($_REQUEST["end_time"]));
+	if(!is_numeric($_REQUEST["start_time"]) && !is_numeric($_REQUEST["end_time"])){	
+   	 	$starttime = strtotime(clean($_REQUEST["start_time"]));
+   	 	$endtime = strtotime(clean($_REQUEST["end_time"]));
+   	}else{
+   		$starttime = clean($_REQUEST["start_time"]);
+   	 	$endtime = clean($_REQUEST["end_time"]);
+   	}
     $periodId = clean($_REQUEST['id']);
 
     $orignalPeriod = fetchBreakPeriod($periodId);
