@@ -93,7 +93,7 @@ if (isset($_SESSION['SESS_MEMBER_ID']))
 			case "setbreak":
 				require_once("../api/api_setbreak.php");
 				break;
-			case "updatbreak":
+			case "updatebreak":
 				require_once("../api/api_updatebreak.php");
 				break;
 			case "removebreak":
@@ -114,11 +114,18 @@ if (isset($_SESSION['SESS_MEMBER_ID']))
 			case "weektotals":			// type
 				require_once("../api/api_week_totals.php");
 				break;
+			case "weekdetail":
+				require_once("../api/api_fetchperiods.php");
+				require_once("../api/api_week_day.php");
+				break;
 			case "monthtotals":			// type
 				require_once("../api/api_month_totals.php");
 				break;
 			case "fetchperiods":			// type
 				require_once("../api/api_fetchperiods.php");
+				break;
+			case "serverupdates":			
+				require_once("../api/api_serverupdates.php");
 				break;
 			default:
 				break;

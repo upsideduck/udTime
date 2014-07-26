@@ -111,8 +111,9 @@ $(document).ready(function() {
 					   			var date = $(this).find('date');
 					   			var id = $(this).find('id');
 					   			var time = $(this).find('time');
+					   			var typelabel = $(this).find('typelabel');
 					   			events.push({
-						   			title: "Time off "+time.text(),
+						   			title: typelabel.text()+" "+time.text(),
 						   			start: date.text(),
 						   			color: "green",
 						   			itemid: id.text(),
@@ -124,9 +125,9 @@ $(document).ready(function() {
 					   			var date = $(this).find('date');
 					   			var id = $(this).find('id');
 					   			var time = $(this).find('time');
-					   			
+					   			var typelabel = $(this).find('typelabel');
 					   			events.push({
-						   			title: "asworktime "+time.text(),
+						   			title: typelabel.text()+" "+time.text(),
 						   			start: date.text(),
 						   			color: "red",
 						   			itemid: id.text(),
@@ -226,7 +227,7 @@ $(document).ready(function() {
 		$.ajax({
 			type: "POST",
 			url: "proc/process_statistics.php",
-			data: { type : "week", week: week_int, year: year_int },
+			data: { stattype : "week", statweek: week_int, statyearforweekofyear: year_int },
 			dataType: "xml",
 			success: function(xml){
 				if ($("result", xml).attr("success") == "true") { 

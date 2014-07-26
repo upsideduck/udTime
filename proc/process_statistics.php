@@ -10,7 +10,11 @@
 	
 	$output = new output();
 	require_once("../api/api_statisitcs.php");
-
+	
+	/*echo("<pre>");
+	var_dump($output);
+	exit;
+	*/
 	header('Content-type: text/xml'); 
 	echo  $output->outputToXml();
 	session_write_close();

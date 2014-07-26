@@ -1,28 +1,11 @@
-<?php
-//Start session
-session_start();
-
-require_once('../auth.php');
-
-//Include database connection details
-require_once('../includes/config.php');
-require_once('../func/func_misc.php');
-require_once('../func/func_fetch.php');
-
-$output = new output();
-
-require_once("../api/api_fetchperiods.php");
-require_once("../api/api_week_day.php");
-
-
-
-/*$periodsArray = $output->periods[0];
+<?php 
+$periodsArray = $output->periods[0];
 $asworktimes = $output->asworktimes;
 $againstworktime = $output->againstworktime;
 
 $weekstats = timespan::updateWeekStats($year,$week);
 
-$output->results = array();
+//$output->results = array();
 $output->periods = array();
 $output->asworktimes = array();
 $output->againstworktime = array();
@@ -91,9 +74,7 @@ $nextweek = date("W", strtotime("{$year}W{$week} + 1 week"));
 $nextyear = date("o", strtotime("{$year}W{$week} + 1 week"));
 
 $output->arrays['weekinfo'] = array("days"=>7,"fromdate"=>$fromdate,"todate"=>$todate,"sumworked"=>$sumworked,"sumworkedinclvac"=>$sumworkedinclvac,"sumtowork"=>$sumtowork,"sumtoworkinclfree"=>$sumtoworkinclfree,"sumasworktime"=>$sumasworktime,"sumagainstworktime"=>$sumagainstworktime,"prevweek"=>$prevweek,"prevyear"=>$prevyear,"nextweek"=>$nextweek,"nextyear"=>$nextyear);
-*/
-header('Content-type: text/xml'); 
-echo $output->outputToXml();
-session_write_close();
-exit();
+
+
+
 ?>

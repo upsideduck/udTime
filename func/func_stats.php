@@ -51,6 +51,7 @@ function balanceUptoWeek($inyear,$inweek) {
 		$week["workedtime"] = timestampToTime(intval($week['worked']));	// Worked as time
 		if($diff > 0) $week["weekdifftime"] = "+".timestampToTime($diff); // diff as time
 		else $week["weekdifftime"] = timestampToTime($diff); 
+		$week["modifiedtimestamp"] = strtotime($week['modified']) == false ? 0 : strtotime($week['modified']);
 		$totalDiff = $totalDiff + $diff;
 		$week["totaldifftime"] = timestampToTime($totalDiff);	// total diff
 		$newStats[] = $week;
@@ -81,6 +82,7 @@ function balanceUptoMonth($inyear,$inmonth) {
 		$month["workedtime"] = timestampToTime(intval($month['worked']));	// Worked as time
 		if($diff > 0) $month["monthdifftime"] = "+".timestampToTime($diff); // diff as time
 		else $month["monthdifftime"] = timestampToTime($diff); 
+		$month["modifiedtimestamp"] = strtotime($month['modified']) == false ? 0 : strtotime($month['modified']);
 		$totalDiff = $totalDiff + $diff;
 		$month["totaldifftime"] = timestampToTime($totalDiff);	// total diff
 		$newStats[] = $month;

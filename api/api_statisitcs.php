@@ -26,7 +26,7 @@ $statmonth = clean($_REQUEST['statmonth']);
 $statyear = clean($_REQUEST['statyear']);
 $statyearforweekofyear = clean($_REQUEST['statyearforweekofyear']);
 
-if($statyearforweekofyear == "") $statyearforweekofyear = $year;
+if($statyearforweekofyear == "") $statyearforweekofyear = $statyear;
 
 $stattypes = explode(",", $clean_type);
 
@@ -80,13 +80,13 @@ foreach($stattypes as $stattype){
 	}else{
 		$result = false;
 		$result_arr[0] = false;
-		$result_arr[] = "Statistics could not be fetched for: {$type}. Type not recognized.";
+		$result_arr[] = "Statistics could not be fetched for: {$stattype}. Type not recognized.";
 	}
 	
 	
 	$output->results['statistics'] = $result_arr;
 	if($result) {
-		$output->stats["{$stattype}"] = $result;
+		$output->arrays["stats"]["{$stattype}"] = $result;
 	
 	}
 	

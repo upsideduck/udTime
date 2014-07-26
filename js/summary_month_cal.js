@@ -177,7 +177,7 @@ $(document).ready(function() {
 		$.ajax({
 			type: "POST",
 			url: "proc/process_statistics.php",
-			data: { type : "month", month: month_int, year: year_int },
+			data: { stattype : "month", statmonth: month_int, statyear: year_int },
 			dataType: "xml",
 			success: function(xml){
 				if ($("result", xml).attr("success") == "true") { 

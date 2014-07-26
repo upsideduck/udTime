@@ -12,7 +12,7 @@
 	$output = new output();
 	
 	require_once("../api/api_month_totals.php");
-
+	
 	header('Content-type: text/xml'); 
 	echo  $output->outputToXml();
 
