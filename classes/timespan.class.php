@@ -167,13 +167,14 @@ class timespan {
 		$startdate = date("Y-m-d", $this->starttime);
 		$enddate = date("Y-m-d", $this->endtime);
 		$resultarray = array('sum'=>0, 'days'=>array());
-		$result = mysql_query("SELECT * FROM againstworktime WHERE member_id = {$_SESSION['SESS_MEMBER_ID']} AND date BETWEEN '{$startdate}' AND '{$enddate}' ORDER BY date ASC");
+		$result = mysql_query("SELECT a.*, lookup.name AS typelabel FROM againstworktime a INNER JOIN lookup ON a.type = lookup.code WHERE a.member_id = {$_SESSION['SESS_MEMBER_ID']} AND a.date BETWEEN '{$startdate}' AND '{$enddate}' AND lookup.type = 'againstworktime' ORDER BY a.date ASC");
 		while($row = mysql_fetch_array($result)) {
 			$resultarray['sum'] += $row['time'];
 			$resultarray['days'][$row['date']]['id'] = $row['id'];
 			$resultarray['days'][$row['date']]['timestamp'] = $row['time'];
 			$resultarray['days'][$row['date']]['time'] = timestampToTime($row['time']);
 			$resultarray['days'][$row['date']]['type'] = $row['type'];
+			$resultarray['days'][$row['date']]['typelabel'] = $row['typelabel'];
 		}
 		return $resultarray;
 	}
@@ -182,13 +183,14 @@ class timespan {
 		$startdate = date("Y-m-d", $this->starttime);
 		$enddate = date("Y-m-d", $this->endtime);
 		$resultarray = array('sum'=>0, 'days'=>array());
-		$result = mysql_query("SELECT * FROM asworktime WHERE member_id = {$_SESSION['SESS_MEMBER_ID']} AND date BETWEEN '{$startdate}' AND '{$enddate}' AND  member_id = ". $_SESSION['SESS_MEMBER_ID'] ."  ORDER BY date ASC");
+		$result = mysql_query("SELECT a.*, lookup.name AS typelabel FROM asworktime a INNER JOIN lookup ON a.type = lookup.code WHERE a.member_id = {$_SESSION['SESS_MEMBER_ID']} AND a.date BETWEEN '{$startdate}' AND '{$enddate}' AND lookup.type = 'asworktime' ORDER BY a.date ASC");
 		while($row = mysql_fetch_array($result)) {
 			$resultarray['sum'] += $row['time'];
 			$resultarray['days'][$row['date']]['id'] = $row['id'];
 			$resultarray['days'][$row['date']]['timestamp'] = $row['time'];
 			$resultarray['days'][$row['date']]['time'] = timestampToTime($row['time']);
 			$resultarray['days'][$row['date']]['type'] = $row['type'];
+			$resultarray['days'][$row['date']]['typelabel'] = $row['typelabel'];
 		}
 		return $resultarray;
 	}
@@ -198,7 +200,7 @@ class timespan {
 		$startyear = date("Y", $this->starttime);
 		$startweek = date("W", $this->starttime);
 		$endyear = date("Y", $this->endtime);
-		$endweek = date("W", $this->endtime);
+		$endweek = date("W", $this->endtime-60*60); //Added -60*60 to compensate for summertime
 		$result = mysql_query("SELECT * FROM weekstats WHERE STR_TO_DATE(CONCAT(CONCAT(year,week),' Monday'),'%X%V %W') BETWEEN STR_TO_DATE(CONCAT({$startyear},{$startweek},' Monday'),'%X%V %W')  AND STR_TO_DATE(CONCAT({$endyear},{$endweek},' Friday'),'%X%V %W') AND  member_id = ". $_SESSION['SESS_MEMBER_ID'] ." ORDER BY year, week ASC");
 		$resultarray = array();
 		while($row = mysql_fetch_assoc($result)) {
@@ -272,7 +274,7 @@ class timespan {
 		if(mysql_num_rows($result) > 0){
 			$resultupdate = mysql_query("UPDATE weekstats SET towork = {$worktimeforweek}, againstworktime = {$againstworktime['sum']}, worked = {$weekworkbreaktime['worktime']},asworktime = {$asworktime['sum']} WHERE  year = {$year} AND week = {$week} AND member_id = {$_SESSION['SESS_MEMBER_ID']}");
 		}else{
-			$resultinsert = mysql_query("INSERT INTO weekstats (member_id,year,week,towork,againstworktime,worked,asworktime) VALUES ({$_SESSION['SESS_MEMBER_ID']},{$year},{$week},{$worktimeforweek},{$againstworktime['sum']},{$weekworkbreaktime['worktime']},{$asworktime['sum']})");
+			$resultinsert = mysql_query("INSERT INTO weekstats (member_id,year,week,towork,againstworktime,worked,asworktime,modified) VALUES ({$_SESSION['SESS_MEMBER_ID']},{$year},{$week},{$worktimeforweek},{$againstworktime['sum']},{$weekworkbreaktime['worktime']},{$asworktime['sum']},NOW())");
 		}
 		if($resultupdate == true || $resultinsert == true){
 			return array('towork'=>$worktimeforweek, 'worked'=>$weekworkbreaktime['worktime'],'againstworktime'=>$againstworktime,'asworktime'=>$asworktime);
@@ -302,7 +304,7 @@ class timespan {
 		if(mysql_num_rows($result) > 0){
 			$resultupdate = mysql_query("UPDATE monthstats SET towork = {$worktimeformonth}, againstworktime = {$againstworktime['sum']}, worked = {$monthworkbreaktime['worktime']}, asworktime = {$asworktime['sum']} WHERE  year = {$year} AND month = {$month} AND member_id = {$_SESSION['SESS_MEMBER_ID']}");
 		}else{
-			$resultinsert = mysql_query("INSERT INTO monthstats (member_id,year,month,towork,againstworktime,worked,asworktime) VALUES ({$_SESSION['SESS_MEMBER_ID']},{$year},{$month},{$worktimeformonth},{$againstworktime['sum']},{$monthworkbreaktime['worktime']},{$asworktime['sum']})");
+			$resultinsert = mysql_query("INSERT INTO monthstats (member_id,year,month,towork,againstworktime,worked,asworktime,modified) VALUES ({$_SESSION['SESS_MEMBER_ID']},{$year},{$month},{$worktimeformonth},{$againstworktime['sum']},{$monthworkbreaktime['worktime']},{$asworktime['sum']},NOW())");
 		}
 		if($resultupdate == true || $resultinsert == true){
 			return array('towork'=>$worktimeformonth, 'worked'=>$monthworkbreaktime['worktime'],'againstworktime'=>$againstworktime,'asworktime'=>$asworktime);
