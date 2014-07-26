@@ -32,7 +32,10 @@ class output {
 			$this->periodsXMLoutput($periods_arr);
 		}
 		foreach($this->stats as $task => $stats_arr){
+			$this->xmlOutput .= "\t<stats>\n";
 			$this->statsXMLoutput($stats_arr, $task);
+			//$this->arrayXMLoutput($stats_arr, $task);
+			$this->xmlOutput .= "\t</stats>\n";
 		}
 		foreach($this->againstworktime as $againstworktime_arr){
 			$this->againstworktimeXMLoutput($againstworktime_arr);
@@ -147,13 +150,15 @@ class output {
 	
 	private function statsXMLoutput($rarray, $mainkey) {
 		$local_xml_output = "";
+		$local_xml_output .= "\t<stats>\n";
 		foreach ($rarray as $speriod) {
-		$local_xml_output .= "\t<{$mainkey}>\n";
+		$local_xml_output .= "\t\t<{$mainkey}>\n";
 			foreach (array_keys($speriod) as $key) {
-				$local_xml_output .= "\t\t<$key>".$speriod[$key]."</$key>\n";
+				$local_xml_output .= "\t\t\t<$key>".$speriod[$key]."</$key>\n";
 			} 
-		$local_xml_output .= "\t</{$mainkey}>\n";
+		$local_xml_output .= "\t\t</{$mainkey}>\n";
 		}
+		$local_xml_output .= "\t</stats>\n";
 		$this->xmlOutput .=  $local_xml_output;
 	}
 	
@@ -195,6 +200,7 @@ class output {
 				$local_xml_output .= "\t\t<date>".$date."</date>\n";		
 				$local_xml_output .= "\t\t<time>".$againstworktime['days'][$date]['time']."</time>\n";
 				$local_xml_output .= "\t\t<type>".$againstworktime['days'][$date]['type']."</type>\n";
+				$local_xml_output .= "\t\t<typelabel>".$againstworktime['days'][$date]['typelabel']."</typelabel>\n";
 				$local_xml_output .= "\t</againstworktime>\n";
 			} 	
 		}
@@ -214,6 +220,7 @@ class output {
 				$local_xml_output .= "\t\t<date>".$date."</date>\n";		
 				$local_xml_output .= "\t\t<time>".$asworktime['days'][$date]['time']."</time>\n";
 				$local_xml_output .= "\t\t<type>".$asworktime['days'][$date]['type']."</type>\n";
+				$local_xml_output .= "\t\t<typelabel>".$asworktime['days'][$date]['typelabel']."</typelabel>\n";
 				$local_xml_output .= "\t</asworktime>\n";
 			} 	
 		}
