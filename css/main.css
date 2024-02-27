@@ -639,3 +639,7 @@ html[xmlns] .clearfix {
 * html .clearfix {
 	height: 1%;
 }
+
+.nav-collapse:has(.sign-in-btn) {
+	text-align: right;
+  }

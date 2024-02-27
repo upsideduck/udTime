@@ -1,0 +1,278 @@
+<?php 
+/********************************************************************
+ *
+ *	fetchPeriodsArray - returns array of two arrays with periods
+ *						in defined timeperiod
+ *
+ *	Incoming: $timeArray 
+ *		keys : start, end
+ *
+ *	Outgoing : $return
+ * 		keys : 0 , 1
+ *		   0 : $allPeriods - all periods in the time interval, 
+ *							breaks under same key as periods
+ *		   1 : $dayArray - how the periods should be divided by day, 
+ *							key 1 is first day and so on
+ *
+ ********************************************************************/  
+function fetchPeriodsArray($timeArray, $periodId = null, $breakId = null) {
+	include(__SITE_BASE__."/includes/connection.php");
+
+	if($periodId != null) $sql = "SELECT * FROM workdb WHERE member_id = " . $_SESSION['SESS_MEMBER_ID'] . " AND id = {$periodId} ORDER BY starttime ASC";
+	elseif($breakId != null)  $sql = "SELECT * FROM breakdb WHERE member_id = " . $_SESSION['SESS_MEMBER_ID'] . " AND id = {$breakId} ORDER BY starttime ASC";
+	else $sql = "SELECT * FROM workdb WHERE member_id = " . $_SESSION['SESS_MEMBER_ID'] . " AND starttime BETWEEN " . $timeArray['start'] ." AND " . $timeArray['end']." AND endtime IS NOT NULL ORDER BY starttime ASC";
+	$result = mysqli_query($link, $sql);
+	
+	$return ="";
+	$allPeriods = [];
+	if(!$result) return null;
+	elseif($breakId == null){
+		while($periodsOfTimeArray = mysqli_fetch_assoc($result)) {
+			$thisPeriod = array();
+			$dayArray[date("N",$periodsOfTimeArray['starttime'])][] = count($allPeriods);
+			$thisPeriod[] = $periodsOfTimeArray;
+			$sql2 = "SELECT * FROM breakdb WHERE parent_id = ".$periodsOfTimeArray['id']." ORDER BY starttime ASC";
+			$result2 = mysqli_query($link, $sql2);
+			while($breaksOfPeriod = mysqli_fetch_assoc($result2)) {
+				$thisPeriod[] = $breaksOfPeriod;
+			}
+			$allPeriods[] = $thisPeriod; 
+		}
+		$return = $allPeriods;
+	}else{
+		$breakPeriodArray = mysqli_fetch_assoc($result);
+		$thisPeriod = array();
+		$thisPeriod[1] = $breakPeriodArray;
+		$sql2 = "SELECT * FROM workdb WHERE id = ".$breakPeriodArray['parent_id']." ORDER BY starttime ASC";
+		$result2 = mysqli_query($link, $sql2);
+		$workOfPeriod = mysqli_fetch_assoc($result2);
+		$thisPeriod[0] = $workOfPeriod;
+		$allPeriods[] = $thisPeriod; 
+		$return = $allPeriods;
+	}
+	
+	mysqli_close($link);
+	return $return;
+}
+
+/********************************************************************
+ *
+ *	fetchWorkPeriod - Fetch single work period
+ *
+ *	Incoming: $workId 
+ *
+ *	Outgoing : $return
+ * 		keys : 0, 1, 2
+ *		   0 : $result - 0: bool, true->success, false->error 1-…: Errors as strings
+ *		   1 : $workPeriod - work-object
+ *		   2 : $breaks_arr - break-objcts array
+ *
+ ********************************************************************/  
+function fetchWorkPeriod($workId) {
+	include(__SITE_BASE__."/includes/connection.php");
+	$result_arr[0] = true;
+	$breaks_arr = array();
+	$return = array();
+	
+	if ($workId == '') {
+		$result_arr[0] = false;
+		$result_arr[] = "No period choosen";
+		$return[0] = $result_arr;
+		return $return; 
+	}
+	
+	$sql = sprintf("SELECT * FROM workdb WHERE id = %d", $workId);
+	$result = mysqli_query($link, $sql); 
+	if(mysqli_num_rows($result) != 1) {		// Check if the period was found
+		$result_arr[0] = false;
+		$result_arr[] = "Work period could not be found";
+		$return[0] = $result_arr;
+		return $return; 
+	}
+	$workPeriod = mysqli_fetch_object($result);
+	if($workPeriod->member_id != $_SESSION["SESS_MEMBER_ID"]) {
+		$result_arr[0] = false;
+		$result_arr[] = "Authorization to view this period is missing";
+		$return[0] = $result_arr;
+		return $return; 
+	}
+	$sql2 = sprintf("SELECT * FROM breakdb WHERE parent_id = %d ORDER BY starttime ASC", $workPeriod->id);
+	$result2 = mysqli_query($link, $sql2); 
+	
+	while($break = mysqli_fetch_object($result2)) {
+		$breaks_arr[] = $break;
+	}
+	$return[0] = $result_arr;
+	$return[1] = $workPeriod;
+	$return[2] = $breaks_arr;
+	mysqli_close($link);
+	return $return;
+}
+/********************************************************************
+ *
+ *	fetchBreakPeriod - Fetch single break period
+ *
+ *	Incoming: $breakId 
+ *
+ *	Outgoing : $return
+ * 		keys : 0, 1
+ *		   0 : $result - 0: bool, true->success, false->error 1-…: Errors as strings
+ *		   1 : $breakPeriod - break-object
+ *
+ ********************************************************************/  
+function fetchBreakPeriod($breakId) {
+	include(__SITE_BASE__."/includes/connection.php");
+	$result_arr[0] = true;
+	$return = array();
+	
+	if ($breakId == '') {
+		$result_arr[0] = false;
+		$result_arr[] = "No period choosen";
+		$return[0] = $result_arr;
+		return $return; 
+	}
+	
+	$sql = sprintf("SELECT * FROM breakdb WHERE id = %d", $breakId);
+	$result = mysqli_query($link, $sql); 
+	if(mysqli_num_rows($result) != 1) {		// Check if the period was found
+		$result_arr[0] = false;
+		$result_arr[] = "Break period could not be found";
+		$return[0] = $result_arr;
+		return $return; 
+	}
+	$breakPeriod = mysqli_fetch_object($result);
+	if($breakPeriod->member_id != $_SESSION["SESS_MEMBER_ID"]) {
+		$result_arr[0] = false;
+		$result_arr[] = "Authorization to view this period is missing";
+		$return[0] = $result_arr;
+		return $return; 
+	}
+	
+	$return[0] = $result_arr;
+	$return[1] = $breakPeriod;
+	mysqli_close($link);
+	return $return;
+}
+/********************************************************************
+ *
+ *	fetchCurrentPeriod - returns array with current period data
+ *
+ *	Incomming: none 
+ *
+ *	Outgoing : $return
+ * 		keys : 
+ *		   
+ *
+ ********************************************************************/  
+function fetchCurrentPeriod() {
+	include(__SITE_BASE__."/includes/connection.php");
+	$pid = $_SESSION['SESS_ACTIVE_PERIOD'];
+	$type = $_SESSION['SESS_ACTIVE_TYPE'];
+	
+	switch ($type) {
+		case "work":
+			$sql = "SELECT w.id, w.member_id, w.starttime, w.endtime, w.comment, IF( name IS NOT NULL , name,  'none' ) AS project
+					FROM workdb w
+					LEFT JOIN projectdb ON w.project_id = projectdb.id
+					WHERE w.id = {$pid}";
+			break;
+			case "break":
+				$sql = "SELECT b.id, b.parent_id, b.member_id, b.starttime, b.endtime, b.comment, IF( name IS NOT NULL , name,  'none' ) AS project
+ 					FROM breakdb b
+ 					LEFT JOIN workdb ON b.parent_id = workdb.id
+ 					LEFT JOIN projectdb ON workdb.project_id = projectdb.id
+ 					WHERE b.id = {$pid}";
+			break;
+			default:
+			$sql = "";
+			break;
+		}
+		
+		if ($sql != "") 
+		{
+			$result = mysqli_query($link, $sql);
+			$return = mysqli_fetch_assoc($result);
+		}
+		$return["type"] = $type;
+	mysqli_close($link);
+	return $return;
+}
+/********************************************************************
+ *
+ *	fetchHoliday - returns holiday
+ *
+ *	Incomming: week, year 
+ *
+ *	Outgoing : $return
+ * 		
+ *		   
+ *
+ ********************************************************************/  
+function fetchHoliday($inWeek, $inYear) {
+	include(__SITE_BASE__."/includes/connection.php");
+	$sql = sprintf("SELECT holiday FROM weeksdb WHERE week = %d AND year = %d AND member_id = %d", $inWeek, $inYear,$_SESSION["SESS_MEMBER_ID"]);
+	
+	if ($sql != "") 
+	{
+		$result = mysqli_query($link, $sql);
+		$return = mysqli_fetch_row($result);
+	}
+	mysqli_close($link);
+	return $return;
+}
+/********************************************************************
+ *
+ *	fetchWorkAndBreakTime - returns work and breaks for timearray
+ *
+ *	Incomming: timearray 
+ *
+ *	Outgoing : work and break array
+ * 		
+ *		   
+ *
+ ********************************************************************/ 
+function fetchWorkAndBreakTime($timearray) {
+	include(__SITE_BASE__."/includes/connection.php");
+	$worktime = 0;
+	$breaktime = 0;
+	$periods = fetchPeriodsArray($timearray);
+	if($periods != null) {
+		foreach($periods as $period) {
+			$worktime += $period[0]["endtime"] - $period[0]["starttime"];
+			if (count($period) > 0) {
+				unset($period[0]);
+				foreach($period as $break){
+					$breaktime += $break["endtime"] - $break["starttime"];
+				}
+			}
+		}
+	}
+	mysqli_close($link);
+	return array("worktime" => $worktime-$breaktime, "breaktime" => $breaktime);
+}
+/********************************************************************
+ *
+ *	fetchProjects - returns all projects
+ *
+ *	Incomming:  
+ *
+ *	Outgoing : array with projects
+ * 		
+ *		   
+ *
+ ********************************************************************/ 
+function fetchProjects() {
+	include(__SITE_BASE__."/includes/connection.php");
+	$sql = "SELECT * FROM projectdb WHERE member_id = {$_SESSION['SESS_MEMBER_ID']} ORDER BY name ASC";
+	$result = mysqli_query($link, $sql);
+	
+	if (!$result) return null;
+	
+	$return = array();
+	while($arr = mysqli_fetch_assoc($result)){
+		$return[] = $arr;	
+	}
+	mysqli_close($link);
+	return $return;
+}
+?>

@@ -1,0 +1,36 @@
+<?php 
+/************************************************************************
+/*
+/*	Login script that outputs the result in xml
+/*  and starts a session if login was successful
+/*
+/*
+/*	Requires: 		func_users.php
+/*					func_misc.php
+/*					func_session.php
+/*	
+/*	Post values:	username
+/*					password
+/*
+/*	Output:			$output_xml - $result_arr as xml
+/*
+/************************************************************************/
+
+$result_arr = null;
+
+//Sanitize the POST values
+$username = clean($_REQUEST['username']);
+$password = clean($_REQUEST['password']);
+
+$result_arr = loginUser($username,$password);	
+$output->results['login'] = $result_arr;
+
+if($result_arr[0]) {
+	$qry="SELECT * FROM userdb WHERE username='$username' AND password='".md5($password)."'";
+	$result=mysqli_query($link, $qry);
+	start_session($result);
+	$resultuser = mysqli_query($link, "SELECT member_id,username,timezone,dworkweek,activeperiod,activetype,offset,registerdate,statsstartdate FROM userdb WHERE username = '". $_SESSION['SESS_USERNAME']."'");
+	$user = mysqli_fetch_object($resultuser);
+}
+
+ ?>
