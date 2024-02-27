@@ -38,19 +38,10 @@
         <div class="navbar navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container">
-                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </a>
-                    <a class="brand" href="index.php">udTime</a>
-                    <div class="nav-collapse collapse">
-                    
-                    
-                        
-                        <a class="sign-in-btn btn" href="/app/">Sign in</a>
-                       
-                    </div><!--/.nav-collapse -->
+                 <a class="brand" href="index.php">udTime</a>
+                    <ul class="nav"  style="float: right;"">
+                        <li><a href="/app/">Sign in</a></li>   
+                    </ul><!--/.nav-collapse -->
                 </div>
             </div>
         </div>
