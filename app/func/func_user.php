@@ -46,6 +46,47 @@ function loginUser($username, $password) {
 
 /********************************************************************
  *
+ *	loginUser - process login request
+ *			 
+ *	Incomming: 	$api_key
+ *
+ *	Outgoing : $result_arr
+ *		key  : 0 - bool login success or not
+ *			   1 - Message
+ *
+ ********************************************************************/
+function verifyApikey($api_key) {
+	include("../includes/connection.php");
+	$result_arr[0] = true;
+	//Input Validations
+	if($api_key == '') {
+		$result_arr[0] = false;
+		$result_arr[] = 'API key missing';
+	}
+
+	if($result_arr[0]) {
+		$api_key_hash = md5($api_key);
+		//Create query
+		$qry="SELECT * FROM apikeys WHERE key_hash='$api_key_hash'";
+		$result=mysqli_query($link, $qry);
+
+		
+		if(mysqli_num_rows($result) != 1) {
+			$result_arr[0] = false;
+			$result_arr[] = 'API key is not valid';
+		}
+		else
+		{
+			$result_arr[] = 'Successful login';
+			
+		}
+	}
+	mysqli_close($link);
+	return $result_arr;
+}
+
+/********************************************************************
+ *
  *	registerUser - process register request
  *			 
  *	Incomming: $newUser
