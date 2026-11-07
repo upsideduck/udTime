@@ -4,9 +4,12 @@ from fastapi import APIRouter, File, Request, UploadFile
 from fastapi.responses import Response
 
 from ..api import BackendError
-from ..web import Api, htmx_response, render, toast
+from ..web import Api, fragment, htmx_response, render, toast
 
 router = APIRouter()
+
+# Recomputing every week/month since statsstartdate can take a while on a large history
+RECOMPUTE_TIMEOUT = 300
 
 
 @router.get("/profile")
@@ -34,10 +37,24 @@ async def upload_avatar(request: Request, api: Api, file: Annotated[UploadFile, 
     return htmx_response(toast(request, "Avatar updated"), trigger={"avatarChanged": True}, reswap="none")
 
 
+@router.get("/admin/recompute/preview")
+async def recompute_preview(request: Request, api: Api):
+    """Dry run: show what recalculating the statistics would change."""
+    try:
+        preview = await api.get("/admin/recompute-stats/preview", timeout=RECOMPUTE_TIMEOUT)
+    except BackendError as exc:
+        return htmx_response(toast(request, exc.detail, "danger"), reswap="none")
+    return htmx_response(fragment(request, "partials/recompute_preview.html", preview=preview))
+
+
 @router.post("/admin/recompute")
 async def recompute(request: Request, api: Api):
     try:
-        result = await api.post("/admin/recompute-stats")
-        return htmx_response(toast(request, result["message"]), reswap="none")
+        result = await api.post("/admin/recompute-stats", timeout=RECOMPUTE_TIMEOUT)
     except BackendError as exc:
         return htmx_response(toast(request, exc.detail, "danger"), reswap="none")
+    return htmx_response(
+        fragment(request, "partials/recompute_preview.html", applied=True),
+        toast(request, result["message"]),
+        trigger={"dataChanged": True},
+    )

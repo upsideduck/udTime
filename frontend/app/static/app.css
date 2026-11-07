@@ -314,3 +314,6 @@ a { text-decoration: none; }
 
 .auth-divider { display: flex; align-items: center; gap: .75rem; margin: 1.25rem 0; color: var(--app-muted); font-size: .8rem; }
 .auth-divider::before, .auth-divider::after { content: ""; flex: 1; border-top: 1px solid var(--app-border); }
+
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline-flex; align-items: center; gap: .4rem; }

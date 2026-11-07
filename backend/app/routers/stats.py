@@ -65,6 +65,13 @@ def month_csv(year: int, month: int, db: DB, user: Annotated[User, Depends(requi
     )
 
 
+@router.get("/admin/recompute-stats/preview")
+def recompute_preview(db: DB, user: Annotated[User, Depends(require_admin)]):
+    """Dry run: compute all week/month stats since statsstartdate and list what would change.
+    Values are seconds; `balance_before/after` include the user's offset. Nothing is written."""
+    return stats.preview_recompute(db, user)
+
+
 @router.post("/admin/recompute-stats", response_model=Message)
 def recompute(db: DB, user: Annotated[User, Depends(require_admin)]):
     stats.recompute_all(db, user)

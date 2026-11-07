@@ -57,15 +57,19 @@
     <div class="surface">
       <div class="surface-header"><h2 class="surface-title">Maintenance</h2></div>
       <div class="surface-body">
-        <p class="small text-muted">Recalculate all cached week and month statistics since the statistics start date.</p>
-        <button class="btn btn-soft" hx-post="/admin/recompute" hx-disabled-elt="this"
-                hx-confirm="Recalculate all statistics? This can take a moment.">
-          <i class="bi bi-arrow-repeat"></i> Update stats</button>
+        <p class="small text-muted">Recalculate the cached week and month statistics since the statistics start date.
+          You will see the proposed changes before anything is saved.</p>
+        <button class="btn btn-soft" hx-get="/admin/recompute/preview" hx-target="#recompute-result"
+                hx-disabled-elt="this" hx-indicator="#recompute-spinner">
+          <i class="bi bi-search"></i> Check stats</button>
+        <span id="recompute-spinner" class="htmx-indicator small text-muted ms-2">
+          <span class="spinner-border spinner-border-sm"></span> Calculating…</span>
       </div>
     </div>
     {% endif %}
   </div>
 </div>
+{% if profile.admin %}<div id="recompute-result" class="mt-4"></div>{% endif %}
 {% endblock %}
 {% block scripts %}
 <script>

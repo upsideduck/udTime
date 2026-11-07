@@ -77,7 +77,8 @@ def _stats_window(user: User, start: int, end: int, tz) -> tuple[int, int, dt.da
     return start, end, tu.local_date(start, tz), tu.local_date(end, tz)
 
 
-def update_week_stats(db: Session, user: User, iso_year: int, week: int) -> dict:
+def update_week_stats(db: Session, user: User, iso_year: int, week: int, persist: bool = True) -> dict:
+    """Compute a week's stats and store them in weekstats (unless persist=False)."""
     tz = tu.user_tz(user)
     start, end = tu.week_span(iso_year, week, tz)
     if start < user.statsstartdate:
@@ -95,12 +96,13 @@ def update_week_stats(db: Session, user: User, iso_year: int, week: int) -> dict
     asworktime = absence_summary(db, "asworktime", user.member_id, first, last)
     againstworktime = absence_summary(db, "againstworktime", user.member_id, first, last)
 
-    _upsert(
-        db,
-        WeekStats,
-        dict(member_id=user.member_id, year=iso_year, week=week),
-        dict(towork=towork, worked=worked, asworktime=asworktime["sum"], againstworktime=againstworktime["sum"]),
-    )
+    if persist:
+        _upsert(
+            db,
+            WeekStats,
+            dict(member_id=user.member_id, year=iso_year, week=week),
+            dict(towork=towork, worked=worked, asworktime=asworktime["sum"], againstworktime=againstworktime["sum"]),
+        )
     return {"towork": towork, "worked": worked, "asworktime": asworktime, "againstworktime": againstworktime}
 
 
@@ -117,7 +119,8 @@ def working_days_month(user: User, year: int, month: int) -> int:
     return days
 
 
-def update_month_stats(db: Session, user: User, year: int, month: int) -> dict:
+def update_month_stats(db: Session, user: User, year: int, month: int, persist: bool = True) -> dict:
+    """Compute a month's stats and store them in monthstats (unless persist=False)."""
     tz = tu.user_tz(user)
     start, end = tu.month_span(year, month, tz)
     towork = round(working_days_month(user, year, month) * user.day_length)
@@ -127,12 +130,13 @@ def update_month_stats(db: Session, user: User, year: int, month: int) -> dict:
     asworktime = absence_summary(db, "asworktime", user.member_id, first, last)
     againstworktime = absence_summary(db, "againstworktime", user.member_id, first, last)
 
-    _upsert(
-        db,
-        MonthStats,
-        dict(member_id=user.member_id, year=year, month=month),
-        dict(towork=towork, worked=worked, asworktime=asworktime["sum"], againstworktime=againstworktime["sum"]),
-    )
+    if persist:
+        _upsert(
+            db,
+            MonthStats,
+            dict(member_id=user.member_id, year=year, month=month),
+            dict(towork=towork, worked=worked, asworktime=asworktime["sum"], againstworktime=againstworktime["sum"]),
+        )
     return {"towork": towork, "worked": worked, "asworktime": asworktime, "againstworktime": againstworktime}
 
 
@@ -158,6 +162,97 @@ def update_stats(db: Session, user: User, start: int, end: int) -> None:
 def recompute_all(db: Session, user: User) -> None:
     update_stats(db, user, user.statsstartdate, tu.now_ts())
     db.commit()
+
+
+STAT_FIELDS = ("towork", "worked", "asworktime", "againstworktime")
+
+
+def _future_target(user: User, first: dt.date, last: dt.date, max_weekday: int) -> int:
+    """Target time for the workdays after today in [first, last] (not yet due)."""
+    tz = tu.user_tz(user)
+    day = max(first, tu.local_date(tu.now_ts(), tz) + dt.timedelta(days=1), tu.local_date(user.statsstartdate, tz))
+    days = 0
+    while day <= last:
+        if day.isoweekday() <= max_weekday:
+            days += 1
+        day += dt.timedelta(days=1)
+    return round(days * user.day_length)
+
+
+def _preview_rows(
+    user: User, existing: dict, computed: list[tuple[tuple[int, int], dict]], label, future: dict
+) -> dict:
+    """Compare freshly computed stats with the stored rows (the row recompute would update).
+    The balances run up to today: the target of workdays still to come in the current
+    period (`future`) is left out, so week and month balances are comparable."""
+    changes = []
+    before = after = user.offset
+    for key, new in computed:
+        new_values = {f: new[f]["sum"] if isinstance(new[f], dict) else new[f] for f in STAT_FIELDS}
+        old = existing.get(key)
+        old_values = {f: int(getattr(old, f)) for f in STAT_FIELDS} if old is not None else None
+        new_diff = new_values["worked"] + new_values["asworktime"] - new_values["towork"] + new_values["againstworktime"]
+        old_diff = (
+            old_values["worked"] + old_values["asworktime"] - old_values["towork"] + old_values["againstworktime"]
+            if old_values
+            else 0
+        )
+        before += old_diff + (future.get(key, 0) if old_values else 0)
+        after += new_diff + future.get(key, 0)
+        if old_values == new_values:
+            continue
+        changes.append({
+            "period": label(*key),
+            "year": key[0],
+            "number": key[1],
+            "status": "missing" if old_values is None else "changed",
+            "fields": {
+                f: {"old": old_values[f] if old_values else None, "new": new_values[f]}
+                for f in STAT_FIELDS
+                if old_values is None or old_values[f] != new_values[f]
+            },
+            "old_diff": old_diff if old_values else None,
+            "new_diff": new_diff,
+        })
+    return {
+        "checked": len(computed),
+        "changes": changes,
+        "balance_before": before,
+        "balance_after": after,
+        "future_target": sum(future.values()),
+    }
+
+
+def preview_recompute(db: Session, user: User) -> dict:
+    """Dry run of recompute_all: what would change in weekstats/monthstats. Writes nothing."""
+    tz = tu.user_tz(user)
+    start, end = user.statsstartdate, tu.now_ts()
+
+    def latest_rows(model, number_field):
+        rows = {}
+        for row in db.scalars(select(model).where(model.member_id == user.member_id).order_by(model.id)):
+            rows[(row.year, getattr(row, number_field))] = row  # recompute updates the newest duplicate
+        return rows
+
+    weeks = [((y, w), update_week_stats(db, user, y, w, persist=False)) for y, w in tu.weeks_in_span(start, end, tz)]
+    months = [((y, m), update_month_stats(db, user, y, m, persist=False)) for y, m in tu.months_in_span(start, end, tz)]
+
+    today = tu.local_date(end, tz)
+    iso_year, iso_week, _ = today.isocalendar()
+    monday = tu.week_monday(iso_year, iso_week)
+    week_future = {(iso_year, iso_week): _future_target(user, monday, monday + dt.timedelta(days=6), user.daysinworkweek)}
+    month_future = {
+        (today.year, today.month): _future_target(
+            user, dt.date(today.year, today.month, 1), tu.month_last_day(today.year, today.month), 5
+        )
+    }
+    return {
+        "through": today.isoformat(),
+        "weeks": _preview_rows(user, latest_rows(WeekStats, "week"), weeks, lambda y, w: f"{y}-W{w:02d}", week_future),
+        "months": _preview_rows(
+            user, latest_rows(MonthStats, "month"), months, lambda y, m: f"{y}-{m:02d}", month_future
+        ),
+    }
 
 
 # --- balances -------------------------------------------------------------------------

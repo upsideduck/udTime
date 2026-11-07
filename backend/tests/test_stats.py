@@ -98,3 +98,30 @@ def test_week_to_date(db, user, monkeypatch):
     assert to_date["towork_incl_againstworktime"] == 20 * 3600
     assert to_date["diff"] == -3 * 3600
     assert stats.week_detail(db, user, 2024, 2)["totals"]["to_date"] is None
+
+
+def test_preview_recompute_writes_nothing(db, monkeypatch):
+    from app.models import MonthStats, WeekStats
+    from sqlalchemy import func, select
+
+    user = make_user(db, statsstart=ts(2024, 1, 1))
+    monkeypatch.setattr(stats.tu, "now_ts", lambda: ts(2024, 1, 20, 12))
+    add_work(db, user, ts(2024, 1, 2, 8), ts(2024, 1, 2, 17))
+    # A stale cached row for week 1 and no row for weeks 2-3
+    db.add(WeekStats(member_id=user.member_id, year=2024, week=1, towork=40 * 3600, worked=0))
+    db.commit()
+
+    preview = stats.preview_recompute(db, user)
+    weeks = preview["weeks"]
+    assert weeks["checked"] == 3
+    w1 = next(c for c in weeks["changes"] if c["number"] == 1)
+    assert w1["status"] == "changed" and w1["fields"] == {"worked": {"old": 0, "new": 9 * 3600}}
+    assert {c["status"] for c in weeks["changes"] if c["number"] != 1} == {"missing"}
+    assert weeks["balance_after"] - weeks["balance_before"] == 9 * 3600 - 2 * 40 * 3600
+    assert preview["months"]["changes"][0]["status"] == "missing"
+    assert db.scalar(select(func.count()).select_from(WeekStats)) == 1
+    assert db.scalar(select(func.count()).select_from(MonthStats)) == 0
+    assert db.scalars(select(WeekStats)).one().worked == 0
+
+    stats.recompute_all(db, user)
+    assert stats.preview_recompute(db, user)["weeks"]["changes"] == []
