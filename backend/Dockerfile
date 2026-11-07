@@ -1,0 +1,39 @@
+# udtime2-backend: FastAPI REST API
+FROM python:3.13-slim
+
+COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /bin/uv
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never \
+    PATH="/app/.venv/bin:$PATH"
+
+WORKDIR /app
+
+# Dependencies first, for layer caching
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
+
+COPY app ./app
+
+RUN useradd --no-create-home --uid 10001 udtime && chown -R udtime /app
+USER udtime
+
+# --- Runtime configuration (override with `docker run -e` / compose `environment:`) ---
+# Secrets below are placeholders only: always set real values at runtime.
+ENV DATABASE_URL="mysql+pymysql://udtime:udtime@db:3306/udTime" \
+    JWT_SECRET="change-me" \
+    JWT_EXPIRE_MINUTES="10080" \
+    FRONTEND_SERVICE_SECRET="change-me-too" \
+    ALLOW_REGISTRATION="false" \
+    DB_HAS_DELETE_TRIGGERS="false" \
+    DEFAULT_TIMEZONE="Europe/Stockholm" \
+    FORWARDED_ALLOW_IPS="*"
+
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4)"
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]

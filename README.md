@@ -6,7 +6,7 @@ A time tracker for work periods, breaks, absences and projects, with week and mo
 | --- | --- |
 | [backend/](backend/) | Python REST API (FastAPI) on the existing MySQL schema in [udtime.sql](udtime.sql) |
 | [frontend/](frontend/) | Python web GUI (Jinja2 + HTMX) that uses the backend API |
-| [app/](app/) | The legacy PHP application, kept for reference |
+| [archive/php/](archive/php/) | The legacy PHP application (`app/`, landing page, old API docs), kept for reference only |
 
 ## Quick start
 
@@ -14,6 +14,36 @@ A time tracker for work periods, breaks, absences and projects, with week and mo
 cd backend && cp .env.example .env && uv sync && uv run uvicorn app.main:app --port 8000
 cd frontend && cp .env.example .env && uv sync && uv run uvicorn app.main:app --port 8001
 ```
+
+## Docker images
+
+Production runs as two containers, `udtime2-backend` (port 8000) and `udtime2-frontend` (port 8001). Configure them with the same variables as the `.env.example` files, passed as container environment variables.
+
+```bash
+cp docker.env.example docker.env   # Docker Hub username + access token (git-ignored)
+./build-images.sh                  # asks which image(s) to build and whether to upload
+./build-images.sh both --push --yes   # non-interactive
+```
+
+Each image is tagged `latest` and `YYYYMMDD_HHMMSS`, as `<namespace>/udtime2-backend` / `<namespace>/udtime2-frontend`.
+
+- **Uploading:** builds for `DOCKER_PLATFORMS` (default `linux/amd64`) and pushes to hub.docker.com.
+- **Local builds:** load the image into your local Docker for your own platform.
+
+### Running with Docker Compose
+
+```bash
+cp .env.example .env             # secrets, DATABASE_URL, image prefix/tag (git-ignored)
+docker compose up -d             # backend + frontend against your existing database
+docker compose --profile db up -d   # also start a bundled MariaDB (schema + lookups loaded on first start)
+docker compose pull && docker compose up -d   # update to the newest pushed images
+```
+
+- **Frontend:** published on `FRONTEND_PORT` (default 8001) for Nginx Proxy Manager.
+- **Backend:** reachable only inside the `udtime2` network.
+- **Missing secrets:** compose refuses to start if `JWT_SECRET`, `FRONTEND_SERVICE_SECRET`, `SESSION_SECRET` or `DATABASE_URL` is empty.
+
+Setting up the reverse proxy and SSO is covered in [docs/authentik-nginx-proxy-manager.md](docs/authentik-nginx-proxy-manager.md).
 
 ## Migrating from the PHP version
 

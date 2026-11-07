@@ -1,7 +1,7 @@
 """Time helpers. All periods are unix timestamps; calendar logic runs in the user's timezone.
 
 Ports fetchStartEndTime, timestampToTime, timestampToDecTime and timeToTimestamp from
-app/func/func_misc.php, using ISO years for ISO weeks and real local midnights.
+archive/php/app/func/func_misc.php, using ISO years for ISO weeks and real local midnights.
 """
 
 import datetime as dt

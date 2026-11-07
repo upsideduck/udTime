@@ -1,6 +1,5 @@
 udTime.esproj*
-app/includes/config.php
-includes/config.php
+archive/php/app/includes/config.php
 .DS_Store
 
 # Python
@@ -9,4 +8,8 @@ __pycache__/
 .venv/
 .env
 .pytest_cache/
+.mypy_cache/
 *.egg-info/
+
+# Docker Hub credentials
+docker.env

@@ -1,0 +1,98 @@
+# udTime 2.0: production stack
+#
+#   cp .env.example .env              # fill in secrets and DATABASE_URL
+#   docker compose up -d              # backend + frontend, using your existing MySQL/MariaDB
+#   docker compose --profile db up -d # also start a bundled MariaDB (fresh install / testing)
+#
+# Images come from Docker Hub (built with ./build-images.sh); `docker compose build` builds them locally.
+
+name: udtime2
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  backend:
+    <<: *restart
+    image: ${UDTIME_IMAGE_PREFIX:-}udtime2-backend:${UDTIME_TAG:-latest}
+    build: ./backend
+    container_name: udtime2-backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-10080}
+      FRONTEND_SERVICE_SECRET: ${FRONTEND_SERVICE_SECRET:?set FRONTEND_SERVICE_SECRET in .env}
+      ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-false}
+      DB_HAS_DELETE_TRIGGERS: ${DB_HAS_DELETE_TRIGGERS:-false}
+      DEFAULT_TIMEZONE: ${DEFAULT_TIMEZONE:-Europe/Stockholm}
+    # Not published: only the frontend talks to it. To expose the API for scripts/API keys,
+    # uncomment and put it behind the proxy (see docs/authentik-nginx-proxy-manager.md).
+    # ports:
+    #   - "${BACKEND_BIND:-0.0.0.0}:${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+        required: false
+    networks: [udtime]
+
+  frontend:
+    <<: *restart
+    image: ${UDTIME_IMAGE_PREFIX:-}udtime2-frontend:${UDTIME_TAG:-latest}
+    build: ./frontend
+    container_name: udtime2-frontend
+    environment:
+      BACKEND_URL: http://backend:8000
+      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
+      SESSION_HTTPS_ONLY: ${SESSION_HTTPS_ONLY:-true}
+      FRONTEND_SERVICE_SECRET: ${FRONTEND_SERVICE_SECRET:?set FRONTEND_SERVICE_SECRET in .env}
+      TRUST_AUTHENTIK_HEADER: ${TRUST_AUTHENTIK_HEADER:-false}
+      AUTHENTIK_HEADER: ${AUTHENTIK_HEADER:-X-Authentik-Username}
+      AUTHENTIK_LOGOUT_URL: ${AUTHENTIK_LOGOUT_URL:-/outpost.goauthentik.io/sign_out}
+      SSO_LABEL: ${SSO_LABEL:-udauth}
+      DEFAULT_TIMEZONE: ${DEFAULT_TIMEZONE:-Europe/Stockholm}
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-*}
+    ports:
+      - "${FRONTEND_BIND:-0.0.0.0}:${FRONTEND_PORT:-8001}:8001"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks: [udtime]
+
+  # Optional bundled database: `docker compose --profile db up -d`
+  # Then use DATABASE_URL=mysql+pymysql://udtime:<MARIADB_PASSWORD>@db:3306/udTime
+  db:
+    <<: *restart
+    profiles: [db]
+    image: mariadb:11.4
+    container_name: udtime2-db
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-}
+      MARIADB_DATABASE: udTime
+      MARIADB_USER: udtime
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-}
+    volumes:
+      - db-data:/var/lib/mysql
+      # Only run on first start (empty volume): schema + lookup values
+      - ./udtime.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./docker/db-init/02-lookups.sql:/docker-entrypoint-initdb.d/02-lookups.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks: [udtime]
+
+networks:
+  udtime:
+    name: udtime2
+  # To let Nginx Proxy Manager reach the frontend by container name instead of host port,
+  # attach the frontend to NPM's network as well, e.g.:
+  #   npm:
+  #     external: true
+  #     name: <npm network name>
+  # and add `npm` to the frontend's `networks:` list.
+
+volumes:
+  db-data:
+    name: udtime2-db-data
