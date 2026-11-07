@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Week {{ detail.week }} - udTime{% endblock %}
+{% block content %}
+<div id="view" hx-get="/summary/week?year={{ detail.year }}&week={{ detail.week }}" hx-trigger="dataChanged from:body"
+     hx-select="#view" hx-swap="outerHTML" hx-disinherit="*">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Week {{ detail.week }}</h1>
+      <p class="page-subtitle">{{ detail.fromdate }} – {{ detail.todate }}</p>
+    </div>
+    <div class="d-flex gap-2">
+      <div class="period-nav">
+        <a class="btn-icon" href="/summary/week?year={{ detail.prev.year }}&week={{ detail.prev.week }}" title="Previous week"><i class="bi bi-chevron-left"></i></a>
+        <a class="label text-reset" href="/summary/week" title="This week">{{ detail.year }} · W{{ detail.week }}</a>
+        <a class="btn-icon" href="/summary/week?year={{ detail.next.year }}&week={{ detail.next.week }}" title="Next week"><i class="bi bi-chevron-right"></i></a>
+      </div>
+      <a class="btn btn-soft" href="/calendar/week?date={{ detail.fromdate }}" title="Calendar"><i class="bi bi-calendar-week"></i></a>
+    </div>
+  </div>
+  {% include "_period_table.html" %}
+</div>
+{% endblock %}

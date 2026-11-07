@@ -1,0 +1,18 @@
+<div class="modal-header">
+  <h5 class="modal-title">Add entry · {{ start }}{% if end != start %} – {{ end }}{% endif %}</h5>
+  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body d-grid gap-2">
+  <button class="choice-btn" hx-get="/forms/work?date={{ start }}" hx-target="#modal-content">
+    <span class="icon" style="background:var(--app-accent-soft);color:var(--app-accent)"><i class="bi bi-briefcase"></i></span>
+    <span>Work period<small>A block of worked time</small></span></button>
+  <button class="choice-btn" hx-get="/forms/break?date={{ start }}" hx-target="#modal-content">
+    <span class="icon" style="background:var(--app-warning-soft);color:var(--app-warning)"><i class="bi bi-cup-hot"></i></span>
+    <span>Break<small>Inside an existing work period</small></span></button>
+  <button class="choice-btn" hx-get="/forms/absence/againstworktime?start={{ start }}&end={{ end }}" hx-target="#modal-content">
+    <span class="icon" style="background:var(--app-success-soft);color:var(--app-success)"><i class="bi bi-dash-circle"></i></span>
+    <span>Reduced work time<small>Holidays and days off that lower the target</small></span></button>
+  <button class="choice-btn" hx-get="/forms/absence/asworktime?start={{ start }}&end={{ end }}" hx-target="#modal-content">
+    <span class="icon" style="background:var(--app-accent-soft);color:#8b5cf6"><i class="bi bi-plus-circle"></i></span>
+    <span>As work time<small>Vacation, sick leave — counts as worked</small></span></button>
+</div>

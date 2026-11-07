@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Calendar - udTime{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Calendar</h1>
+    <p class="page-subtitle">Click an entry to edit it, or drag over a range to add one</p>
+  </div>
+  <div class="d-flex gap-2">
+    <ul class="nav nav-pills gap-1 surface p-1" style="--bs-nav-pills-link-active-bg: var(--app-accent-soft); --bs-nav-pills-link-active-color: var(--app-accent); --bs-nav-link-color: var(--app-muted)">
+      <li class="nav-item"><a class="nav-link py-1 px-3 {% if view == 'week' %}active{% endif %}" href="/calendar/week">Week</a></li>
+      <li class="nav-item"><a class="nav-link py-1 px-3 {% if view == 'month' %}active{% endif %}" href="/calendar/month">Month</a></li>
+    </ul>
+    <a class="btn btn-soft" id="list-link" href="/summary/{{ view }}" title="List view"><i class="bi bi-list-task"></i></a>
+  </div>
+</div>
+<div id="cal-totals" class="mb-3"></div>
+<div class="surface p-3">
+  <div id="calendar" data-view="{{ view }}" data-date="{{ request.query_params.get('date', '') }}"></div>
+</div>
+<div class="d-flex flex-wrap gap-3 mt-3 small text-muted">
+  <span><span class="project-dot" style="background:#4f46e5"></span> Work</span>
+  <span><span class="project-dot" style="background:#f59e0b"></span> Break</span>
+  <span><span class="project-dot" style="background:#10b981"></span> Reduced work time</span>
+  <span><span class="project-dot" style="background:#8b5cf6"></span> As work time</span>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/calendar.js"></script>
+{% endblock %}

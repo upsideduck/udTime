@@ -1,0 +1,21 @@
+<div id="projects-panel">
+  <div class="mb-2">
+    {% for p in projects %}
+      <span class="project-chip" hx-post="/projects/{{ p.id }}/select" hx-target="#modal-content" title="{{ p.description or 'Assign to current period' }}">
+        <span class="project-dot" style="background: {{ p.color }}"></span>{{ p.name }}
+      </span>
+    {% else %}
+      <p class="text-muted small">No projects yet.</p>
+    {% endfor %}
+    {% if projects %}
+      <span class="project-chip muted" hx-post="/projects/none/select" hx-target="#modal-content" title="Remove project from current period">
+        <i class="bi bi-x"></i> None
+      </span>
+    {% endif %}
+  </div>
+  <form class="d-flex gap-2 mt-2" hx-post="/projects" hx-target="#projects-panel" hx-swap="outerHTML">
+    <input class="form-control form-control-color" type="color" name="color" value="#4f46e5" title="Colour">
+    <input class="form-control" name="name" placeholder="New project…" required>
+    <button class="btn btn-soft" title="Add project"><i class="bi bi-plus-lg"></i></button>
+  </form>
+</div>

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ month_name }} {{ detail.year }} - udTime{% endblock %}
+{% block content %}
+<div id="view" hx-get="/summary/month?year={{ detail.year }}&month={{ detail.month }}" hx-trigger="dataChanged from:body"
+     hx-select="#view" hx-swap="outerHTML" hx-disinherit="*">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">{{ month_name }} {{ detail.year }}</h1>
+      <p class="page-subtitle">{{ detail.days | length }} days</p>
+    </div>
+    <div class="d-flex gap-2">
+      <div class="period-nav">
+        <a class="btn-icon" href="/summary/month?year={{ detail.prev.year }}&month={{ detail.prev.month }}" title="Previous month"><i class="bi bi-chevron-left"></i></a>
+        <a class="label text-reset" href="/summary/month" title="This month">{{ month_name[:3] }} {{ detail.year }}</a>
+        <a class="btn-icon" href="/summary/month?year={{ detail.next.year }}&month={{ detail.next.month }}" title="Next month"><i class="bi bi-chevron-right"></i></a>
+      </div>
+      <a class="btn btn-soft" href="/calendar/month?date={{ detail.fromdate }}" title="Calendar"><i class="bi bi-calendar3"></i></a>
+      <a class="btn btn-soft" href="/export/{{ detail.year }}/{{ detail.month }}.csv" title="Download CSV"><i class="bi bi-download"></i> CSV</a>
+    </div>
+  </div>
+  {% include "_period_table.html" %}
+</div>
+{% endblock %}

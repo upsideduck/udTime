@@ -1,0 +1,24 @@
+[project]
+name = "udtime-backend"
+version = "2.0.0"
+description = "udTime REST API"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0",
+    "pymysql>=1.1",
+    "pydantic-settings>=2.4",
+    "argon2-cffi>=23.1",
+    "pyjwt>=2.9",
+    "python-multipart>=0.0.9",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "httpx>=0.27"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120

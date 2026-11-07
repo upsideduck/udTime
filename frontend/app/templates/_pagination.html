@@ -1,0 +1,17 @@
+{% if pages > 1 %}
+{% set window = range([1, page - 2] | max, [pages, page + 2] | min + 1) %}
+<nav class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+  <span class="small text-muted">Page {{ page }} of {{ pages }}</span>
+  <ul class="pagination pagination-sm mb-0">
+    <li class="page-item {% if page == 1 %}disabled{% endif %}"><a class="page-link" href="?page={{ page - 1 }}"><i class="bi bi-chevron-left"></i></a></li>
+    {% if window[0] > 1 %}<li class="page-item"><a class="page-link" href="?page=1">1</a></li>{% endif %}
+    {% if window[0] > 2 %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+    {% for p in window %}
+      <li class="page-item {% if p == page %}active{% endif %}"><a class="page-link" href="?page={{ p }}">{{ p }}</a></li>
+    {% endfor %}
+    {% if window[-1] < pages - 1 %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+    {% if window[-1] < pages %}<li class="page-item"><a class="page-link" href="?page={{ pages }}">{{ pages }}</a></li>{% endif %}
+    <li class="page-item {% if page == pages %}disabled{% endif %}"><a class="page-link" href="?page={{ page + 1 }}"><i class="bi bi-chevron-right"></i></a></li>
+  </ul>
+</nav>
+{% endif %}

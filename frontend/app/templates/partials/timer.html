@@ -1,0 +1,52 @@
+{% set state = timer.state %}
+<div id="timer-panel" class="surface timer-card h-100" {% if oob %}hx-swap-oob="true"{% endif %}>
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+    {% if state == "work" %}
+      <span class="pill work"><span class="dot"></span> Working</span>
+    {% elif state == "break" %}
+      <span class="pill break"><span class="dot"></span> On break</span>
+    {% else %}
+      <span class="pill"><span class="dot"></span> Not working</span>
+    {% endif %}
+    {% if timer.work %}
+      <span class="tag">
+        {% if timer.project %}<span class="project-dot" style="background: {{ timer.project.color }}"></span>{{ timer.project.name }}
+        {% else %}<i class="bi bi-folder2"></i> No project{% endif %}
+      </span>
+    {% endif %}
+  </div>
+
+  <div class="clock {% if not timer.clock_start %}idle{% endif %}"
+       {% if timer.clock_start %}data-clock-start="{{ timer.clock_start }}" data-clock-offset="{{ timer.clock_offset }}"
+       data-server-time="{{ timer.server_time }}"{% endif %}>0:00:00</div>
+  <div class="timer-meta">
+    {% if state == "work" %}
+      Started {{ timer.work.starttime | localtime(tz, "%H:%M") }}{% if timer.all_break_time %} · {{ timer.all_break_time | hm }} on breaks{% endif %}
+    {% elif state == "break" %}
+      Break started {{ timer.clock_start | localtime(tz, "%H:%M") }} · work began {{ timer.work.starttime | localtime(tz, "%H:%M") }}
+    {% else %}
+      Ready when you are.
+    {% endif %}
+  </div>
+
+  <form hx-post="/timer" hx-target="#timer-panel" hx-swap="outerHTML" hx-disabled-elt="find button">
+    <div class="timer-actions">
+      {% if state == "free" %}
+        <button class="btn btn-work" name="action" value="start-work"><i class="bi bi-play-fill"></i> Start work</button>
+      {% elif state == "work" %}
+        <button class="btn btn-break" name="action" value="start-break"><i class="bi bi-cup-hot"></i> Take a break</button>
+        <button class="btn btn-home" name="action" value="end-work"><i class="bi bi-stop-fill"></i> Finish day</button>
+      {% else %}
+        <button class="btn btn-work" name="action" value="end-break"><i class="bi bi-play-fill"></i> Resume work</button>
+        <button class="btn btn-home" name="action" value="end-work"><i class="bi bi-stop-fill"></i> Finish day</button>
+      {% endif %}
+    </div>
+    <div class="timer-options">
+      <input class="form-control" type="text" name="comment" placeholder="What are you working on?"
+             value="{{ timer.work.comment if timer.work and timer.work.comment else '' }}">
+      <input class="form-control" type="time" name="time" title="Leave empty to use the current time">
+    </div>
+    <div class="form-text">Leave the time empty to use now.
+      <a href="#" hx-get="/forms/work" hx-target="#modal-content" class="ms-1">Add a past entry</a></div>
+  </form>
+</div>

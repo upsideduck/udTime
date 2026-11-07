@@ -1,0 +1,13 @@
+<div class="modal-header">
+  <h5 class="modal-title">Project: {{ target.name if target else "none" }}</h5>
+  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+  <p>The current period already belongs to <strong>{{ timer.project.name }}</strong>.
+    Change the project of the current period, or end it now and start a new period?</p>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+  <button class="btn btn-outline-primary" hx-post="/projects/{{ project }}/assign" hx-vals='{"mode": "newperiod"}'>New period</button>
+  <button class="btn btn-primary" hx-post="/projects/{{ project }}/assign" hx-vals='{"mode": "change"}'>Change</button>
+</div>

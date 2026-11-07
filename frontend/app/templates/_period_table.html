@@ -1,0 +1,56 @@
+{% macro absence(item, cls) %}
+  <span class="tag {{ cls }}">
+    <i class="bi bi-{{ 'dash-circle' if item.kind == 'againstworktime' else 'plus-circle' }}"></i>
+    {{ item.typelabel or "" }} {{ item.time_hms[:-3] }}
+    <span class="period-actions">
+      <a href="#" class="btn-icon" style="width:1.4rem;height:1.4rem" hx-get="/forms/absence/{{ item.kind }}?id={{ item.id }}" hx-target="#modal-content" title="Edit"><i class="bi bi-pencil"></i></a>
+      <a href="#" class="btn-icon danger" style="width:1.4rem;height:1.4rem" hx-delete="/items/{{ item.kind }}/{{ item.id }}" hx-confirm="Remove this entry?" title="Remove"><i class="bi bi-trash"></i></a>
+    </span>
+  </span>
+{% endmacro %}
+
+{% set t = detail.totals %}{% set period = "week" if detail.week is defined else "month" %}
+<div class="mb-4">{% include "partials/summary_tiles.html" %}</div>
+
+<div class="surface day-list">
+  {% for day in detail.days %}
+  <div class="day-row {% if day.isoweekday > 5 %}weekend{% endif %} {% if day.date == today %}today{% endif %}">
+    <div class="day-date">
+      <span class="dnum">{{ day.day }}</span>
+      <span class="dow">{{ day.weekday }}</span>
+    </div>
+    <div class="day-body">
+      {% for p in day.periods %}
+        <div class="period">
+          <span class="period-time">{{ p.start[:5] }} – {{ p.end[:5] }}</span>
+          {% for b in p.breaks %}
+            <a href="#" class="tag" hx-get="/forms/break?id={{ b.id }}" hx-target="#modal-content" title="Edit break">
+              <i class="bi bi-cup-hot"></i> {{ b.start }}–{{ b.end }}</a>
+          {% endfor %}
+          {% if p.comment %}<span class="period-comment" title="{{ p.comment }}">{{ p.comment }}</span>{% endif %}
+          <span class="period-actions">
+            <a href="#" class="btn-icon" hx-get="/forms/work?id={{ p.id }}" hx-target="#modal-content" title="Edit"><i class="bi bi-pencil"></i></a>
+            <a href="#" class="btn-icon" hx-get="/forms/break?parent={{ p.id }}" hx-target="#modal-content" title="Add break"><i class="bi bi-cup-hot"></i></a>
+            <a href="#" class="btn-icon danger" hx-delete="/items/work/{{ p.id }}" hx-confirm="Remove this work period and its breaks?" title="Remove"><i class="bi bi-trash"></i></a>
+          </span>
+        </div>
+      {% endfor %}
+      {% if day.againstworktime or day.asworktime %}
+        <div class="d-flex flex-wrap gap-2">
+          {% if day.againstworktime %}{{ absence(day.againstworktime, "success") }}{% endif %}
+          {% if day.asworktime %}{{ absence(day.asworktime, "accent") }}{% endif %}
+        </div>
+      {% endif %}
+      {% if not day.periods and not day.againstworktime and not day.asworktime %}
+        <span class="day-empty">—</span>
+      {% endif %}
+    </div>
+    <div class="day-total">
+      {% if day.periods %}<span class="h">{{ day.workeddec }} h</span><small>{{ day.worked[:-3] }}</small>{% endif %}
+    </div>
+    <div class="day-add">
+      <a href="#" class="btn-icon" hx-get="/forms/choice?start={{ day.date }}" hx-target="#modal-content" title="Add"><i class="bi bi-plus-lg"></i></a>
+    </div>
+  </div>
+  {% endfor %}
+</div>

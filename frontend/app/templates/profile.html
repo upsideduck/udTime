@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Profile - udTime{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Profile</h1>
+    <p class="page-subtitle">Your account and work schedule</p>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="surface">
+      <div class="surface-body d-flex align-items-center gap-3 border-bottom">
+        <span class="avatar-circle lg">
+          <img id="avatar" src="/avatar" alt="" onerror="this.remove()">
+          {{ (profile.firstname or profile.username)[:1] | upper }}
+        </span>
+        <div>
+          <div class="h5 fw-bold mb-0">{{ profile.firstname or "" }} {{ profile.lastname or "" }}</div>
+          <div class="text-muted">@{{ profile.username }}{% if profile.admin %} · <span class="tag accent">Admin</span>{% endif %}</div>
+        </div>
+      </div>
+      <div class="surface-body">
+        <div class="row g-4">
+          {% for label, value in [
+            ("Work week", (profile.dworkweek | hm) ~ " h"),
+            ("Days per week", profile.daysinworkweek),
+            ("Standard day", ((profile.dworkweek // (profile.daysinworkweek or 5)) | hm) ~ " h"),
+            ("Starting offset", profile.offset | hm),
+            ("Timezone", profile.timezone),
+            ("Member since", profile.registerdate | localtime(tz, "%d %b %Y")),
+            ("Statistics from", profile.statsstartdate | localtime(tz, "%d %b %Y")),
+          ] %}
+          <div class="col-6 col-md-4">
+            <div class="stat-label">{{ label }}</div>
+            <div class="fw-semibold mt-1">{{ value }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5 d-flex flex-column gap-4">
+    <div class="surface">
+      <div class="surface-header"><h2 class="surface-title">Avatar</h2></div>
+      <div class="surface-body">
+        <form hx-post="/profile/avatar" hx-encoding="multipart/form-data" class="d-flex gap-2">
+          <input class="form-control" type="file" name="file" accept="image/*" required>
+          <button class="btn btn-primary">Upload</button>
+        </form>
+        <div class="form-text">JPEG, PNG or GIF, max 20 kB.</div>
+      </div>
+    </div>
+    {% if profile.admin %}
+    <div class="surface">
+      <div class="surface-header"><h2 class="surface-title">Maintenance</h2></div>
+      <div class="surface-body">
+        <p class="small text-muted">Recalculate all cached week and month statistics since the statistics start date.</p>
+        <button class="btn btn-soft" hx-post="/admin/recompute" hx-disabled-elt="this"
+                hx-confirm="Recalculate all statistics? This can take a moment.">
+          <i class="bi bi-arrow-repeat"></i> Update stats</button>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  document.body.addEventListener("avatarChanged", () => location.reload());
+</script>
+{% endblock %}

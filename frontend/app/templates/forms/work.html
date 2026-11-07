@@ -1,0 +1,64 @@
+<form hx-post="/forms/work" hx-disabled-elt="find button[type=submit]">
+  <div class="modal-header">
+    <h5 class="modal-title">{{ "Edit work period" if work else "Add work period" }}</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  </div>
+  <div class="modal-body">
+    <input type="hidden" name="id" value="{{ work.id if work else '' }}">
+    <div class="row g-2 mb-3">
+      <div class="col-sm-6">
+        <label class="form-label">Start</label>
+        <input class="form-control" type="datetime-local" step="1" name="starttime" value="{{ start }}" required>
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label">End</label>
+        <input class="form-control" type="datetime-local" step="1" name="endtime" value="{{ end }}"
+               {% if work and not work.endtime %}disabled title="Period is running"{% else %}required{% endif %}>
+      </div>
+    </div>
+    <div class="row g-2 mb-3">
+      <div class="col-sm-8">
+        <label class="form-label">Comment</label>
+        <input class="form-control" name="comment" value="{{ work.comment if work and work.comment else '' }}">
+      </div>
+      <div class="col-sm-4">
+        <label class="form-label">Project</label>
+        <select class="form-select" name="project_id">
+          <option value="">none</option>
+          {% for p in projects %}
+            <option value="{{ p.id }}" {% if work and work.project_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    {% if work %}
+      <h6>Breaks</h6>
+      <table class="table table-sm">
+        {% for b in work.breaks %}
+          <tr>
+            <td>{{ b.starttime | localtime(tz, "%H:%M:%S") }} – {{ b.endtime | localtime(tz, "%H:%M:%S") }}</td>
+            <td>{{ b.comment or "" }}</td>
+            <td class="actions">
+              <a href="#" hx-get="/forms/break?id={{ b.id }}" hx-target="#modal-content" title="Edit"><i class="bi bi-pencil"></i></a>
+              <a href="#" hx-delete="/items/break/{{ b.id }}" hx-confirm="Remove this break?" title="Remove"><i class="bi bi-trash"></i></a>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td class="text-body-secondary">No breaks</td></tr>
+        {% endfor %}
+      </table>
+      {% if work.endtime %}
+        <button type="button" class="btn btn-sm btn-outline-secondary" hx-get="/forms/break?parent={{ work.id }}" hx-target="#modal-content">
+          <i class="bi bi-cup-hot"></i> Add break</button>
+      {% endif %}
+    {% endif %}
+  </div>
+  <div class="modal-footer">
+    {% if work %}
+      <button type="button" class="btn btn-outline-danger me-auto" hx-delete="/items/work/{{ work.id }}"
+              hx-confirm="Remove this work period and its breaks?">Delete</button>
+    {% endif %}
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>

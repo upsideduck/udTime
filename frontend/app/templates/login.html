@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Sign in - udTime{% endblock %}
+{% block auth %}
+<div class="surface auth-card">
+  <div class="brand mb-4"><span class="brand-mark"><i class="bi bi-clock-history"></i></span> udTime</div>
+  <h1 class="h4 fw-bold mb-1">Welcome back</h1>
+  <p class="text-muted mb-4">Sign in to track your time.</p>
+  {% if error %}<div class="alert alert-danger py-2 small">{{ error }}</div>{% endif %}
+  <form method="post" action="/login">
+    <div class="mb-3">
+      <label class="form-label" for="username">Username</label>
+      <input class="form-control form-control-lg" id="username" name="username" value="{{ username or '' }}" required autofocus>
+    </div>
+    <div class="mb-4">
+      <label class="form-label" for="password">Password</label>
+      <input class="form-control form-control-lg" id="password" type="password" name="password" required>
+    </div>
+    <button class="btn btn-primary btn-lg w-100">Sign in</button>
+  </form>
+  {% if sso_enabled %}
+  <div class="auth-divider"><span>or</span></div>
+  <a class="btn btn-soft btn-lg w-100 d-flex align-items-center justify-content-center gap-2" href="/sso">
+    <i class="bi bi-shield-lock"></i> Sign in with {{ sso_label }}</a>
+  {% endif %}
+  <p class="mt-4 mb-0 small text-center text-muted">No account? <a href="/register">Create one</a></p>
+</div>
+{% endblock %}
