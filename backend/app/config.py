@@ -1,12 +1,15 @@
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Every setting is read from UDTIME2_<NAME>, e.g. UDTIME2_JWT_SECRET for jwt_secret
+ENV_PREFIX = "UDTIME2_"
+
 INSECURE_SECRETS = {"", "change-me", "change-me-too", "secret"}
 MIN_SECRET_LENGTH = 16
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_prefix=ENV_PREFIX, env_file=".env", extra="ignore")
 
     database_url: str = "mysql+pymysql://udtime:udtime@localhost:3306/udTime"
     jwt_secret: str = ""
@@ -24,12 +27,12 @@ class Settings(BaseSettings):
             value = getattr(self, name)
             if value in INSECURE_SECRETS or len(value) < MIN_SECRET_LENGTH:
                 raise ValueError(
-                    f"{name.upper()} must be set to a random value of at least {MIN_SECRET_LENGTH} characters "
+                    f"{ENV_PREFIX}{name.upper()} must be set to a random value of at least {MIN_SECRET_LENGTH} characters "
                     '(e.g. python3 -c "import secrets; print(secrets.token_urlsafe(48))")'
                 )
         if not self.frontend_service_secret.isascii():
             # It is sent as an HTTP header, which only allows ASCII
-            raise ValueError("FRONTEND_SERVICE_SECRET may only contain ASCII characters")
+            raise ValueError(f"{ENV_PREFIX}FRONTEND_SERVICE_SECRET may only contain ASCII characters")
         return self
 
 

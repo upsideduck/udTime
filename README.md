@@ -34,23 +34,23 @@ Every push to `main` builds both images in GitHub Actions ([.github/workflows/do
 - `ghcr.io/upsideduck/udtime2-backend`
 - `ghcr.io/upsideduck/udtime2-frontend`
 
-Each build is tagged `latest` and `YYYYMMDD_HHMMSS` (UTC, shared by both images of a run). It can also be started by hand from the Actions tab. To run them with compose, set `UDTIME_IMAGE_PREFIX=ghcr.io/upsideduck/` in `.env`. While the packages are private, `docker login ghcr.io` first with a personal access token that has `read:packages`.
+Each build is tagged `latest` and `YYYYMMDD_HHMMSS` (UTC, shared by both images of a run). It can also be started by hand from the Actions tab. To run them with compose, set `UDTIME2_IMAGE_PREFIX=ghcr.io/upsideduck/` in `.env`. While the packages are private, `docker login ghcr.io` first with a personal access token that has `read:packages`.
 
-- **Uploading:** builds for `DOCKER_PLATFORMS` (default `linux/amd64`) and pushes to hub.docker.com.
+- **Uploading:** builds for `UDTIME2_DOCKER_PLATFORMS` (default `linux/amd64`) and pushes to hub.docker.com.
 - **Local builds:** load the image into your local Docker for your own platform.
 
 ### Running with Docker Compose
 
 ```bash
-cp .env.example .env             # secrets, DATABASE_URL, image prefix/tag (git-ignored)
+cp .env.example .env             # secrets, UDTIME2_DATABASE_URL, image prefix/tag (git-ignored)
 docker compose up -d             # backend + frontend against your existing database
 docker compose --profile db up -d   # also start a bundled MariaDB (schema + lookups loaded on first start)
 docker compose pull && docker compose up -d   # update to the newest pushed images
 ```
 
-- **Frontend:** published on `FRONTEND_PORT` (default 8001) for Nginx Proxy Manager.
+- **Frontend:** published on `UDTIME2_FRONTEND_PORT` (default 8001) for Nginx Proxy Manager.
 - **Backend:** reachable only inside the `udtime2` network.
-- **Missing secrets:** compose refuses to start if `JWT_SECRET`, `FRONTEND_SERVICE_SECRET`, `SESSION_SECRET` or `DATABASE_URL` is empty.
+- **Missing secrets:** compose refuses to start if `UDTIME2_JWT_SECRET`, `UDTIME2_FRONTEND_SERVICE_SECRET`, `UDTIME2_SESSION_SECRET` or `UDTIME2_DATABASE_URL` is empty.
 
 Setting up the reverse proxy and SSO is covered in [docs/authentik-nginx-proxy-manager.md](docs/authentik-nginx-proxy-manager.md).
 
@@ -66,7 +66,7 @@ Setting up the reverse proxy and SSO is covered in [docs/authentik-nginx-proxy-m
 
 **API keys.** Existing keys keep working, and their action-name scopes are mapped to the new scopes. Create new keys with `python -m app.cli create-apikey`.
 
-**Delete tombstones.** The `deleted` table used to be filled by database triggers, which [udtime.sql](udtime.sql) does not contain. The API now writes these rows itself. If the triggers still exist in your database, set `DB_HAS_DELETE_TRIGGERS=true`.
+**Delete tombstones.** The `deleted` table used to be filled by database triggers, which [udtime.sql](udtime.sql) does not contain. The API now writes these rows itself. If the triggers still exist in your database, set `UDTIME2_DB_HAS_DELETE_TRIGGERS=true`.
 
 **Statistics.** After deploying, an admin should press *Update stats* on the profile page once. The same is available as `python -m app.cli recompute-stats --user <name>`. The recompute applies the corrected timezone and ISO week handling to all cached week and month stats.
 
@@ -74,7 +74,7 @@ Setting up the reverse proxy and SSO is covered in [docs/authentik-nginx-proxy-m
 
 - **Ownership checks.** Every update and delete checks that the row belongs to the logged-in user.
 - **Timezones.** The user's timezone is applied everywhere, including API calls. Week and month boundaries are local midnights and use ISO years.
-- **Registration.** It works without being logged in when `ALLOW_REGISTRATION=true`, and it sets every required column.
+- **Registration.** It works without being logged in when `UDTIME2_ALLOW_REGISTRATION=true`, and it sets every required column.
 - **Project colours.** Projects get a colour, and it is shown in the GUI.
 - **Work schedules.** The work week and its workdays can change over time (Profile → Change schedule). Targets are counted per day with the schedule valid that day, for weeks and months alike. Absence ranges fill only workdays. With a 5-day week this gives exactly the PHP numbers. `userdb.dworkweek` and `daysinworkweek` always hold today's schedule.
 - **Removed.** XML output, the Redis publish, the long-poll `events.php`, the unused `edit.php` forms and the test scripts.

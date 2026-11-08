@@ -6,7 +6,7 @@ schema ([../udtime.sql](../udtime.sql)) without changing any tables.
 ## Run
 
 ```bash
-cp .env.example .env        # set DATABASE_URL, JWT_SECRET, FRONTEND_SERVICE_SECRET
+cp .env.example .env        # set UDTIME2_DATABASE_URL, UDTIME2_JWT_SECRET, UDTIME2_FRONTEND_SERVICE_SECRET
 uv sync
 uv run uvicorn app.main:app --port 8000
 ```
@@ -43,7 +43,7 @@ Timestamps in request bodies can be any of:
 
 | Area | Endpoints |
 | --- | --- |
-| Auth | `POST /auth/login`, `GET /auth/me`, `POST /users` (when `ALLOW_REGISTRATION=true`), `PATCH /users/me` (work week, days, offset, timezone), `PUT /users/me/password` (login token only), `GET/PUT /users/me/avatar` |
+| Auth | `POST /auth/login`, `GET /auth/me`, `POST /users` (when `UDTIME2_ALLOW_REGISTRATION=true`), `PATCH /users/me` (work week, days, offset, timezone), `PUT /users/me/password` (login token only), `GET/PUT /users/me/avatar` |
 | Timer | `GET /timer`, `POST /timer/start-work`, `/timer/start-break`, `/timer/end-break`, `/timer/end-work`, `/timer/switch-project` |
 | Work | `GET /work?year=&week=` (or `year=&month=`, or `from=&to=`), `POST /work`, `GET/PATCH/DELETE /work/{id}`, `PUT /work/{id}/project` |
 | Breaks | `POST /breaks` (the parent is the work period containing it), `GET/PATCH/DELETE /breaks/{id}` |
@@ -72,10 +72,10 @@ The timer's start and end calls are idempotent on the timestamp. An offline clie
 
 | Variable | Meaning |
 | --- | --- |
-| `DATABASE_URL` | SQLAlchemy URL, e.g. `mysql+pymysql://user:pass@host:3306/udTime` |
-| `JWT_SECRET` / `JWT_EXPIRE_MINUTES` | Signing secret (at least 16 random characters, required) and token lifetime (default 720 = 12 h) |
-| `FRONTEND_SERVICE_SECRET` | Shared with the frontend; protects the trusted (SSO) login and the client-IP header used for rate limiting. At least 16 characters. |
-| `ALLOW_REGISTRATION` | Allows `POST /users` |
-| `DB_HAS_DELETE_TRIGGERS` | Set to `true` if the database still has the old `BEFORE DELETE` triggers that fill `deleted`. Otherwise the API writes the tombstones itself. |
-| `DEFAULT_TIMEZONE` | Used when a user's `timezone` is empty or invalid |
-| `API_DOCS` | Serve the interactive docs at `/docs` (default `true`; `false` in the Docker image) |
+| `UDTIME2_DATABASE_URL` | SQLAlchemy URL, e.g. `mysql+pymysql://user:pass@host:3306/udTime` |
+| `UDTIME2_JWT_SECRET` / `UDTIME2_JWT_EXPIRE_MINUTES` | Signing secret (at least 16 random characters, required) and token lifetime (default 720 = 12 h) |
+| `UDTIME2_FRONTEND_SERVICE_SECRET` | Shared with the frontend; protects the trusted (SSO) login and the client-IP header used for rate limiting. At least 16 characters. |
+| `UDTIME2_ALLOW_REGISTRATION` | Allows `POST /users` |
+| `UDTIME2_DB_HAS_DELETE_TRIGGERS` | Set to `true` if the database still has the old `BEFORE DELETE` triggers that fill `deleted`. Otherwise the API writes the tombstones itself. |
+| `UDTIME2_DEFAULT_TIMEZONE` | Used when a user's `timezone` is empty or invalid |
+| `UDTIME2_API_DOCS` | Serve the interactive docs at `/docs` (default `true`; `false` in the Docker image) |

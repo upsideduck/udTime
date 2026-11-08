@@ -5,25 +5,25 @@ The web GUI for udTime. It is a FastAPI app that renders Jinja2 templates with H
 ## Run
 
 ```bash
-cp .env.example .env        # set BACKEND_URL, SESSION_SECRET, FRONTEND_SERVICE_SECRET
+cp .env.example .env        # set UDTIME2_BACKEND_URL, UDTIME2_SESSION_SECRET, UDTIME2_FRONTEND_SERVICE_SECRET
 uv sync
 uv run uvicorn app.main:app --port 8001
 ```
 
-The backend must be running at `BACKEND_URL`.
+The backend must be running at `UDTIME2_BACKEND_URL`.
 
 ## Login
 
 - **Login form:** `/login` checks the credentials against the backend. The access token is kept in a signed session cookie.
-- **Single sign-on (OpenID Connect):** with `OIDC_ISSUER`, `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET` set, the login page shows a **Sign in with udauth** button (label from `SSO_LABEL`).
+- **Single sign-on (OpenID Connect):** with `UDTIME2_OIDC_ENABLED=true` and `UDTIME2_OIDC_ISSUER`, `UDTIME2_OIDC_CLIENT_ID` and `UDTIME2_OIDC_CLIENT_SECRET` set, the login page shows a **Sign in with udauth** button (label from `UDTIME2_SSO_LABEL`).
   - `/sso` starts the Authorization Code + PKCE flow, and `/sso/callback` verifies the ID token (signature, issuer, audience, expiry, nonce, state).
   - The user is then signed in through the backend's service-secret protected trusted login.
   - Logout also ends the session at the identity provider.
 
   See [docs/authentik-nginx-proxy-manager.md](../docs/authentik-nginx-proxy-manager.md) for setting up Authentik and Nginx Proxy Manager.
 - **Security:**
-  - `SESSION_SECRET` and `FRONTEND_SERVICE_SECRET` must be random values of at least 16 characters, or the app refuses to start.
-  - Responses carry a strict Content-Security-Policy (no inline scripts), `X-Frame-Options: DENY`, and HSTS when `SESSION_HTTPS_ONLY=true`.
+  - `UDTIME2_SESSION_SECRET` and `UDTIME2_FRONTEND_SERVICE_SECRET` must be random values of at least 16 characters, or the app refuses to start.
+  - Responses carry a strict Content-Security-Policy (no inline scripts), `X-Frame-Options: DENY`, and HSTS when `UDTIME2_SESSION_HTTPS_ONLY=true`.
 
 ## Pages
 

@@ -24,11 +24,11 @@ if [[ -f docker.env ]]; then
   source docker.env
   set +a
 fi
-DOCKERHUB_USERNAME="${DOCKERHUB_USERNAME:-}"
-DOCKERHUB_TOKEN="${DOCKERHUB_TOKEN:-}"
-DOCKERHUB_NAMESPACE="${DOCKERHUB_NAMESPACE:-$DOCKERHUB_USERNAME}"
-[[ "$DOCKERHUB_NAMESPACE" == "your-dockerhub-user" ]] && DOCKERHUB_NAMESPACE=""  # template not filled in
-DOCKER_PLATFORMS="${DOCKER_PLATFORMS:-linux/amd64}"
+UDTIME2_DOCKERHUB_USERNAME="${UDTIME2_DOCKERHUB_USERNAME:-}"
+UDTIME2_DOCKERHUB_TOKEN="${UDTIME2_DOCKERHUB_TOKEN:-}"
+UDTIME2_DOCKERHUB_NAMESPACE="${UDTIME2_DOCKERHUB_NAMESPACE:-$UDTIME2_DOCKERHUB_USERNAME}"
+[[ "$UDTIME2_DOCKERHUB_NAMESPACE" == "your-dockerhub-user" ]] && UDTIME2_DOCKERHUB_NAMESPACE=""  # template not filled in
+UDTIME2_DOCKER_PLATFORMS="${UDTIME2_DOCKER_PLATFORMS:-linux/amd64}"
 
 command -v docker >/dev/null || fail "docker is not installed"
 docker info >/dev/null 2>&1 || fail "the Docker daemon is not running"
@@ -76,9 +76,9 @@ case "$TARGET" in
 esac
 
 if [[ "$PUSH" == "yes" ]]; then
-  [[ -n "$DOCKERHUB_USERNAME" && -n "$DOCKERHUB_TOKEN" ]] \
-    || fail "DOCKERHUB_USERNAME and DOCKERHUB_TOKEN must be set in docker.env to upload"
-  [[ "$DOCKERHUB_TOKEN" != dckr_pat_xxxx* ]] || fail "docker.env still contains the example token"
+  [[ -n "$UDTIME2_DOCKERHUB_USERNAME" && -n "$UDTIME2_DOCKERHUB_TOKEN" ]] \
+    || fail "UDTIME2_DOCKERHUB_USERNAME and UDTIME2_DOCKERHUB_TOKEN must be set in docker.env to upload"
+  [[ "$UDTIME2_DOCKERHUB_TOKEN" != dckr_pat_xxxx* ]] || fail "docker.env still contains the example token"
 fi
 
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
@@ -86,8 +86,8 @@ REVISION="$(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
 CREATED="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 image_name() {
-  if [[ -n "$DOCKERHUB_NAMESPACE" ]]; then
-    echo "$DOCKERHUB_NAMESPACE/udtime2-$1"
+  if [[ -n "$UDTIME2_DOCKERHUB_NAMESPACE" ]]; then
+    echo "$UDTIME2_DOCKERHUB_NAMESPACE/udtime2-$1"
   else
     echo "udtime2-$1"
   fi
@@ -102,8 +102,8 @@ for component in $COMPONENTS; do
   echo "  $(image_name "$component"):$TIMESTAMP"
 done
 if [[ "$PUSH" == "yes" ]]; then
-  echo "  Upload:    yes, to hub.docker.com as $DOCKERHUB_USERNAME"
-  echo "  Platforms: $DOCKER_PLATFORMS"
+  echo "  Upload:    yes, to hub.docker.com as $UDTIME2_DOCKERHUB_USERNAME"
+  echo "  Platforms: $UDTIME2_DOCKER_PLATFORMS"
 else
   echo "  Upload:    no (loaded into the local Docker image store)"
   echo "  Platform:  local ($(docker version --format '{{.Server.Os}}/{{.Server.Arch}}'))"
@@ -125,15 +125,15 @@ fi
 # --- build ------------------------------------------------------------------------------
 
 if [[ "$PUSH" == "yes" ]]; then
-  info "Logging in to Docker Hub as $DOCKERHUB_USERNAME"
-  printf '%s' "$DOCKERHUB_TOKEN" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin >/dev/null
+  info "Logging in to Docker Hub as $UDTIME2_DOCKERHUB_USERNAME"
+  printf '%s' "$UDTIME2_DOCKERHUB_TOKEN" | docker login --username "$UDTIME2_DOCKERHUB_USERNAME" --password-stdin >/dev/null
 
   # Cross-platform builds with --push need a docker-container builder
   if ! docker buildx inspect udtime-builder >/dev/null 2>&1; then
     info "Creating buildx builder 'udtime-builder'"
     docker buildx create --name udtime-builder --driver docker-container >/dev/null
   fi
-  BUILD_ARGS=(--builder udtime-builder --platform "$DOCKER_PLATFORMS" --push)
+  BUILD_ARGS=(--builder udtime-builder --platform "$UDTIME2_DOCKER_PLATFORMS" --push)
 else
   BUILD_ARGS=(--load)
 fi

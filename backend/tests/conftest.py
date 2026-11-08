@@ -2,8 +2,8 @@ import datetime as dt
 import hashlib
 import os
 
-os.environ.setdefault("JWT_SECRET", "test-jwt-secret-0123456789abcdef")
-os.environ.setdefault("FRONTEND_SERVICE_SECRET", "test-service-secret-0123456789")
+os.environ.setdefault("UDTIME2_JWT_SECRET", "test-jwt-secret-0123456789abcdef")
+os.environ.setdefault("UDTIME2_FRONTEND_SERVICE_SECRET", "test-service-secret-0123456789")
 from zoneinfo import ZoneInfo
 
 import pytest

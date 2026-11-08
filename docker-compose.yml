@@ -1,11 +1,11 @@
 # udTime 2.0: production stack
 #
-#   cp .env.example .env              # fill in secrets and DATABASE_URL
+#   cp .env.example .env              # fill in secrets and UDTIME2_DATABASE_URL
 #   docker compose up -d              # backend + frontend, using your existing MySQL/MariaDB
 #   docker compose --profile db up -d # also start a bundled MariaDB (fresh install / testing)
 #
 # Images come from ghcr.io/upsideduck (built by GitHub Actions on push to main) or Docker Hub
-# (./build-images.sh), picked by UDTIME_IMAGE_PREFIX; `docker compose build` builds them locally.
+# (./build-images.sh), picked by UDTIME2_IMAGE_PREFIX; `docker compose build` builds them locally.
 
 name: udtime2
 
@@ -15,22 +15,22 @@ x-restart: &restart
 services:
   backend:
     <<: *restart
-    image: ${UDTIME_IMAGE_PREFIX:-}udtime2-backend:${UDTIME_TAG:-latest}
+    image: ${UDTIME2_IMAGE_PREFIX:-}udtime2-backend:${UDTIME2_TAG:-latest}
     build: ./backend
     container_name: udtime2-backend
     environment:
-      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL in .env}
-      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
-      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-720}
-      FRONTEND_SERVICE_SECRET: ${FRONTEND_SERVICE_SECRET:?set FRONTEND_SERVICE_SECRET in .env}
-      ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-false}
-      DB_HAS_DELETE_TRIGGERS: ${DB_HAS_DELETE_TRIGGERS:-false}
-      DEFAULT_TIMEZONE: ${DEFAULT_TIMEZONE:-Europe/Stockholm}
-      API_DOCS: ${API_DOCS:-false}
+      UDTIME2_DATABASE_URL: ${UDTIME2_DATABASE_URL:?set UDTIME2_DATABASE_URL in .env}
+      UDTIME2_JWT_SECRET: ${UDTIME2_JWT_SECRET:?set UDTIME2_JWT_SECRET in .env}
+      UDTIME2_JWT_EXPIRE_MINUTES: ${UDTIME2_JWT_EXPIRE_MINUTES:-720}
+      UDTIME2_FRONTEND_SERVICE_SECRET: ${UDTIME2_FRONTEND_SERVICE_SECRET:?set UDTIME2_FRONTEND_SERVICE_SECRET in .env}
+      UDTIME2_ALLOW_REGISTRATION: ${UDTIME2_ALLOW_REGISTRATION:-false}
+      UDTIME2_DB_HAS_DELETE_TRIGGERS: ${UDTIME2_DB_HAS_DELETE_TRIGGERS:-false}
+      UDTIME2_DEFAULT_TIMEZONE: ${UDTIME2_DEFAULT_TIMEZONE:-Europe/Stockholm}
+      UDTIME2_API_DOCS: ${UDTIME2_API_DOCS:-false}
     # Not published: only the frontend talks to it. To expose the API for scripts/API keys,
     # uncomment and put it behind the proxy (see docs/authentik-nginx-proxy-manager.md).
     # ports:
-    #   - "${BACKEND_BIND:-0.0.0.0}:${BACKEND_PORT:-8000}:8000"
+    #   - "${UDTIME2_BACKEND_BIND:-0.0.0.0}:${UDTIME2_BACKEND_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -39,43 +39,44 @@ services:
 
   frontend:
     <<: *restart
-    image: ${UDTIME_IMAGE_PREFIX:-}udtime2-frontend:${UDTIME_TAG:-latest}
+    image: ${UDTIME2_IMAGE_PREFIX:-}udtime2-frontend:${UDTIME2_TAG:-latest}
     build: ./frontend
     container_name: udtime2-frontend
     environment:
-      BACKEND_URL: http://backend:8000
-      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
-      SESSION_HTTPS_ONLY: ${SESSION_HTTPS_ONLY:-true}
-      FRONTEND_SERVICE_SECRET: ${FRONTEND_SERVICE_SECRET:?set FRONTEND_SERVICE_SECRET in .env}
-      SESSION_MAX_AGE: ${SESSION_MAX_AGE:-43200}
-      OIDC_ISSUER: ${OIDC_ISSUER:-}
-      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
-      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
-      OIDC_REDIRECT_URI: ${OIDC_REDIRECT_URI:-}
-      OIDC_SCOPES: ${OIDC_SCOPES:-openid profile email}
-      OIDC_USERNAME_CLAIM: ${OIDC_USERNAME_CLAIM:-preferred_username}
-      SSO_LABEL: ${SSO_LABEL:-udauth}
-      DEFAULT_TIMEZONE: ${DEFAULT_TIMEZONE:-Europe/Stockholm}
-      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+      UDTIME2_BACKEND_URL: http://backend:8000
+      UDTIME2_SESSION_SECRET: ${UDTIME2_SESSION_SECRET:?set UDTIME2_SESSION_SECRET in .env}
+      UDTIME2_SESSION_HTTPS_ONLY: ${UDTIME2_SESSION_HTTPS_ONLY:-true}
+      UDTIME2_FRONTEND_SERVICE_SECRET: ${UDTIME2_FRONTEND_SERVICE_SECRET:?set UDTIME2_FRONTEND_SERVICE_SECRET in .env}
+      UDTIME2_SESSION_MAX_AGE: ${UDTIME2_SESSION_MAX_AGE:-43200}
+      UDTIME2_OIDC_ENABLED: ${UDTIME2_OIDC_ENABLED:-false}
+      UDTIME2_OIDC_ISSUER: ${UDTIME2_OIDC_ISSUER:-}
+      UDTIME2_OIDC_CLIENT_ID: ${UDTIME2_OIDC_CLIENT_ID:-}
+      UDTIME2_OIDC_CLIENT_SECRET: ${UDTIME2_OIDC_CLIENT_SECRET:-}
+      UDTIME2_OIDC_REDIRECT_URI: ${UDTIME2_OIDC_REDIRECT_URI:-}
+      UDTIME2_OIDC_SCOPES: ${UDTIME2_OIDC_SCOPES:-openid profile email}
+      UDTIME2_OIDC_USERNAME_CLAIM: ${UDTIME2_OIDC_USERNAME_CLAIM:-preferred_username}
+      UDTIME2_SSO_LABEL: ${UDTIME2_SSO_LABEL:-udauth}
+      UDTIME2_DEFAULT_TIMEZONE: ${UDTIME2_DEFAULT_TIMEZONE:-Europe/Stockholm}
+      UDTIME2_FORWARDED_ALLOW_IPS: ${UDTIME2_FORWARDED_ALLOW_IPS:-127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
     ports:
-      - "${FRONTEND_BIND:-0.0.0.0}:${FRONTEND_PORT:-8001}:8001"
+      - "${UDTIME2_FRONTEND_BIND:-0.0.0.0}:${UDTIME2_FRONTEND_PORT:-8001}:8001"
     depends_on:
       backend:
         condition: service_healthy
     networks: [udtime]
 
   # Optional bundled database: `docker compose --profile db up -d`
-  # Then use DATABASE_URL=mysql+pymysql://udtime:<MARIADB_PASSWORD>@db:3306/udTime
+  # Then use UDTIME2_DATABASE_URL=mysql+pymysql://udtime:<UDTIME2_MARIADB_PASSWORD>@db:3306/udTime
   db:
     <<: *restart
     profiles: [db]
     image: mariadb:11.4
     container_name: udtime2-db
     environment:
-      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-}
+      MARIADB_ROOT_PASSWORD: ${UDTIME2_MARIADB_ROOT_PASSWORD:-}
       MARIADB_DATABASE: udTime
       MARIADB_USER: udtime
-      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-}
+      MARIADB_PASSWORD: ${UDTIME2_MARIADB_PASSWORD:-}
     volumes:
       - db-data:/var/lib/mysql
       # Only run on first start (empty volume): schema + lookup values

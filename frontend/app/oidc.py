@@ -104,7 +104,7 @@ class OIDCClient:
                 raise OIDCError(f"Unsupported token algorithm {algorithm}")
             if algorithm == "HS256":
                 if not settings.oidc_client_secret:
-                    raise OIDCError("HS256 tokens need OIDC_CLIENT_SECRET")
+                    raise OIDCError("HS256 tokens need UDTIME2_OIDC_CLIENT_SECRET")
                 key = settings.oidc_client_secret
             else:
                 key = await self._signing_key(header.get("kid"))

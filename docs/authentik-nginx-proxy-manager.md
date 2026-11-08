@@ -17,7 +17,7 @@ Browser ──https──▶ Nginx Proxy Manager ──▶ udtime2-frontend :800
 1. The user clicks **Sign in with udauth**. The frontend (`/sso`) redirects to Authentik using the Authorization Code flow with PKCE, a one-time `state` and a `nonce`.
 2. The user signs in to Authentik, which redirects back to `https://time.example.com/sso/callback?code=…`.
 3. The frontend exchanges the code for an ID token, server to server. It then verifies the token's **signature** (Authentik's published keys), **issuer**, **audience** (your client ID), **expiry**, and the **nonce** and **state** from step 1.
-4. The frontend reads the username from the `preferred_username` claim. It signs the user in through the backend's trusted login, which is protected by `FRONTEND_SERVICE_SECRET`.
+4. The frontend reads the username from the `preferred_username` claim. It signs the user in through the backend's trusted login, which is protected by `UDTIME2_FRONTEND_SERVICE_SECRET`.
 5. **Sign out** clears the udTime session and redirects to Authentik's end-session endpoint, which signs the user out of Authentik too.
 
 The **Authentik username must equal `userdb.username`** in udTime. A user without a matching account sees "… has no udTime account".
@@ -59,7 +59,7 @@ Go to **Applications → Applications → Create**.
 
 Optional: bind a group (e.g. `udtime-users`) under **Policy / Group / User Bindings**, so only its members can use udTime.
 
-The provider's **OpenID Configuration Issuer** is shown on the provider page, e.g. `https://auth.example.com/application/o/udtime/`. Use that value as `OIDC_ISSUER`.
+The provider's **OpenID Configuration Issuer** is shown on the provider page, e.g. `https://auth.example.com/application/o/udtime/`. Use that value as `UDTIME2_OIDC_ISSUER`.
 
 ---
 
@@ -70,21 +70,22 @@ Put these in the root `.env` used by `docker-compose.yml` (see `.env.example`):
 ```ini
 # Secrets: random values of at least 16 characters; the apps refuse to start otherwise.
 # python3 -c "import secrets; print(secrets.token_urlsafe(48))"
-JWT_SECRET=...
-FRONTEND_SERVICE_SECRET=...
-SESSION_SECRET=...
+UDTIME2_JWT_SECRET=...
+UDTIME2_FRONTEND_SERVICE_SECRET=...
+UDTIME2_SESSION_SECRET=...
 
-SESSION_HTTPS_ONLY=true
+UDTIME2_SESSION_HTTPS_ONLY=true
 
-OIDC_ISSUER=https://auth.example.com/application/o/udtime/
-OIDC_CLIENT_ID=<client id from 1.1>
-OIDC_CLIENT_SECRET=<client secret from 1.1>
+UDTIME2_OIDC_ENABLED=true
+UDTIME2_OIDC_ISSUER=https://auth.example.com/application/o/udtime/
+UDTIME2_OIDC_CLIENT_ID=<client id from 1.1>
+UDTIME2_OIDC_CLIENT_SECRET=<client secret from 1.1>
 # Only needed if the public URL can't be derived from the proxy headers:
-OIDC_REDIRECT_URI=https://time.example.com/sso/callback
-SSO_LABEL=udauth
+UDTIME2_OIDC_REDIRECT_URI=https://time.example.com/sso/callback
+UDTIME2_SSO_LABEL=udauth
 ```
 
-Leave `OIDC_ISSUER` empty to disable SSO. The button then disappears and only password login remains.
+Set `UDTIME2_OIDC_ENABLED=false` to turn SSO off without removing the other settings. The button then disappears and only password login remains. With it set to `true`, the frontend won't start until `UDTIME2_OIDC_ISSUER` and `UDTIME2_OIDC_CLIENT_ID` are filled in.
 
 The frontend container must be able to reach Authentik's public URL, for the discovery document, the published keys and the token endpoint.
 
@@ -110,10 +111,10 @@ proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 udTime limits failed logins itself: 10 per username and 30 per IP within 15 minutes. If you want an extra limit at the proxy, add a `limit_req_zone` in NPM's custom http config and a `limit_req` for `location = /login`.
 
 **Keep the frontend port private.** Only NPM should reach port 8001.
-- **If NPM runs in Docker on the same host:** attach the frontend to NPM's network (see the comment in `docker-compose.yml`) and set `FRONTEND_BIND=127.0.0.1`, or remove the `ports:` mapping.
+- **If NPM runs in Docker on the same host:** attach the frontend to NPM's network (see the comment in `docker-compose.yml`) and set `UDTIME2_FRONTEND_BIND=127.0.0.1`, or remove the `ports:` mapping.
 - **Otherwise:** firewall the port so only NPM's IP can connect.
 
-`FORWARDED_ALLOW_IPS` defaults to private networks. Set it to NPM's IP if you can.
+`UDTIME2_FORWARDED_ALLOW_IPS` defaults to private networks. Set it to NPM's IP if you can.
 
 ---
 
@@ -151,11 +152,11 @@ docker exec -it udtime2-backend python -m app.cli create-apikey --user <name> --
 
 | Symptom | Cause / fix |
 | --- | --- |
-| "Single sign-on is not configured" | `OIDC_ISSUER` / `OIDC_CLIENT_ID` are empty. Restart after setting them. |
-| "Could not reach the identity provider" | The frontend container can't resolve or reach `OIDC_ISSUER`. Check DNS and firewall from inside the container. |
-| Authentik: "Redirect URI Error" | The redirect URI in the provider must exactly match `https://time.example.com/sso/callback`. Set `OIDC_REDIRECT_URI` if udTime builds an `http://` URL. |
-| `http://` redirect URI / cookie not kept | NPM must send `X-Forwarded-Proto`, and NPM's IP must be covered by `FORWARDED_ALLOW_IPS`. |
-| "Invalid sign-in token (Audience doesn't match)" | `OIDC_CLIENT_ID` differs from the provider's client ID. |
+| "Single sign-on is not configured" | `UDTIME2_OIDC_ENABLED` is not `true`. Restart after setting it. |
+| "Could not reach the identity provider" | The frontend container can't resolve or reach `UDTIME2_OIDC_ISSUER`. Check DNS and firewall from inside the container. |
+| Authentik: "Redirect URI Error" | The redirect URI in the provider must exactly match `https://time.example.com/sso/callback`. Set `UDTIME2_OIDC_REDIRECT_URI` if udTime builds an `http://` URL. |
+| `http://` redirect URI / cookie not kept | NPM must send `X-Forwarded-Proto`, and NPM's IP must be covered by `UDTIME2_FORWARDED_ALLOW_IPS`. |
+| "Invalid sign-in token (Audience doesn't match)" | `UDTIME2_OIDC_CLIENT_ID` differs from the provider's client ID. |
 | "… has no udTime account" | The Authentik username doesn't match any `userdb.username`. |
-| "The identity provider sent no 'preferred_username' claim" | Add the `profile` scope mapping to the provider, or change `OIDC_USERNAME_CLAIM`. |
-| "Sign-in expired or was not started here" | The sign-in took more than 10 minutes, or the session cookie was lost. Check `SESSION_HTTPS_ONLY` against http/https. |
+| "The identity provider sent no 'preferred_username' claim" | Add the `profile` scope mapping to the provider, or change `UDTIME2_OIDC_USERNAME_CLAIM`. |
+| "Sign-in expired or was not started here" | The sign-in took more than 10 minutes, or the session cookie was lost. Check `UDTIME2_SESSION_HTTPS_ONLY` against http/https. |
