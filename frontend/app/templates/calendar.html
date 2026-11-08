@@ -22,12 +22,12 @@
   <div id="calendar" data-view="{{ view }}" data-date="{{ request.query_params.get('date', '') }}"></div>
 </div>
 <div class="d-flex flex-wrap gap-3 mt-3 small text-muted">
-  <span><span class="project-dot" style="background:#4f46e5"></span> Work</span>
-  <span><span class="project-dot" style="background:#f59e0b"></span> Break</span>
-  <span><span class="project-dot" style="background:#10b981"></span> Reduced work time</span>
-  <span><span class="project-dot" style="background:#8b5cf6"></span> As work time</span>
+  <span><span class="legend-dot work"></span> Work</span>
+  <span><span class="legend-dot break"></span> Break</span>
+  <span><span class="legend-dot againstworktime"></span> Reduced work time</span>
+  <span><span class="legend-dot asworktime"></span> As work time</span>
 </div>
 {% endblock %}
 {% block scripts %}
-<script src="/static/calendar.js"></script>
+<script src="{{ static_url('calendar.js') }}"></script>
 {% endblock %}

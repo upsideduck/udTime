@@ -56,9 +56,14 @@ def list_work(db: Session, user: User, start: int, end: int, include_open: bool 
     return [work_dict(w, breaks[w.id]) for w in works]
 
 
+MAX_PERIOD_SECONDS = 7 * 86400
+
+
 def _check_span(start: int, end: int | None) -> None:
     if end is not None and end < start:
         raise DomainError("End time must be after start time")
+    if end is not None and end - start > MAX_PERIOD_SECONDS:
+        raise DomainError("A period can be at most 7 days long")
 
 
 def add_work(db: Session, user: User, start: int, end: int, comment: str | None, project_id: int | None) -> dict:

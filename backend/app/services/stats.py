@@ -2,7 +2,8 @@
 
 Ports fetchWorkAndBreakTime (func_fetch.php), timespan::updateWeekStats/updateMonthStats
 (timespan.class.php), workingdaysmonth (func_misc.php) and balanceUptoWeek/Month
-(func_stats.php). The formulas are kept identical to the PHP implementation.
+(func_stats.php). Targets are counted per day with the work schedule valid on that day
+(services/schedule.py); with one 5-day schedule they equal the PHP formulas.
 """
 
 import datetime as dt
@@ -12,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from ..models import AgainstWorkTime, AsWorkTime, Break, Lookup, MonthStats, User, WeekStats, Work, to_epoch
 from . import timeutil as tu
+from .schedule import Schedules
 from .serialize import absence_dict
 
 ABSENCE_MODELS = {"asworktime": AsWorkTime, "againstworktime": AgainstWorkTime}
@@ -77,19 +79,21 @@ def _stats_window(user: User, start: int, end: int, tz) -> tuple[int, int, dt.da
     return start, end, tu.local_date(start, tz), tu.local_date(end, tz)
 
 
-def update_week_stats(db: Session, user: User, iso_year: int, week: int, persist: bool = True) -> dict:
+def _target(user: User, sched: Schedules, first: dt.date, last: dt.date) -> int:
+    """Target time for the days in [first, last] on or after the statistics start."""
+    first = max(first, tu.local_date(user.statsstartdate, tu.user_tz(user)))
+    return round(sched.target(first, last))
+
+
+def update_week_stats(
+    db: Session, user: User, iso_year: int, week: int, persist: bool = True, sched: Schedules | None = None
+) -> dict:
     """Compute a week's stats and store them in weekstats (unless persist=False)."""
     tz = tu.user_tz(user)
+    sched = sched or Schedules.load(db, user)
     start, end = tu.week_span(iso_year, week, tz)
-    if start < user.statsstartdate:
-        stats_start = tu.local_date(user.statsstartdate, tz)
-        if stats_start.isocalendar()[:2] == (iso_year, week):
-            workdays = max(0, 7 - stats_start.isoweekday() - 1)
-        else:
-            workdays = 0
-    else:
-        workdays = user.daysinworkweek
-    towork = round(workdays * user.day_length)
+    monday = tu.week_monday(iso_year, week)
+    towork = _target(user, sched, monday, monday + dt.timedelta(days=6))
 
     start, end, first, last = _stats_window(user, start, end, tz)
     worked = worked_and_break(db, user.member_id, start, end)[0] if start <= end else 0
@@ -106,24 +110,14 @@ def update_week_stats(db: Session, user: User, iso_year: int, week: int, persist
     return {"towork": towork, "worked": worked, "asworktime": asworktime, "againstworktime": againstworktime}
 
 
-def working_days_month(user: User, year: int, month: int) -> int:
-    """Mon-Fri days from max(1st of month, statsstartdate) to the end of the month."""
-    tz = tu.user_tz(user)
-    day = max(dt.date(year, month, 1), tu.local_date(user.statsstartdate, tz))
-    last = tu.month_last_day(year, month)
-    days = 0
-    while day <= last:
-        if day.isoweekday() < 6:
-            days += 1
-        day += dt.timedelta(days=1)
-    return days
-
-
-def update_month_stats(db: Session, user: User, year: int, month: int, persist: bool = True) -> dict:
+def update_month_stats(
+    db: Session, user: User, year: int, month: int, persist: bool = True, sched: Schedules | None = None
+) -> dict:
     """Compute a month's stats and store them in monthstats (unless persist=False)."""
     tz = tu.user_tz(user)
+    sched = sched or Schedules.load(db, user)
     start, end = tu.month_span(year, month, tz)
-    towork = round(working_days_month(user, year, month) * user.day_length)
+    towork = _target(user, sched, dt.date(year, month, 1), tu.month_last_day(year, month))
 
     start, end, first, last = _stats_window(user, start, end, tz)
     worked = worked_and_break(db, user.member_id, start, end)[0] if start <= end else 0
@@ -150,13 +144,14 @@ def _upsert(db: Session, model, key: dict, values: dict) -> None:
     db.flush()
 
 
-def update_stats(db: Session, user: User, start: int, end: int) -> None:
+def update_stats(db: Session, user: User, start: int, end: int, sched: Schedules | None = None) -> None:
     """Recompute every week and month touched by [start, end]."""
     tz = tu.user_tz(user)
+    sched = sched or Schedules.load(db, user)
     for year, week in tu.weeks_in_span(start, end, tz):
-        update_week_stats(db, user, year, week)
+        update_week_stats(db, user, year, week, sched=sched)
     for year, month in tu.months_in_span(start, end, tz):
-        update_month_stats(db, user, year, month)
+        update_month_stats(db, user, year, month, sched=sched)
 
 
 def recompute_all(db: Session, user: User) -> None:
@@ -167,20 +162,14 @@ def recompute_all(db: Session, user: User) -> None:
 STAT_FIELDS = ("towork", "worked", "asworktime", "againstworktime")
 
 
-def _future_target(user: User, first: dt.date, last: dt.date, max_weekday: int) -> int:
+def _future_target(user: User, sched: Schedules, first: dt.date, last: dt.date) -> int:
     """Target time for the workdays after today in [first, last] (not yet due)."""
-    tz = tu.user_tz(user)
-    day = max(first, tu.local_date(tu.now_ts(), tz) + dt.timedelta(days=1), tu.local_date(user.statsstartdate, tz))
-    days = 0
-    while day <= last:
-        if day.isoweekday() <= max_weekday:
-            days += 1
-        day += dt.timedelta(days=1)
-    return round(days * user.day_length)
+    tomorrow = tu.local_date(tu.now_ts(), tu.user_tz(user)) + dt.timedelta(days=1)
+    return _target(user, sched, max(first, tomorrow), last)
 
 
 def _preview_rows(
-    user: User, existing: dict, computed: list[tuple[tuple[int, int], dict]], label, future: dict
+    user: User, existing: dict, computed: list[tuple[tuple[int, int], dict]], label, future: dict, carried: int = 0
 ) -> dict:
     """Compare freshly computed stats with the stored rows (the row recompute would update).
     The balances run up to today: the target of workdays still to come in the current
@@ -215,7 +204,7 @@ def _preview_rows(
             "new_diff": new_diff,
         })
     return {
-        "checked": len(computed),
+        "checked": len(computed) - carried,
         "changes": changes,
         "balance_before": before,
         "balance_after": after,
@@ -223,10 +212,17 @@ def _preview_rows(
     }
 
 
-def preview_recompute(db: Session, user: User) -> dict:
-    """Dry run of recompute_all: what would change in weekstats/monthstats. Writes nothing."""
+def preview_recompute(
+    db: Session, user: User, sched: Schedules | None = None, start_day: dt.date | None = None
+) -> dict:
+    """Dry run of recompute_all: what would change in weekstats/monthstats. Writes nothing.
+    With `sched` the stats are computed for a proposed schedule; with `start_day` only weeks and
+    months from that day on are recomputed (earlier stored rows still count in the balances)."""
     tz = tu.user_tz(user)
+    sched = sched or Schedules.load(db, user)
     start, end = user.statsstartdate, tu.now_ts()
+    if start_day is not None and start_day > dt.date.min:  # dt.date.min: the whole history
+        start = max(start, tu.midnight(start_day, tz))
 
     def latest_rows(model, number_field):
         rows = {}
@@ -234,24 +230,37 @@ def preview_recompute(db: Session, user: User) -> dict:
             rows[(row.year, getattr(row, number_field))] = row  # recompute updates the newest duplicate
         return rows
 
-    weeks = [((y, w), update_week_stats(db, user, y, w, persist=False)) for y, w in tu.weeks_in_span(start, end, tz)]
-    months = [((y, m), update_month_stats(db, user, y, m, persist=False)) for y, m in tu.months_in_span(start, end, tz)]
+    def carried(existing: dict, first_key, computed: list) -> list:
+        """Stored rows between the statistics start and the recomputed range, unchanged."""
+        if not computed:
+            return []
+        return [(key, {f: int(getattr(row, f)) for f in STAT_FIELDS})
+                for key, row in sorted(existing.items()) if first_key <= key < computed[0][0]]
+
+    weeks_rows, months_rows = latest_rows(WeekStats, "week"), latest_rows(MonthStats, "month")
+    stats_start = tu.local_date(user.statsstartdate, tz)
+    weeks = [((y, w), update_week_stats(db, user, y, w, persist=False, sched=sched))
+             for y, w in tu.weeks_in_span(start, end, tz)]
+    months = [((y, m), update_month_stats(db, user, y, m, persist=False, sched=sched))
+              for y, m in tu.months_in_span(start, end, tz)]
+    week_carried = carried(weeks_rows, stats_start.isocalendar()[:2], weeks)
+    month_carried = carried(months_rows, (stats_start.year, stats_start.month), months)
 
     today = tu.local_date(end, tz)
     iso_year, iso_week, _ = today.isocalendar()
     monday = tu.week_monday(iso_year, iso_week)
-    week_future = {(iso_year, iso_week): _future_target(user, monday, monday + dt.timedelta(days=6), user.daysinworkweek)}
+    week_future = {(iso_year, iso_week): _future_target(user, sched, monday, monday + dt.timedelta(days=6))}
     month_future = {
         (today.year, today.month): _future_target(
-            user, dt.date(today.year, today.month, 1), tu.month_last_day(today.year, today.month), 5
+            user, sched, dt.date(today.year, today.month, 1), tu.month_last_day(today.year, today.month)
         )
     }
     return {
         "through": today.isoformat(),
-        "weeks": _preview_rows(user, latest_rows(WeekStats, "week"), weeks, lambda y, w: f"{y}-W{w:02d}", week_future),
-        "months": _preview_rows(
-            user, latest_rows(MonthStats, "month"), months, lambda y, m: f"{y}-{m:02d}", month_future
-        ),
+        "weeks": _preview_rows(user, weeks_rows, week_carried + weeks, lambda y, w: f"{y}-W{w:02d}", week_future,
+                               carried=len(week_carried)),
+        "months": _preview_rows(user, months_rows, month_carried + months, lambda y, m: f"{y}-{m:02d}",
+                                month_future, carried=len(month_carried)),
     }
 
 
@@ -365,10 +374,10 @@ def _totals(stats: dict) -> dict:
     }
 
 
-def _to_date(user: User, rows: list[dict], max_weekday: int) -> dict | None:
+def _to_date(user: User, sched: Schedules, rows: list[dict]) -> dict | None:
     """Totals for the days up to and including today, when today lies inside the period.
-    The target counts a standard day for each workday (isoweekday <= max_weekday) on or after
-    statsstartdate, matching how the week/month target is built."""
+    The target counts each day's scheduled time on or after statsstartdate, matching how the
+    week/month target is built."""
     tz = tu.user_tz(user)
     today = tu.local_date(tu.now_ts(), tz)
     first, last = dt.date.fromisoformat(rows[0]["date"]), dt.date.fromisoformat(rows[-1]["date"])
@@ -380,8 +389,7 @@ def _to_date(user: User, rows: list[dict], max_weekday: int) -> dict | None:
         day = dt.date.fromisoformat(row["date"])
         if day > today or day < stats_start:
             continue
-        if day.isoweekday() <= max_weekday:
-            towork += user.day_length
+        towork += sched.day_target(day)
         worked += sum(p["worked_seconds"] for p in row["periods"])
         asw += row["asworktime"]["time"] if row["asworktime"] else 0
         agw += row["againstworktime"]["time"] if row["againstworktime"] else 0
@@ -397,7 +405,9 @@ def _to_date(user: User, rows: list[dict], max_weekday: int) -> dict | None:
     }
 
 
-def _day_rows(db: Session, user: User, start: int, end: int, days: list[dt.date], stats: dict) -> list[dict]:
+def _day_rows(
+    db: Session, user: User, sched: Schedules, start: int, end: int, days: list[dt.date], stats: dict
+) -> list[dict]:
     """One entry per calendar day with its work periods and absences."""
     tz = tu.user_tz(user)
     asw_days, agw_days = stats["asworktime"]["days"], stats["againstworktime"]["days"]
@@ -441,6 +451,8 @@ def _day_rows(db: Session, user: User, start: int, end: int, days: list[dt.date]
                 "label": day.strftime("%d-%b"),
                 "weekday": day.strftime("%a"),
                 "isoweekday": day.isoweekday(),
+                "workday": sched.is_workday(day),
+                "target": round(sched.day_target(day)),
                 "day": day.day,
                 "periods": periods,
                 "asworktime": asw_days.get(iso),
@@ -454,13 +466,14 @@ def _day_rows(db: Session, user: User, start: int, end: int, days: list[dt.date]
 
 def week_detail(db: Session, user: User, iso_year: int, week: int) -> dict:
     tz = tu.user_tz(user)
-    stats = update_week_stats(db, user, iso_year, week)
+    sched = Schedules.load(db, user)
+    stats = update_week_stats(db, user, iso_year, week, sched=sched)
     db.commit()
     start, end = tu.week_span(iso_year, week, tz)
     monday = tu.week_monday(iso_year, week)
     days = [monday + dt.timedelta(days=i) for i in range(7)]
     prev, nxt = tu.shift_week(iso_year, week, -1), tu.shift_week(iso_year, week, 1)
-    rows = _day_rows(db, user, start, end, days, stats)
+    rows = _day_rows(db, user, sched, start, end, days, stats)
     return {
         "year": iso_year,
         "week": week,
@@ -468,20 +481,21 @@ def week_detail(db: Session, user: User, iso_year: int, week: int) -> dict:
         "todate": days[-1].isoformat(),
         "prev": {"year": prev[0], "week": prev[1]},
         "next": {"year": nxt[0], "week": nxt[1]},
-        "totals": {**_totals(stats), "to_date": _to_date(user, rows, user.daysinworkweek)},
+        "totals": {**_totals(stats), "to_date": _to_date(user, sched, rows)},
         "days": rows,
     }
 
 
 def month_detail(db: Session, user: User, year: int, month: int) -> dict:
     tz = tu.user_tz(user)
-    stats = update_month_stats(db, user, year, month)
+    sched = Schedules.load(db, user)
+    stats = update_month_stats(db, user, year, month, sched=sched)
     db.commit()
     start, end = tu.month_span(year, month, tz)
     last = tu.month_last_day(year, month)
     days = [dt.date(year, month, d) for d in range(1, last.day + 1)]
     prev, nxt = tu.shift_month(year, month, -1), tu.shift_month(year, month, 1)
-    rows = _day_rows(db, user, start, end, days, stats)
+    rows = _day_rows(db, user, sched, start, end, days, stats)
     return {
         "year": year,
         "month": month,
@@ -489,7 +503,7 @@ def month_detail(db: Session, user: User, year: int, month: int) -> dict:
         "todate": days[-1].isoformat(),
         "prev": {"year": prev[0], "month": prev[1]},
         "next": {"year": nxt[0], "month": nxt[1]},
-        "totals": {**_totals(stats), "to_date": _to_date(user, rows, 5)},
+        "totals": {**_totals(stats), "to_date": _to_date(user, sched, rows)},
         "days": rows,
     }
 

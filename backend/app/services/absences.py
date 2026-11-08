@@ -11,6 +11,7 @@ from ..errors import DomainError, NotFound
 from ..models import AgainstWorkTime, Lookup, User
 from . import timeutil as tu
 from .periods import record_deleted
+from .schedule import Schedules
 from .serialize import absence_dict
 from .stats import ABSENCE_MODELS, update_stats
 
@@ -75,13 +76,17 @@ def add_range(
     time: int | None,
     comment: str | None = None,
 ) -> dict:
-    """One row per weekday (Mon-Fri) in [first, last] that doesn't have one yet.
-    time 0/None means a standard working day (dworkweek / daysinworkweek)."""
+    """One row per workday in [first, last] that doesn't have one yet. A workday is one the
+    work schedule gives a target. time 0/None means that day's standard working day."""
     model = _model(kind)
     if last < first:
         raise DomainError("End date must be on or after start date")
+    if (last - first).days >= tu.MAX_RANGE_DAYS:
+        raise DomainError(f"A range can be at most {tu.MAX_RANGE_DAYS} days")
+    tu.check_year(first.year)
+    tu.check_year(last.year)
     _check_type(db, kind, type_code)
-    seconds = time or round(user.day_length)
+    sched = Schedules.load(db, user)
     existing = set(
         db.scalars(select(model.date).where(model.member_id == user.member_id, model.date.between(first, last)))
     )
@@ -90,11 +95,12 @@ def add_range(
     created, skipped = [], []
     day = first
     while day <= last:
-        if day.isoweekday() >= 6:
-            skipped.append({"date": day.isoformat(), "reason": "weekend"})
+        if not sched.is_workday(day):
+            skipped.append({"date": day.isoformat(), "reason": "not a workday"})
         elif day in existing:
             skipped.append({"date": day.isoformat(), "reason": "already registered"})
         else:
+            seconds = time or round(sched.day_target(day))
             row = model(member_id=user.member_id, date=day, time=seconds, type=type_code)
             if comment is not None and model is AgainstWorkTime:
                 row.comment = comment

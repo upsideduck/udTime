@@ -1,0 +1,63 @@
+<div id="profile-card" class="surface" hx-get="/profile/card" hx-trigger="profileChanged from:body"
+ hx-swap="outerHTML" hx-disinherit="*">
+  <div class="surface-body d-flex align-items-center gap-3 border-bottom">
+    <button type="button" class="avatar-circle lg avatar-edit" hx-get="/forms/avatar" hx-target="#modal-content"
+            title="Change avatar" aria-label="Change avatar">
+      <img id="avatar" src="/avatar" alt="" data-hide-on-error>
+      {{ (profile.firstname or profile.username)[:1] | upper }}
+      <span class="avatar-edit-overlay"><i class="bi bi-pencil"></i> Edit</span>
+    </button>
+    <div>
+      <div class="h5 fw-bold mb-0">{{ profile.firstname or "" }} {{ profile.lastname or "" }}</div>
+      <div class="text-muted">@{{ profile.username }}{% if profile.admin %} · <span class="tag accent">Admin</span>{% endif %}</div>
+    </div>
+    <button class="btn btn-soft btn-sm ms-auto" hx-get="/forms/profile" hx-target="#modal-content">
+      <i class="bi bi-gear"></i> Settings</button>
+  </div>
+  <div class="surface-body">
+    <div class="row g-4">
+      {% for label, value in [
+        ("Starting offset", profile.offset | hm),
+        ("Timezone", profile.timezone),
+        ("Member since", profile.registerdate | localtime(tz, "%d %b %Y")),
+        ("Statistics from", profile.statsstartdate | localtime(tz, "%d %b %Y")),
+      ] %}
+      <div class="col-6 col-md-4">
+        <div class="stat-label">{{ label }}</div>
+        <div class="fw-semibold mt-1">{{ value }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="surface-body border-top">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <div class="stat-label">Work schedule</div>
+      <button class="btn btn-soft btn-sm" hx-get="/forms/schedule" hx-target="#modal-content">
+        <i class="bi bi-plus-lg"></i> Change schedule</button>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-clean align-middle mb-0">
+        <thead><tr><th>Period</th><th>Work week</th><th>Workdays</th><th>Standard day</th><th></th></tr></thead>
+        <tbody>
+          {% for p in schedules | reverse %}
+          <tr class="{{ 'fw-semibold' if p.current else 'text-muted' }}">
+            <td class="text-nowrap">{{ p.valid_from }} – {{ p.valid_to or "" }}
+              {% if p.current %}<span class="tag accent ms-1">Now</span>{% endif %}</td>
+            <td>{{ p.dworkweek | hm }} h</td>
+            <td>{{ p.workdays_label }}</td>
+            <td>{{ p.day_length | hm }} h</td>
+            <td class="text-end text-nowrap">
+              {% if p.id %}
+              <a href="#" class="btn-icon" hx-get="/forms/schedule?id={{ p.id }}" hx-target="#modal-content" title="Edit"><i class="bi bi-pencil"></i></a>
+              {% if not loop.last %}
+              <a href="#" class="btn-icon danger" hx-post="/forms/schedule/preview" hx-vals='{"op": "delete", "id": "{{ p.id }}"}'
+                 hx-target="#modal-content" title="Remove"><i class="bi bi-trash"></i></a>
+              {% endif %}{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -15,8 +15,15 @@ The backend must be running at `BACKEND_URL`.
 ## Login
 
 - **Login form:** `/login` checks the credentials against the backend. The access token is kept in a signed session cookie.
-- **Authentik (SSO):** with `TRUST_AUTHENTIK_HEADER=true`, a request carrying `X-Authentik-Username` (configurable via `AUTHENTIK_HEADER`) is logged in as that user through the backend's trusted login. Logout then redirects to `AUTHENTIK_LOGOUT_URL`. Only enable this behind a proxy that strips the header from client requests.
-- **"Sign in with udauth" button:** shown on the login page when `TRUST_AUTHENTIK_HEADER=true`. The label comes from `SSO_LABEL`. The button goes to `/sso`, which logs in from the header and redirects to `/`. `/sso` must be protected by Authentik in the reverse proxy, and the header must be stripped on every other path. See [docs/authentik-nginx-proxy-manager.md](../docs/authentik-nginx-proxy-manager.md) for the full Authentik and Nginx Proxy Manager setup.
+- **Single sign-on (OpenID Connect):** with `OIDC_ISSUER`, `OIDC_CLIENT_ID` and `OIDC_CLIENT_SECRET` set, the login page shows a **Sign in with udauth** button (label from `SSO_LABEL`).
+  - `/sso` starts the Authorization Code + PKCE flow, and `/sso/callback` verifies the ID token (signature, issuer, audience, expiry, nonce, state).
+  - The user is then signed in through the backend's service-secret protected trusted login.
+  - Logout also ends the session at the identity provider.
+
+  See [docs/authentik-nginx-proxy-manager.md](../docs/authentik-nginx-proxy-manager.md) for setting up Authentik and Nginx Proxy Manager.
+- **Security:**
+  - `SESSION_SECRET` and `FRONTEND_SERVICE_SECRET` must be random values of at least 16 characters, or the app refuses to start.
+  - Responses carry a strict Content-Security-Policy (no inline scripts), `X-Frame-Options: DENY`, and HSTS when `SESSION_HTTPS_ONLY=true`.
 
 ## Pages
 

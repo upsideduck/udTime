@@ -1,0 +1,15 @@
+<div class="modal-header">
+  <h5 class="modal-title">API key created</h5>
+  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+  <p>Copy the key for <strong>{{ key.name }}</strong> now. It is not stored and <strong>will not be shown again</strong>.</p>
+  <div class="input-group">
+    <input class="form-control font-monospace" id="new-apikey" value="{{ key.key }}" readonly>
+    <button type="button" class="btn btn-soft" data-copy="#new-apikey"><i class="bi bi-clipboard"></i> Copy</button>
+  </div>
+  <div class="form-text">Send it in the <code>X-API-Key</code> header.</div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Done</button>
+</div>

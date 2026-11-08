@@ -22,15 +22,18 @@ RUN useradd --no-create-home --uid 10001 udtime && chown -R udtime /app
 USER udtime
 
 # --- Runtime configuration (override with `docker run -e` / compose `environment:`) ---
-# Secrets below are placeholders only: always set real values at runtime.
+# JWT_SECRET and FRONTEND_SERVICE_SECRET have no default: the app refuses to start until
+# they are set to random values (min 16 characters).
+# FORWARDED_ALLOW_IPS: proxies allowed to set X-Forwarded-* (private networks by default).
 ENV DATABASE_URL="mysql+pymysql://udtime:udtime@db:3306/udTime" \
-    JWT_SECRET="change-me" \
-    JWT_EXPIRE_MINUTES="10080" \
-    FRONTEND_SERVICE_SECRET="change-me-too" \
+    JWT_SECRET="" \
+    JWT_EXPIRE_MINUTES="720" \
+    FRONTEND_SERVICE_SECRET="" \
     ALLOW_REGISTRATION="false" \
     DB_HAS_DELETE_TRIGGERS="false" \
     DEFAULT_TIMEZONE="Europe/Stockholm" \
-    FORWARDED_ALLOW_IPS="*"
+    API_DOCS="false" \
+    FORWARDED_ALLOW_IPS="127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
 
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

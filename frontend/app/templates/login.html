@@ -2,9 +2,10 @@
 {% block title %}Sign in - udTime{% endblock %}
 {% block auth %}
 <div class="surface auth-card">
-  <div class="brand mb-4"><span class="brand-mark"><i class="bi bi-clock-history"></i></span> udTime</div>
-  <h1 class="h4 fw-bold mb-1">Welcome back</h1>
-  <p class="text-muted mb-4">Sign in to track your time.</p>
+  {% from "_brand.html" import brand %}{{ brand("mb-4") }}
+  <hr class="double-rule mb-4">
+  <h1 class="h4 mb-1 text-center">Welcome back</h1>
+  <p class="text-muted fst-italic mb-4 text-center">Sign in to track your time.</p>
   {% if error %}<div class="alert alert-danger py-2 small">{{ error }}</div>{% endif %}
   <form method="post" action="/login">
     <div class="mb-3">
@@ -22,6 +23,8 @@
   <a class="btn btn-soft btn-lg w-100 d-flex align-items-center justify-content-center gap-2" href="/sso">
     <i class="bi bi-shield-lock"></i> Sign in with {{ sso_label }}</a>
   {% endif %}
+  {% if registration_open %}
   <p class="mt-4 mb-0 small text-center text-muted">No account? <a href="/register">Create one</a></p>
+  {% endif %}
 </div>
 {% endblock %}

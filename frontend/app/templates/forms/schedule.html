@@ -1,0 +1,48 @@
+<form hx-post="/forms/schedule/preview" hx-target="#modal-content" hx-disabled-elt="find button[type=submit]" hx-disinherit="hx-disabled-elt" data-schedule>
+  <div class="modal-header">
+    <h5 class="modal-title">{% if values.op == "update" %}Edit schedule period{% else %}Change work schedule{% endif %}</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  </div>
+  <div class="modal-body">
+    <input type="hidden" name="op" value="{{ values.op }}">
+    <input type="hidden" name="id" value="{{ values.id }}">
+    <div class="mb-3" style="max-width: 16rem">
+      <label class="form-label" for="s-from">Applies from</label>
+      <input class="form-control" type="date" id="s-from" name="valid_from" value="{{ values.valid_from }}" required>
+    </div>
+    <div class="row g-3">
+      <div class="col-sm-4">
+        <label class="form-label" for="s-week">Work week</label>
+        <input class="form-control" id="s-week" name="dworkweek" value="{{ values.dworkweek | hm }}"
+               pattern="\d{1,3}(:[0-5]\d)?" required data-week>
+        <div class="form-text">Hours, HH:MM</div>
+      </div>
+      <div class="col-sm-4">
+        <label class="form-label" for="s-days">Days per week</label>
+        <input class="form-control" id="s-days" value="{{ values.workdays | length }}" readonly tabindex="-1" data-days>
+        <div class="form-text">The days ticked below</div>
+      </div>
+      <div class="col-sm-4">
+        <label class="form-label" for="s-day">Standard day</label>
+        <input class="form-control" id="s-day" value="{{ values.day_length | hm }}" pattern="\d{1,2}(:[0-5]\d)?" data-day>
+        <div class="form-text">Work week ÷ days</div>
+      </div>
+    </div>
+    <div class="mt-3">
+      <label class="form-label d-block">Workdays</label>
+      <div class="btn-group flex-wrap" role="group" aria-label="Workdays">
+        {% for name in weekdays %}{% set n = loop.index %}
+        <input type="checkbox" class="btn-check" id="s-wd{{ n }}" name="workdays" value="{{ n }}" autocomplete="off"
+               data-workday {% if n in values.workdays %}checked{% endif %}>
+        <label class="btn btn-outline-primary btn-sm" for="s-wd{{ n }}">{{ name }}</label>
+        {% endfor %}
+      </div>
+    </div>
+    <p class="small text-muted mt-3 mb-0">The schedule applies from this date until the next change. Next you will see
+      how the week and month statistics would change, before anything is saved.</p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    <button type="submit" class="btn btn-primary">Preview changes <i class="bi bi-arrow-right"></i></button>
+  </div>
+</form>

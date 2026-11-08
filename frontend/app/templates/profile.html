@@ -10,47 +10,37 @@
 
 <div class="row g-4">
   <div class="col-lg-7">
-    <div class="surface">
-      <div class="surface-body d-flex align-items-center gap-3 border-bottom">
-        <span class="avatar-circle lg">
-          <img id="avatar" src="/avatar" alt="" onerror="this.remove()">
-          {{ (profile.firstname or profile.username)[:1] | upper }}
-        </span>
-        <div>
-          <div class="h5 fw-bold mb-0">{{ profile.firstname or "" }} {{ profile.lastname or "" }}</div>
-          <div class="text-muted">@{{ profile.username }}{% if profile.admin %} · <span class="tag accent">Admin</span>{% endif %}</div>
-        </div>
-      </div>
-      <div class="surface-body">
-        <div class="row g-4">
-          {% for label, value in [
-            ("Work week", (profile.dworkweek | hm) ~ " h"),
-            ("Days per week", profile.daysinworkweek),
-            ("Standard day", ((profile.dworkweek // (profile.daysinworkweek or 5)) | hm) ~ " h"),
-            ("Starting offset", profile.offset | hm),
-            ("Timezone", profile.timezone),
-            ("Member since", profile.registerdate | localtime(tz, "%d %b %Y")),
-            ("Statistics from", profile.statsstartdate | localtime(tz, "%d %b %Y")),
-          ] %}
-          <div class="col-6 col-md-4">
-            <div class="stat-label">{{ label }}</div>
-            <div class="fw-semibold mt-1">{{ value }}</div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
+    {% include "partials/profile_card.html" %}
   </div>
 
   <div class="col-lg-5 d-flex flex-column gap-4">
     <div class="surface">
-      <div class="surface-header"><h2 class="surface-title">Avatar</h2></div>
+      <div class="surface-header"><h2 class="surface-title">Password</h2></div>
       <div class="surface-body">
-        <form hx-post="/profile/avatar" hx-encoding="multipart/form-data" class="d-flex gap-2">
-          <input class="form-control" type="file" name="file" accept="image/*" required>
-          <button class="btn btn-primary">Upload</button>
+        {% if sso %}<p class="small text-muted">You signed in with {{ sso_label }}. This changes the password for
+          the udTime login form only.</p>{% endif %}
+        <form id="password-form" hx-post="/profile/password" hx-disabled-elt="find button" hx-disinherit="hx-disabled-elt">
+          <input type="text" name="username" value="{{ profile.username }}" autocomplete="username" hidden>
+          <div class="mb-2">
+            <label class="form-label" for="current_password">Current password</label>
+            <input class="form-control" type="password" id="current_password" name="current_password"
+                   autocomplete="current-password" required>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label" for="new_password">New password</label>
+              <input class="form-control" type="password" id="new_password" name="new_password" minlength="8"
+                     maxlength="1024" autocomplete="new-password" required>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label" for="confirm_password">Repeat new password</label>
+              <input class="form-control" type="password" id="confirm_password" name="confirm_password" minlength="8"
+                     maxlength="1024" autocomplete="new-password" required>
+            </div>
+          </div>
+          <button class="btn btn-primary">Change password</button>
+          <span class="form-text ms-2">At least 8 characters.</span>
         </form>
-        <div class="form-text">JPEG, PNG or GIF, max 20 kB.</div>
       </div>
     </div>
     {% if profile.admin %}
@@ -70,9 +60,5 @@
   </div>
 </div>
 {% if profile.admin %}<div id="recompute-result" class="mt-4"></div>{% endif %}
-{% endblock %}
-{% block scripts %}
-<script>
-  document.body.addEventListener("avatarChanged", () => location.reload());
-</script>
+<div class="mt-4">{% include "partials/apikeys.html" %}</div>
 {% endblock %}

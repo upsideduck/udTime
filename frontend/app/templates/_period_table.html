@@ -14,7 +14,7 @@
 
 <div class="surface day-list">
   {% for day in detail.days %}
-  <div class="day-row {% if day.isoweekday > 5 %}weekend{% endif %} {% if day.date == today %}today{% endif %}">
+  <div class="day-row {% if not day.workday %}weekend{% endif %} {% if day.date == today %}today{% endif %}">
     <div class="day-date">
       <span class="dnum">{{ day.day }}</span>
       <span class="dow">{{ day.weekday }}</span>

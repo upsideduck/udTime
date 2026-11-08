@@ -1,232 +1,129 @@
-# Setting up udTime behind Authentik and Nginx Proxy Manager
+# Setting up udTime behind Nginx Proxy Manager, with Authentik sign-in
 
-This guide puts the udTime frontend behind Nginx Proxy Manager (NPM), using Authentik as the single sign-on provider ("udauth"). After setup:
+This guide publishes udTime on the internet behind Nginx Proxy Manager (NPM). Single sign-on uses Authentik ("udauth") over **OpenID Connect**. The result:
 
-- **Login page:** the "Sign in with udauth" button signs users in through Authentik.
-- **Password login:** still works. This is optional, see [Option A](#option-a-sso-only).
-- **Backend:** never directly reachable from the browser, or exposed separately for API clients only.
+- **Login page:** has a **Sign in with udauth** button next to the normal password login.
+- **NPM:** an ordinary https reverse proxy, with no forward-auth configuration.
+- **Backend:** never reachable from the internet, unless you choose to expose the API (section 4).
 
 ```
-Browser ──https──▶ Nginx Proxy Manager ──▶ udTime frontend :8001 ──▶ udTime backend :8000 ──▶ MySQL
-                        │  auth_request
-                        ▼
-                  Authentik outpost (/outpost.goauthentik.io)
+Browser ──https──▶ Nginx Proxy Manager ──▶ udtime2-frontend :8001 ──▶ udtime2-backend :8000 ──▶ MySQL
+   │                                              │
+   └──── sign-in redirect ────▶ Authentik ◀───────┘ code exchange + token check (server to server)
 ```
 
-## How SSO works in udTime
+## How sign-in works
 
-1. The user clicks **Sign in with udauth**. This links to `/sso` on the frontend.
-2. NPM asks the Authentik outpost whether the request is authenticated. If it isn't, the user is redirected to Authentik to sign in, then sent back to `/sso`.
-3. When the request reaches the frontend, NPM adds the header `X-Authentik-Username: <username>`.
-4. The frontend calls the backend's trusted login (`POST /api/v1/auth/trusted`), authenticated with the shared `FRONTEND_SERVICE_SECRET`. It stores the returned token in its session cookie and redirects to `/`.
-5. **Sign out** clears the udTime session and sends the user to `/outpost.goauthentik.io/sign_out`, which ends the Authentik session too.
+1. The user clicks **Sign in with udauth**. The frontend (`/sso`) redirects to Authentik using the Authorization Code flow with PKCE, a one-time `state` and a `nonce`.
+2. The user signs in to Authentik, which redirects back to `https://time.example.com/sso/callback?code=…`.
+3. The frontend exchanges the code for an ID token, server to server. It then verifies the token's **signature** (Authentik's published keys), **issuer**, **audience** (your client ID), **expiry**, and the **nonce** and **state** from step 1.
+4. The frontend reads the username from the `preferred_username` claim. It signs the user in through the backend's trusted login, which is protected by `FRONTEND_SERVICE_SECRET`.
+5. **Sign out** clears the udTime session and redirects to Authentik's end-session endpoint, which signs the user out of Authentik too.
 
-**Requirements:**
-- The **Authentik username must equal `userdb.username`** in udTime. An SSO user without a matching account sees "… has no udTime account".
-- **Security:** the frontend trusts the header blindly, so NPM must always overwrite it. Clients must never be able to send their own `X-Authentik-Username`. The configuration below does this.
+The **Authentik username must equal `userdb.username`** in udTime. A user without a matching account sees "… has no udTime account".
+
+> **Important:** because accounts are matched by username, users must **not** be able to rename themselves in Authentik. Otherwise someone could rename their account to `johan` and sign in as johan. Check **System → Brands / Settings → "Allow users to change username"** (off by default) and keep it off. The same applies to enrollment flows that let people pick their own username.
 
 ---
 
-## 1. udTime configuration
+## 1. Authentik
 
-`backend/.env`:
+In the Authentik admin interface:
+
+### 1.1 Provider
+
+Go to **Applications → Providers → Create → OAuth2/OpenID Provider**.
+
+| Field | Value |
+| --- | --- |
+| Name | `udTime` |
+| Authorization flow | `default-provider-authorization-implicit-consent` (or explicit consent) |
+| Client type | **Confidential** |
+| Client ID / Client Secret | generated. Copy both. |
+| Redirect URIs | `https://time.example.com/sso/callback` (strict) |
+| Signing key | `authentik Self-signed Certificate` (RS256) |
+| Scopes | `openid`, `profile`, `email` (the defaults) |
+| Subject mode | Based on the User's hashed ID (default) |
+
+`preferred_username` is part of the `profile` scope and holds the Authentik username.
+
+### 1.2 Application
+
+Go to **Applications → Applications → Create**.
+
+| Field | Value |
+| --- | --- |
+| Name / Slug | `udTime` / `udtime` |
+| Provider | `udTime` |
+| Launch URL | `https://time.example.com/sso`, so the Authentik dashboard tile signs straight in |
+
+Optional: bind a group (e.g. `udtime-users`) under **Policy / Group / User Bindings**, so only its members can use udTime.
+
+The provider's **OpenID Configuration Issuer** is shown on the provider page, e.g. `https://auth.example.com/application/o/udtime/`. Use that value as `OIDC_ISSUER`.
+
+---
+
+## 2. udTime configuration
+
+Put these in the root `.env` used by `docker-compose.yml` (see `.env.example`):
 
 ```ini
-DATABASE_URL=mysql+pymysql://udtime:<password>@<db-host>:3306/udTime
-JWT_SECRET=<long random string>
-FRONTEND_SERVICE_SECRET=<long random string, shared with the frontend>
-```
+# Secrets: random values of at least 16 characters; the apps refuse to start otherwise.
+# python3 -c "import secrets; print(secrets.token_urlsafe(48))"
+JWT_SECRET=...
+FRONTEND_SERVICE_SECRET=...
+SESSION_SECRET=...
 
-`frontend/.env`:
+SESSION_HTTPS_ONLY=true
 
-```ini
-BACKEND_URL=http://<backend-host>:8000       # internal address, not the public one
-SESSION_SECRET=<long random string>
-SESSION_HTTPS_ONLY=true                      # the site is served over https by NPM
-FRONTEND_SERVICE_SECRET=<same value as the backend>
-TRUST_AUTHENTIK_HEADER=true                  # enables /sso and the udauth button
-AUTHENTIK_HEADER=X-Authentik-Username
-AUTHENTIK_LOGOUT_URL=/outpost.goauthentik.io/sign_out
+OIDC_ISSUER=https://auth.example.com/application/o/udtime/
+OIDC_CLIENT_ID=<client id from 1.1>
+OIDC_CLIENT_SECRET=<client secret from 1.1>
+# Only needed if the public URL can't be derived from the proxy headers:
+OIDC_REDIRECT_URI=https://time.example.com/sso/callback
 SSO_LABEL=udauth
 ```
 
-Generate the secrets with `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`.
+Leave `OIDC_ISSUER` empty to disable SSO. The button then disappears and only password login remains.
 
-Run both apps so they are reachable from the NPM container but **not** from the internet. Bind them to an internal Docker network, or to the LAN IP with a firewall in front:
-
-```bash
-# backend
-cd backend && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
-# frontend: trust X-Forwarded-* from NPM so redirects use https
-cd frontend && uv run uvicorn app.main:app --host 0.0.0.0 --port 8001 \
-    --proxy-headers --forwarded-allow-ips "<NPM IP or *>"
-```
+The frontend container must be able to reach Authentik's public URL, for the discovery document, the published keys and the token endpoint.
 
 ---
 
-## 2. Authentik configuration
-
-All of this is done in the Authentik admin interface.
-
-### 2.1 Create the provider
-
-**Applications → Providers → Create → Proxy Provider**
-
-| Field | Value |
-| --- | --- |
-| Name | `udTime` |
-| Authorization flow | `default-provider-authorization-implicit-consent` (or your own) |
-| Mode | **Forward auth (single application)** |
-| External host | `https://time.example.com` (the public URL of the frontend) |
-| Token validity | as you like, e.g. `hours=24` |
-
-Leave **Unauthenticated paths** empty. Which paths require udauth is decided in NPM (step 3).
-
-> Unauthenticated paths are Go regular expressions, and Go doesn't support negative lookahead such as `(?!sso)`. Restricting SSO to `/sso` is easier in nginx.
-
-### 2.2 Create the application
-
-**Applications → Applications → Create**
-
-| Field | Value |
-| --- | --- |
-| Name | `udTime` |
-| Slug | `udtime` |
-| Provider | `udTime` (from 2.1) |
-| Launch URL | `https://time.example.com/sso`, so the Authentik dashboard tile signs straight in |
-
-Optional: under **Policy / Group / User Bindings**, bind a group (e.g. `udtime-users`) so only its members can sign in.
-
-### 2.3 Add it to the outpost
-
-**Applications → Outposts → authentik Embedded Outpost → Edit**, then add `udTime` to **Applications** and save.
-
-If you run a separate outpost container instead of the embedded one, add it there. Then use that container's address in the nginx config below.
-
----
-
-## 3. Nginx Proxy Manager configuration
+## 3. Nginx Proxy Manager
 
 Create **Hosts → Proxy Hosts → Add Proxy Host**:
 
-**Details tab**
-
-| Field | Value |
+| Tab | Setting |
 | --- | --- |
-| Domain Names | `time.example.com` |
-| Scheme | `http` |
-| Forward Hostname / IP | the frontend host (container name or IP) |
-| Forward Port | `8001` |
-| Block Common Exploits | on |
-| Websockets Support | off (not needed) |
-
-**SSL tab:** request or select a certificate, and enable **Force SSL** and **HTTP/2**.
-
-**Custom Locations tab:** leave it empty.
-
-**Advanced tab:** paste one of the two options below. Replace `authentik.example.com` with the address NPM can reach Authentik on: `http://authentik-server:9000` for the embedded outpost on the same Docker network, or the outpost container for a manual outpost.
-
-NPM skips its own generated `location /` when the Advanced config defines one, so it's fine that both options do.
-
-### Option B: password login plus the "Sign in with udauth" button (recommended)
-
-Only `/sso` goes through Authentik. Every other path is proxied directly, with the SSO header removed so clients can't fake it.
+| Details | Domain `time.example.com`, scheme `http`, forward host = the frontend (container name `udtime2-frontend` if NPM shares its network, otherwise the server's IP), port `8001`. **Block Common Exploits** on. |
+| SSL | Certificate (Let's Encrypt), **Force SSL**, **HTTP/2**, **HSTS** on |
+| Advanced | see below (optional rate limit) |
 
 ```nginx
-# Authentik sends large headers/cookies
-proxy_buffers 8 16k;
-proxy_buffer_size 32k;
-port_in_redirect off;
-
-# Everything except /sso: no Authentik, and never pass a client-supplied SSO header
-location / {
-    proxy_pass       $forward_scheme://$server:$port;
-    proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-authentik-username "";
-}
-
-# /sso: must be signed in to Authentik; forwards the username to udTime
-location = /sso {
-    auth_request        /outpost.goauthentik.io/auth/nginx;
-    error_page          401 = @goauthentik_proxy_signin;
-    auth_request_set    $auth_cookie $upstream_http_set_cookie;
-    add_header          Set-Cookie $auth_cookie;
-
-    auth_request_set    $authentik_username $upstream_http_x_authentik_username;
-    proxy_set_header    X-authentik-username $authentik_username;
-
-    proxy_pass          $forward_scheme://$server:$port;
-    proxy_set_header    Host $host;
-    proxy_set_header    X-Forwarded-Proto $scheme;
-    proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;
-}
-
-# Authentik outpost endpoints (sign-in callback, sign-out); must not require auth
-location /outpost.goauthentik.io {
-    proxy_pass              http://authentik.example.com:9000/outpost.goauthentik.io;
-    proxy_set_header        Host $host;
-    proxy_set_header        X-Original-URL $scheme://$http_host$request_uri;
-    add_header              Set-Cookie $auth_cookie;
-    auth_request_set        $auth_cookie $upstream_http_set_cookie;
-    proxy_pass_request_body off;
-    proxy_set_header        Content-Length "";
-}
-
-# Not signed in to Authentik: start the udauth sign-in, then come back to /sso
-location @goauthentik_proxy_signin {
-    internal;
-    add_header Set-Cookie $auth_cookie;
-    return 302 /outpost.goauthentik.io/start?rd=$scheme://$http_host$request_uri;
-}
+# Keep the original host and scheme for the app (redirect URIs, secure cookies)
+proxy_set_header Host $host;
+proxy_set_header X-Forwarded-Proto $scheme;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 ```
 
-### Option A: SSO only
+udTime limits failed logins itself: 10 per username and 30 per IP within 15 minutes. If you want an extra limit at the proxy, add a `limit_req_zone` in NPM's custom http config and a `limit_req` for `location = /login`.
 
-Every page requires udauth, and users are signed in automatically on their first visit. The password form is never shown in practice. Use the same snippet, but make `location /` require Authentik as well:
+**Keep the frontend port private.** Only NPM should reach port 8001.
+- **If NPM runs in Docker on the same host:** attach the frontend to NPM's network (see the comment in `docker-compose.yml`) and set `FRONTEND_BIND=127.0.0.1`, or remove the `ports:` mapping.
+- **Otherwise:** firewall the port so only NPM's IP can connect.
 
-```nginx
-proxy_buffers 8 16k;
-proxy_buffer_size 32k;
-port_in_redirect off;
-
-location / {
-    auth_request        /outpost.goauthentik.io/auth/nginx;
-    error_page          401 = @goauthentik_proxy_signin;
-    auth_request_set    $auth_cookie $upstream_http_set_cookie;
-    add_header          Set-Cookie $auth_cookie;
-
-    auth_request_set    $authentik_username $upstream_http_x_authentik_username;
-    proxy_set_header    X-authentik-username $authentik_username;
-
-    proxy_pass          $forward_scheme://$server:$port;
-    proxy_set_header    Host $host;
-    proxy_set_header    X-Forwarded-Proto $scheme;
-    proxy_set_header    X-Forwarded-For $proxy_add_x_forwarded_for;
-}
-
-# ... plus the same `location /outpost.goauthentik.io` and
-# `location @goauthentik_proxy_signin` blocks as in Option B
-```
+`FORWARDED_ALLOW_IPS` defaults to private networks. Set it to NPM's IP if you can.
 
 ---
 
 ## 4. Exposing the API for scripts and apps (optional)
 
-Browser users never need the backend directly. If you want API access for scripts, mobile apps or API keys, create a **second** proxy host without Authentik. Those clients authenticate with `X-API-Key` or a bearer token.
-
-| Field | Value |
-| --- | --- |
-| Domain Names | `time-api.example.com` |
-| Forward Hostname / IP / Port | backend host, `8000` |
-| SSL | certificate + Force SSL |
-| Advanced | see below |
+Browser users never need the backend directly. For scripts, mobile apps or API keys, publish the backend with a **second** proxy host, e.g. `time-api.example.com` → `udtime2-backend:8000`, with SSL. In its Advanced tab:
 
 ```nginx
-# The trusted login is only meant for the frontend on the internal network
+# Only the frontend may use the trusted login
 location = /api/v1/auth/trusted { return 404; }
-
 location / {
     proxy_pass       $forward_scheme://$server:$port;
     proxy_set_header Host $host;
@@ -234,39 +131,31 @@ location / {
 }
 ```
 
-`/api/v1/auth/trusted` also requires `FRONTEND_SERVICE_SECRET`, so blocking it is a second layer of protection.
-
-Create API keys with:
+Create API keys on the **Profile** page (API keys panel), or from the command line:
 
 ```bash
-cd backend && uv run python -m app.cli create-apikey --user <username> --scopes timer:write,sync:read --name phone
+docker exec -it udtime2-backend python -m app.cli create-apikey --user <name> --scopes timer:write,sync:read --name phone
 ```
 
 ---
 
-## 5. Testing the setup
+## 5. Testing
 
-1. **Header spoofing must fail.** This must **not** sign you in:
-   ```bash
-   curl -si https://time.example.com/sso -H "X-Authentik-Username: johan" | head -1
-   ```
-   With Option B you should get a `302` to `/outpost.goauthentik.io/start…`. You must not get a `303` to `/`.
-2. **Same for the other pages:**
-   ```bash
-   curl -si https://time.example.com/ -H "X-Authentik-Username: johan" | grep -i location
-   ```
-   This should redirect to `/login`.
-3. **In a private browser window**, open `https://time.example.com/login` and click **Sign in with udauth**. You should land on Authentik, sign in, and arrive on the udTime home page with "Sign out (SSO)" in the sidebar.
-4. **Sign out** should return you to Authentik's signed-out page, and `/` should ask you to sign in again.
+1. In a private window, open `https://time.example.com/login` and click **Sign in with udauth**. You should end up on the udTime home page with "Sign out (SSO)" in the sidebar.
+2. **Sign out** should land on Authentik's signed-out page.
+3. `curl -sI https://time.example.com/login` should show `strict-transport-security`, `content-security-policy` and `x-frame-options: DENY`.
+4. `curl -s -o /dev/null -w '%{http_code}' https://time.example.com/sso/callback?code=x&state=forged` should return `400`.
+5. From outside your network, port 8001 on the server must not answer.
 
 ## Troubleshooting
 
 | Symptom | Cause / fix |
 | --- | --- |
-| "No udauth sign-in was received. Is /sso protected by the proxy?" | `/sso` didn't go through `auth_request`. Check the `location = /sso` block and that the proxy host uses it. |
-| "&lt;user&gt; has no udTime account" | The Authentik username doesn't match any `userdb.username`. Rename one of them, or register the user in udTime. |
-| Redirect loop between `/sso` and Authentik | The application isn't added to the outpost (2.3), or the `/outpost.goauthentik.io` `proxy_pass` points to the wrong host or port. |
-| 502 on `/outpost.goauthentik.io/...` | NPM can't reach Authentik. Use the container name or IP and port `9000` that NPM can resolve. |
-| "Single sign-on is not enabled" | `TRUST_AUTHENTIK_HEADER` isn't `true` in `frontend/.env`. Restart the frontend after changing it. |
-| Signed in, but redirected to `http://` URLs | Start the frontend with `--proxy-headers --forwarded-allow-ips`, and keep `X-Forwarded-Proto` in the nginx config. |
-| "upstream sent too big header" in the NPM logs | Keep the `proxy_buffers` / `proxy_buffer_size` lines. |
+| "Single sign-on is not configured" | `OIDC_ISSUER` / `OIDC_CLIENT_ID` are empty. Restart after setting them. |
+| "Could not reach the identity provider" | The frontend container can't resolve or reach `OIDC_ISSUER`. Check DNS and firewall from inside the container. |
+| Authentik: "Redirect URI Error" | The redirect URI in the provider must exactly match `https://time.example.com/sso/callback`. Set `OIDC_REDIRECT_URI` if udTime builds an `http://` URL. |
+| `http://` redirect URI / cookie not kept | NPM must send `X-Forwarded-Proto`, and NPM's IP must be covered by `FORWARDED_ALLOW_IPS`. |
+| "Invalid sign-in token (Audience doesn't match)" | `OIDC_CLIENT_ID` differs from the provider's client ID. |
+| "… has no udTime account" | The Authentik username doesn't match any `userdb.username`. |
+| "The identity provider sent no 'preferred_username' claim" | Add the `profile` scope mapping to the provider, or change `OIDC_USERNAME_CLAIM`. |
+| "Sign-in expired or was not started here" | The sign-in took more than 10 minutes, or the session cookie was lost. Check `SESSION_HTTPS_ONLY` against http/https. |

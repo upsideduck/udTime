@@ -17,6 +17,12 @@ from .serialize import break_dict, project_dict, work_dict
 from .stats import update_stats
 
 KEEP_COMMENT = "NOCHANGE"
+MAX_CLOCK_SKEW = 60
+
+
+def _not_in_future(ts: int) -> None:
+    if ts > tu.now_ts() + MAX_CLOCK_SKEW:
+        raise DomainError("Time cannot be in the future")
 
 
 def _set_state(user: User, period_id: int | None, kind: str | None) -> None:
@@ -51,6 +57,7 @@ def _apply_comment(target, comment: str | None) -> None:
 def start_work(
     db: Session, user: User, ts: int, comment: str | None = None, project_id: int | None = None, resend_check=True
 ) -> str:
+    _not_in_future(ts)
     _repair_state(db, user)
     if resend_check:
         existing = db.scalars(select(Work.id).where(Work.member_id == user.member_id, Work.starttime == ts)).first()
@@ -80,8 +87,7 @@ def start_break(db: Session, user: User, ts: int, comment: str | None = None) ->
     work = db.get(Work, user.activeperiod)
     if ts < work.starttime:
         raise DomainError("Break cannot start before the work period")
-    if ts > tu.now_ts() + 60:
-        raise DomainError("Break cannot start in the future")
+    _not_in_future(ts)
     last_end = db.scalar(select(func.max(Break.endtime)).where(Break.parent_id == work.id))
     if last_end is not None and ts < last_end:
         raise DomainError("Break cannot start before the previous break ended")
@@ -96,6 +102,7 @@ def start_break(db: Session, user: User, ts: int, comment: str | None = None) ->
 
 
 def end_break(db: Session, user: User, ts: int, comment: str | None = None) -> str:
+    _not_in_future(ts)
     if db.scalars(select(Break.id).where(Break.member_id == user.member_id, Break.endtime == ts)).first():
         return "Break end already registered (synced)"
     _repair_state(db, user)
@@ -114,6 +121,7 @@ def end_break(db: Session, user: User, ts: int, comment: str | None = None) -> s
 
 def end_work(db: Session, user: User, ts: int, comment: str | None = None) -> str:
     """Ends the work period, ending an active break first (as call_api's endwork did)."""
+    _not_in_future(ts)
     messages = []
     _repair_state(db, user)
     active = _active_work(db, user)

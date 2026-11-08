@@ -10,9 +10,9 @@ import datetime as dt
 import sys
 
 from .db import SessionLocal
-from .models import ApiKey
-from .security import LEGACY_SCOPES, SCOPES, expand_scopes, generate_api_key, hash_api_key
-from .services import stats, users
+from .errors import DomainError
+from .security import LEGACY_SCOPES, SCOPES, expand_scopes
+from .services import apikeys, stats, timeutil, users
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -53,22 +53,15 @@ def main(argv: list[str] | None = None) -> int:
         if not scopes:
             print("No valid scopes given", file=sys.stderr)
             return 1
-        plain = generate_api_key()
         expires = None
         if args.expires_days:
-            expires = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None) + dt.timedelta(days=args.expires_days)
-        db.add(
-            ApiKey(
-                member_id=user.member_id,
-                key_hash=hash_api_key(plain),
-                scopes=";".join(sorted(scopes)),
-                name=args.name,
-                expires_at=expires,
-                is_active=1,
-            )
-        )
-        db.commit()
-        print(plain)
+            expires = dt.datetime.now(timeutil.user_tz(user)).date() + dt.timedelta(days=args.expires_days)
+        try:
+            created = apikeys.create_key(db, user, args.name or "cli", sorted(scopes), expires)
+        except DomainError as exc:
+            print(exc.message, file=sys.stderr)
+            return 1
+        print(created["key"])
         print(f"Scopes: {', '.join(sorted(scopes))}", file=sys.stderr)
     return 0
 

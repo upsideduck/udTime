@@ -21,16 +21,29 @@ def _paginate(rows: list, page: int) -> tuple[list, int, int]:
     return rows[(page - 1) * PAGE_SIZE : page * PAGE_SIZE], page, pages
 
 
+def _schedule_changes(periods: list[dict], kind: str) -> dict[tuple[int, int], dict]:
+    """Schedule periods (except the first) by the (iso year, week) or (year, month) they start in."""
+    changes = {}
+    for period in periods[1:]:
+        day = dt.date.fromisoformat(period["valid_from"])
+        changes[day.isocalendar()[:2] if kind == "week" else (day.year, day.month)] = period
+    return changes
+
+
 @router.get("/summary/week-totals")
 async def week_totals(request: Request, api: Api, page: int = 1):
-    rows, page, pages = _paginate(await api.get("/stats/balance/weeks"), page)
-    return render(request, "week_totals.html", rows=rows, page=page, pages=pages)
+    balance, periods = await asyncio.gather(api.get("/stats/balance/weeks"), api.get("/schedules"))
+    rows, page, pages = _paginate(balance, page)
+    return render(request, "week_totals.html", rows=rows, page=page, pages=pages,
+                  changes=_schedule_changes(periods, "week"))
 
 
 @router.get("/summary/month-totals")
 async def month_totals(request: Request, api: Api, page: int = 1):
-    rows, page, pages = _paginate(await api.get("/stats/balance/months"), page)
-    return render(request, "month_totals.html", rows=rows, page=page, pages=pages)
+    balance, periods = await asyncio.gather(api.get("/stats/balance/months"), api.get("/schedules"))
+    rows, page, pages = _paginate(balance, page)
+    return render(request, "month_totals.html", rows=rows, page=page, pages=pages,
+                  changes=_schedule_changes(periods, "month"))
 
 
 def _today(request: Request) -> dt.date:
@@ -100,7 +113,7 @@ async def calendar_events(request: Request, api: Api, start: str, end: str):
             "title": _work_title(w["worked"]),
             "start": iso(w["starttime"]),
             "end": iso(w["endtime"]),
-            "color": "#4f46e5",
+            "color": "#1C4A38",
             "extendedProps": {"kind": "work", "itemId": w["id"], "comment": w["comment"] or ""},
         })
         for b in w["breaks"]:
@@ -109,11 +122,11 @@ async def calendar_events(request: Request, api: Api, start: str, end: str):
                     "title": "Break",
                     "start": iso(b["starttime"]),
                     "end": iso(b["endtime"]),
-                    "color": "#f59e0b",
+                    "color": "#B07D2B",
                     "classNames": ["break"],
                     "extendedProps": {"kind": "break", "itemId": b["id"]},
                 })
-    for kind, items, color in (("asworktime", asw, "#8b5cf6"), ("againstworktime", agw, "#10b981")):
+    for kind, items, color in (("asworktime", asw, "#4A5D7E"), ("againstworktime", agw, "#A0522D")):
         for item in items:
             events.append({
                 "title": f"{item['typelabel'] or kind} {item['time_hms']}",
@@ -125,7 +138,7 @@ async def calendar_events(request: Request, api: Api, start: str, end: str):
     for title, ts in (("Registered", me["registerdate"]), ("Stats begin ->", me["statsstartdate"])):
         day = dt.datetime.fromtimestamp(ts, tz).date()
         if first <= day <= last:
-            events.append({"title": title, "start": day.isoformat(), "allDay": True, "color": "#64748b"})
+            events.append({"title": title, "start": day.isoformat(), "allDay": True, "color": "#6B6255"})
     return events
 
 

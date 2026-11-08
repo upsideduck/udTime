@@ -1,6 +1,7 @@
 """Shared web helpers: templates, session login, rendering HTMX fragments."""
 
 import datetime as dt
+import hashlib
 import json
 from pathlib import Path
 from typing import Annotated
@@ -52,6 +53,23 @@ def sign_class(value) -> str:
 
 templates.env.filters.update(hms=format_hms, hm=format_hm, localtime=localtime, sign_class=sign_class)
 
+STATIC_DIR = Path(__file__).parent / "static"
+_static_versions: dict[str, tuple[float, str]] = {}
+
+
+def static_url(name: str) -> str:
+    """/static/<name>?v=<content hash>, so browsers fetch a changed file instead of a cached one."""
+    path = STATIC_DIR / name
+    mtime = path.stat().st_mtime
+    cached = _static_versions.get(name)
+    if cached is None or cached[0] != mtime:
+        cached = (mtime, hashlib.sha256(path.read_bytes()).hexdigest()[:10])
+        _static_versions[name] = cached
+    return f"/static/{name}?v={cached[1]}"
+
+
+templates.env.globals["static_url"] = static_url
+
 
 # --- session / auth -------------------------------------------------------------------
 
@@ -64,7 +82,7 @@ def session_tz(request: Request) -> ZoneInfo:
         return ZoneInfo(settings.default_timezone)
 
 
-def store_login(request: Request, token_response: dict, sso: bool) -> None:
+def store_login(request: Request, token_response: dict, sso: bool, id_token: str | None = None) -> None:
     user = token_response["user"]
     request.session.clear()
     request.session.update(
@@ -72,29 +90,15 @@ def store_login(request: Request, token_response: dict, sso: bool) -> None:
         sso=sso,
         user={k: user.get(k) for k in ("member_id", "username", "firstname", "lastname", "timezone", "admin")},
     )
-
-
-def sso_username(request: Request) -> str | None:
-    if not settings.trust_authentik_header:
-        return None
-    return request.headers.get(settings.authentik_header) or None
+    if id_token:
+        request.session["id_token"] = id_token
 
 
 async def get_backend(request: Request) -> Backend:
-    client = request.app.state.http
     token = request.session.get("token")
-    sso_user = sso_username(request)
-    current = (request.session.get("user") or {}).get("username")
-    if sso_user and (not token or current != sso_user):
-        try:
-            store_login(request, await Backend(client).trusted_login(sso_user), sso=True)
-        except BackendError:
-            request.session.clear()
-            raise NotLoggedIn()
-        token = request.session["token"]
     if not token:
         raise NotLoggedIn()
-    return Backend(client, token)
+    return Backend(request.app.state.http, token)
 
 
 Api = Annotated[Backend, Depends(get_backend)]
@@ -109,7 +113,7 @@ def context(request: Request, **ctx) -> dict:
         "me": request.session.get("user"),
         "sso": request.session.get("sso", False),
         "tz": session_tz(request),
-        "sso_enabled": settings.trust_authentik_header,
+        "sso_enabled": settings.oidc_enabled,
         "sso_label": settings.sso_label,
         **ctx,
     }

@@ -139,13 +139,13 @@ def test_month_csv(client, user, auth):
 
 
 def test_registration_disabled_by_default(client):
-    body = {"username": "new", "password": "secret1", "workweek_hours": 40}
+    body = {"username": "new", "password": "secret-pass1", "workweek_hours": 40}
     assert client.post(f"{API}/users", json=body).status_code == 403
 
 
 def test_registration(client, db, monkeypatch):
     monkeypatch.setattr("app.routers.auth.settings.allow_registration", True)
-    body = {"username": "new", "password": "secret1", "workweek_hours": 40, "timezone": "Europe/Stockholm"}
+    body = {"username": "new", "password": "secret-pass1", "workweek_hours": 40, "timezone": "Europe/Stockholm"}
     res = client.post(f"{API}/users", json=body)
     assert res.status_code == 201, res.text
     user = db.scalars(select(User).where(User.username == "new")).one()
@@ -162,3 +162,34 @@ def test_switch_and_end_within_same_second(client, db, user, auth):
     res = client.post(f"{API}/timer/end-work", json={"timestamp": new_start}, headers=auth)
     assert res.json()["timer"]["state"] == "free"
     assert db.scalars(select(Work).where(Work.endtime.is_(None))).first() is None
+
+
+def test_change_password(client, auth):
+    url = f"{API}/users/me/password"
+    assert client.put(url, json={"current_password": "wrong", "new_password": "newpassword"},
+                      headers=auth).status_code == 400
+    assert client.put(url, json={"current_password": "secret", "new_password": "short"}, headers=auth).status_code == 422
+    res = client.put(url, json={"current_password": "secret", "new_password": "newpassword"}, headers=auth)
+    assert res.status_code == 200, res.text
+    assert client.post(f"{API}/auth/login", json={"username": "johan", "password": "secret"}).status_code == 401
+    assert client.post(f"{API}/auth/login", json={"username": "johan", "password": "newpassword"}).status_code == 200
+
+    key = client.post(f"{API}/apikeys", json={"name": "k", "scopes": ["profile:write"]}, headers=auth).json()["key"]
+    assert client.put(url, json={"current_password": "newpassword", "new_password": "another1"},
+                      headers={"X-API-Key": key}).status_code == 403
+
+
+def test_change_password_rate_limited(client, auth):
+    url = f"{API}/users/me/password"
+    for _ in range(10):
+        client.put(url, json={"current_password": "wrong", "new_password": "newpassword"}, headers=auth)
+    res = client.put(url, json={"current_password": "secret", "new_password": "newpassword"}, headers=auth)
+    assert res.status_code == 429
+
+
+def test_update_profile(client, auth):
+    res = client.patch(f"{API}/users/me", json={"offset": -3600, "timezone": "America/New_York"}, headers=auth)
+    assert res.status_code == 200, res.text
+    me = client.get(f"{API}/auth/me", headers=auth).json()
+    assert (me["offset"], me["timezone"]) == (-3600, "America/New_York")
+    assert client.patch(f"{API}/users/me", json={"timezone": "Mars/Base"}, headers=auth).status_code == 400

@@ -1,0 +1,41 @@
+{% from "partials/_changes.html" import changes_table with context %}
+{% set total = (preview.weeks.changes | length) + (preview.months.changes | length) %}
+<form hx-post="/forms/schedule/apply" hx-disabled-elt="find button" hx-disinherit="hx-disabled-elt">
+  <div class="modal-header">
+    <h5 class="modal-title">Review schedule change</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  </div>
+  <div class="modal-body">
+    {% for name in ("op", "id", "valid_from", "dworkweek") %}<input type="hidden" name="{{ name }}" value="{{ values[name] }}">{% endfor %}
+    {% for d in values.workdays %}<input type="hidden" name="workdays" value="{{ d }}">{% endfor %}
+    <div class="alert alert-light border small">
+      {% if values.op == "delete" %}
+        Remove the period from <strong>{{ period.valid_from }}</strong> ({{ period.dworkweek | hm }} h over
+        {{ period.workdays_label }}). The previous period then continues in its place.
+      {% else %}
+        {{ "Change the period to" if values.op == "update" else "From" }} <strong>{{ body.valid_from }}</strong>:
+        <strong>{{ body.dworkweek | hm }} h</strong> over
+        <strong>{% for d in body.workdays %}{{ weekdays[d - 1] }}{{ ", " if not loop.last }}{% endfor %}</strong>
+        ({{ (body.dworkweek // (body.workdays | length)) | hm }} h a day).
+      {% endif %}
+    </div>
+    {% if total %}
+      <p class="small text-muted">Nothing has been saved yet. Applying updates
+        {{ total }} cached week and month row{{ "" if total == 1 else "s" }} as below.</p>
+      {{ changes_table("Weeks", preview.weeks) }}
+      {{ changes_table("Months", preview.months) }}
+    {% else %}
+      <p class="small text-muted mb-0">No past weeks or months change{% if values.op != "delete" %}; the schedule only
+        affects days that haven't happened yet{% endif %}.</p>
+    {% endif %}
+  </div>
+  <div class="modal-footer">
+    {% if values.op != "delete" %}
+    <button type="button" class="btn btn-soft me-auto" hx-post="/forms/schedule/back" hx-target="#modal-content">
+      <i class="bi bi-arrow-left"></i> Back</button>
+    {% endif %}
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    <button type="submit" class="btn {{ 'btn-danger' if values.op == 'delete' else 'btn-primary' }}">
+      <i class="bi bi-check2"></i> {{ "Remove period" if values.op == "delete" else "Apply" }}</button>
+  </div>
+</form>

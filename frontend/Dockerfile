@@ -22,19 +22,25 @@ RUN useradd --no-create-home --uid 10001 udtime && chown -R udtime /app
 USER udtime
 
 # --- Runtime configuration (override with `docker run -e` / compose `environment:`) ---
-# Secrets below are placeholders only: always set real values at runtime.
+# SESSION_SECRET and FRONTEND_SERVICE_SECRET have no default: the app refuses to start until
+# they are set to random values (min 16 characters).
 # SESSION_HTTPS_ONLY=true needs https (the proxy); set it to false to test over plain http.
-# FORWARDED_ALLOW_IPS: trust X-Forwarded-* from these addresses (the reverse proxy).
+# OIDC_*: single sign-on with OpenID Connect (Authentik); empty OIDC_ISSUER disables it.
+# FORWARDED_ALLOW_IPS: proxies allowed to set X-Forwarded-* (private networks by default).
 ENV BACKEND_URL="http://udtime2-backend:8000" \
-    SESSION_SECRET="change-me" \
+    SESSION_SECRET="" \
     SESSION_HTTPS_ONLY="true" \
-    FRONTEND_SERVICE_SECRET="change-me-too" \
-    TRUST_AUTHENTIK_HEADER="false" \
-    AUTHENTIK_HEADER="X-Authentik-Username" \
-    AUTHENTIK_LOGOUT_URL="/outpost.goauthentik.io/sign_out" \
-    SSO_LABEL="udauth" \
+    SESSION_MAX_AGE="43200" \
+    FRONTEND_SERVICE_SECRET="" \
     DEFAULT_TIMEZONE="Europe/Stockholm" \
-    FORWARDED_ALLOW_IPS="*"
+    OIDC_ISSUER="" \
+    OIDC_CLIENT_ID="" \
+    OIDC_CLIENT_SECRET="" \
+    OIDC_REDIRECT_URI="" \
+    OIDC_SCOPES="openid profile email" \
+    OIDC_USERNAME_CLAIM="preferred_username" \
+    SSO_LABEL="udauth" \
+    FORWARDED_ALLOW_IPS="127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
 
 EXPOSE 8001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

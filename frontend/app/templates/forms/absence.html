@@ -1,4 +1,4 @@
-<form hx-post="/forms/absence/{{ kind }}" hx-disabled-elt="find button[type=submit]">
+<form hx-post="/forms/absence/{{ kind }}" hx-disabled-elt="find button[type=submit]" hx-disinherit="hx-disabled-elt">
   <div class="modal-header">
     <h5 class="modal-title">{{ title }}{% if item %} – {{ item.date }}{% endif %}</h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -26,7 +26,7 @@
         <label class="form-label">Time per day</label>
         <input class="form-control" name="time" pattern="\d{1,2}:\d{2}(:\d{2})?" placeholder="Standard day"
                value="{{ item.time_hms if item else '' }}">
-        <div class="form-text">HH:MM, empty for a standard working day. Weekends are skipped.</div>
+        <div class="form-text">HH:MM, empty for that day's standard working day. Days off in your work schedule are skipped.</div>
       </div>
       <div class="col-sm-6">
         <label class="form-label">Type</label>

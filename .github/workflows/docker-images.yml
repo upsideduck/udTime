@@ -1,0 +1,72 @@
+# Build udtime2-backend and udtime2-frontend on every push to main and publish them to
+# GitHub Container Registry (ghcr.io/<owner>/udtime2-*), tagged `latest` and `YYYYMMDD_HHMMSS` (UTC).
+name: Docker images
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: docker-images-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  stamp:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.stamp.outputs.tag }}
+      owner: ${{ steps.stamp.outputs.owner }}
+    steps:
+      # One timestamp for the whole run, so backend and frontend from the same commit share a tag
+      - id: stamp
+        run: |
+          echo "tag=$(date -u +%Y%m%d_%H%M%S)" >> "$GITHUB_OUTPUT"
+          echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: stamp
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [backend, frontend]
+    env:
+      IMAGE: ghcr.io/${{ needs.stamp.outputs.owner }}/udtime2-${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Labels link the package to this repository on GitHub
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ needs.stamp.outputs.tag }}
+          labels: |
+            org.opencontainers.image.title=udtime2-${{ matrix.service }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.service }}
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+      - name: Summary
+        run: echo "Pushed \`${IMAGE}:latest\` and \`${IMAGE}:${{ needs.stamp.outputs.tag }}\`" >> "$GITHUB_STEP_SUMMARY"

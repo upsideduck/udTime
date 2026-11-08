@@ -1,5 +1,9 @@
 import datetime as dt
 import hashlib
+import os
+
+os.environ.setdefault("JWT_SECRET", "test-jwt-secret-0123456789abcdef")
+os.environ.setdefault("FRONTEND_SERVICE_SECRET", "test-service-secret-0123456789")
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -57,6 +61,14 @@ def make_user(db, username="johan", password="secret", statsstart=None, offset=0
 @pytest.fixture
 def user(db):
     return make_user(db)
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limits():
+    from app import ratelimit
+
+    for limiter in (ratelimit.by_username, ratelimit.by_ip):
+        limiter._failures.clear()
 
 
 @pytest.fixture

@@ -25,6 +25,17 @@ def hash_password(password: str) -> str:
     return _hasher.hash(password)
 
 
+_DUMMY_HASH = _hasher.hash("udtime-dummy-password")
+
+
+def burn_password_check(password: str) -> None:
+    """Spend the same time as a real check so unknown usernames can't be detected by timing."""
+    try:
+        _hasher.verify(_DUMMY_HASH, password)
+    except (VerifyMismatchError, VerificationError, InvalidHashError):
+        pass
+
+
 def verify_password(password: str, stored: str) -> tuple[bool, bool]:
     """Returns (valid, needs_rehash)."""
     if not stored:

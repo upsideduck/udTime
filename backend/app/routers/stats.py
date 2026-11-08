@@ -15,7 +15,8 @@ Reader = Annotated[User, Depends(require("stats:read"))]
 
 @router.get("/stats/summary")
 def summary(db: DB, user: Reader, types: str = Query("today,thisweek,thismonth", description=",".join(NAMED_SPANS))):
-    return stats.summary(db, user, [t.strip() for t in types.split(",") if t.strip()])
+    names = list(dict.fromkeys(t.strip() for t in types.split(",") if t.strip()))
+    return stats.summary(db, user, names[: len(NAMED_SPANS)])
 
 
 @router.get("/stats/week/{year}/{week}")

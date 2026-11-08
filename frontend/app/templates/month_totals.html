@@ -13,11 +13,16 @@
 <div class="surface overflow-hidden">
   <div class="table-responsive">
     <table class="table table-clean table-hover align-middle">
-      <thead><tr><th>Month</th><th>Worked</th><th>Difference</th><th>Balance</th><th class="actions"></th></tr></thead>
+      <thead><tr><th>Month</th><th>To work</th><th>Worked</th><th>Difference</th><th>Balance</th><th class="actions"></th></tr></thead>
       <tbody>
       {% for r in rows %}
         <tr>
-          <td><span class="fw-semibold">{{ months[r.month] }}</span> <span class="text-muted">{{ r.year }}</span></td>
+          <td><span class="fw-semibold">{{ months[r.month] }}</span> <span class="text-muted">{{ r.year }}</span>
+            {% set change = changes.get((r.year, r.month)) %}
+            {% if change %}<div class="small text-muted mt-1" title="New work schedule"><i class="bi bi-calendar-event"></i>
+              {{ change.dworkweek | hm }} h · {{ change.workdays_label }} from {{ change.valid_from }}</div>{% endif %}
+          </td>
+          <td>{{ r.towork | hm }}</td>
           <td>{{ r.workedtime[:-3] }}</td>
           {% if r.ongoing %}
             <td colspan="2"><span class="pill work"><span class="dot"></span> In progress</span></td>
@@ -28,7 +33,7 @@
           <td class="actions"><a class="btn-icon" href="/summary/month?year={{ r.year }}&month={{ r.month }}" title="Open month"><i class="bi bi-arrow-right"></i></a></td>
         </tr>
       {% else %}
-        <tr><td colspan="5" class="text-muted py-4 text-center">No statistics yet.</td></tr>
+        <tr><td colspan="6" class="text-muted py-4 text-center">No statistics yet.</td></tr>
       {% endfor %}
       </tbody>
     </table>

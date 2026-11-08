@@ -17,6 +17,23 @@ Span = tuple[int, int]  # (start, end) inclusive, in unix seconds
 
 _HHMM = re.compile(r"^(\d{1,2}):(\d{2})(?::(\d{2}))?$")
 
+# Sanity bounds for user input, so a request can't trigger recomputing centuries of statistics
+MIN_YEAR, MAX_YEAR = 2000, 2100
+MIN_TIMESTAMP = 946684800  # 2000-01-01
+MAX_FUTURE_SECONDS = 400 * 86400
+MAX_RANGE_DAYS = 366
+
+
+def check_year(year: int) -> None:
+    if not MIN_YEAR <= year <= MAX_YEAR:
+        raise DomainError(f"Year must be between {MIN_YEAR} and {MAX_YEAR}")
+
+
+def check_timestamp(ts: int) -> int:
+    if ts < MIN_TIMESTAMP or ts > now_ts() + MAX_FUTURE_SECONDS:
+        raise DomainError("Time is out of the allowed range")
+    return ts
+
 
 def now_ts() -> int:
     return int(time.time())
@@ -47,6 +64,7 @@ def date_span(first: dt.date, last: dt.date, tz: ZoneInfo) -> Span:
 
 
 def week_monday(iso_year: int, week: int) -> dt.date:
+    check_year(iso_year)
     try:
         return dt.date.fromisocalendar(iso_year, week, 1)
     except ValueError as exc:
@@ -59,6 +77,7 @@ def week_span(iso_year: int, week: int, tz: ZoneInfo) -> Span:
 
 
 def month_last_day(year: int, month: int) -> dt.date:
+    check_year(year)
     if not 1 <= month <= 12:
         raise DomainError(f"Invalid month {month}")
     nxt = dt.date(year + 1, 1, 1) if month == 12 else dt.date(year, month + 1, 1)
@@ -66,7 +85,8 @@ def month_last_day(year: int, month: int) -> dt.date:
 
 
 def month_span(year: int, month: int, tz: ZoneInfo) -> Span:
-    return date_span(dt.date(year, month, 1), month_last_day(year, month), tz)
+    last = month_last_day(year, month)  # validates year and month
+    return date_span(dt.date(year, month, 1), last, tz)
 
 
 def shift_week(iso_year: int, week: int, delta: int) -> tuple[int, int]:
@@ -131,10 +151,10 @@ def parse_timestamp(value: str | int | None, tz: ZoneInfo) -> int:
     if value is None or (isinstance(value, str) and not value.strip()):
         return now_ts()
     if isinstance(value, int):
-        return value
+        return check_timestamp(value)
     value = value.strip()
     if value.lstrip("-").isdigit():
-        return int(value)
+        return check_timestamp(int(value))
     if match := _HHMM.match(value):
         h, m, s = (int(g or 0) for g in match.groups())
         if h > 23 or m > 59 or s > 59:
@@ -147,7 +167,7 @@ def parse_timestamp(value: str | int | None, tz: ZoneInfo) -> int:
         raise DomainError(f"Invalid timestamp '{value}'") from exc
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=tz)
-    return int(parsed.timestamp())
+    return check_timestamp(int(parsed.timestamp()))
 
 
 def parse_duration(value: str | int | None) -> int:
@@ -155,14 +175,17 @@ def parse_duration(value: str | int | None) -> int:
     if value is None or value == "":
         return 0
     if isinstance(value, int):
-        return value
-    value = value.strip()
-    if value.isdigit():
-        return int(value)
-    if match := _HHMM.match(value):
+        seconds = value
+    elif (value := value.strip()).isdigit():
+        seconds = int(value)
+    elif match := _HHMM.match(value):
         h, m, s = (int(g or 0) for g in match.groups())
-        return h * 3600 + m * 60 + s
-    raise DomainError(f"Invalid duration '{value}'")
+        seconds = h * 3600 + m * 60 + s
+    else:
+        raise DomainError(f"Invalid duration '{value}'")
+    if seconds > 86400:
+        raise DomainError("A duration can be at most 24 hours")
+    return seconds
 
 
 def format_hms(seconds: int | float) -> str:

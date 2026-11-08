@@ -1,0 +1,43 @@
+{# Macros for showing proposed statistics changes (dry runs) #}
+{% set field_labels = {"towork": "To work", "worked": "Worked", "asworktime": "As work time", "againstworktime": "Reduction"} %}
+{% macro signed(seconds) %}<span class="{{ (seconds | hms) | sign_class }}">{% if seconds > 0 %}+{% endif %}{{ seconds | hm }}</span>{% endmacro %}
+{% macro changes_table(title, section) %}
+  <div class="surface overflow-hidden mb-3">
+    <div class="surface-header">
+      <h3 class="surface-title">{{ title }}</h3>
+      <span class="small text-muted">{{ section.checked }} checked ·
+        <strong class="{{ 'text-warning' if section.changes else '' }}">{{ section.changes | length }} to update</strong></span>
+    </div>
+    <div class="surface-body d-flex flex-wrap gap-4 small border-bottom">
+      <div><div class="text-muted">Balance to date</div><div class="fw-semibold fs-6">{{ signed(section.balance_before) }}</div></div>
+      <div class="align-self-end text-muted pb-1"><i class="bi bi-arrow-right"></i></div>
+      <div><div class="text-muted">To date after update</div><div class="fw-semibold fs-6">{{ signed(section.balance_after) }}</div></div>
+      {% set delta = section.balance_after - section.balance_before %}
+      {% if delta %}<div><div class="text-muted">Change</div><div class="fw-semibold fs-6">{{ signed(delta) }}</div></div>{% endif %}
+    </div>
+    {% if section.changes %}
+    <div class="table-responsive" style="max-height: 420px">
+      <table class="table table-clean align-middle">
+        <thead><tr><th>Period</th><th>Status</th><th>Values (old → new)</th><th>Difference (old → new)</th></tr></thead>
+        <tbody>
+        {% for c in section.changes %}
+          <tr>
+            <td class="fw-semibold">{{ c.period }}</td>
+            <td>{% if c.status == "missing" %}<span class="tag accent">new row</span>{% else %}<span class="tag">changed</span>{% endif %}</td>
+            <td class="small">
+              {% for field, v in c.fields.items() %}
+                <span class="text-nowrap me-3"><span class="text-muted">{{ field_labels[field] }}</span>
+                  {% if v.old is not none %}{{ v.old | hm }} → {% endif %}<strong>{{ v.new | hm }}</strong></span>
+              {% endfor %}
+            </td>
+            <td class="small text-nowrap">
+              {% if c.old_diff is not none %}{{ signed(c.old_diff) }} → {% endif %}<strong>{{ signed(c.new_diff) }}</strong>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+{% endmacro %}

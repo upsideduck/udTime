@@ -66,11 +66,19 @@ class Backend:
         return await self.request("DELETE", path, **kwargs)
 
     async def trusted_login(self, username: str) -> dict:
+        """Backend sign-in for a user the frontend has authenticated itself (OIDC)."""
         return await self.post(
             "/auth/trusted",
             {"username": username},
             headers={"X-Service-Secret": settings.frontend_service_secret},
         )
+
+    async def password_login(self, username: str, password: str, client_ip: str | None) -> dict:
+        """Password sign-in; passes the real client IP so the backend can rate-limit per IP."""
+        headers = {"X-Service-Secret": settings.frontend_service_secret}
+        if client_ip:
+            headers["X-Client-IP"] = client_ip
+        return await self.post("/auth/login", {"username": username, "password": password}, headers=headers)
 
 
 def make_client() -> httpx.AsyncClient:

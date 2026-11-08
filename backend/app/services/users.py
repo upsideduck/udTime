@@ -1,9 +1,12 @@
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..errors import Conflict, DomainError
 from ..models import User
-from ..security import hash_password, verify_password
+from ..security import burn_password_check, hash_password, verify_password
+from . import schedule
 from . import timeutil as tu
 
 MAX_AVATAR_BYTES = 20000
@@ -16,6 +19,7 @@ def find_by_username(db: Session, username: str) -> User | None:
 def authenticate(db: Session, username: str, password: str) -> User | None:
     user = find_by_username(db, username)
     if user is None:
+        burn_password_check(password)
         return None
     valid, needs_rehash = verify_password(password, user.password)
     if not valid:
@@ -24,6 +28,30 @@ def authenticate(db: Session, username: str, password: str) -> User | None:
         user.password = hash_password(password)
         db.commit()
     return user
+
+
+def update_profile(db: Session, user: User, changes: dict) -> None:
+    if changes.get("timezone") is not None:
+        try:
+            ZoneInfo(changes["timezone"])
+        except (ZoneInfoNotFoundError, ValueError):
+            raise DomainError(f"Unknown timezone: {changes['timezone']}") from None
+    for field in ("offset", "timezone"):
+        if changes.get(field) is not None:
+            setattr(user, field, changes[field])
+    db.commit()
+
+
+def change_password(db: Session, user: User, current: str, new: str) -> bool:
+    """Returns False when the current password is wrong."""
+    valid, _ = verify_password(current, user.password)
+    if not valid:
+        return False
+    if new == current:
+        raise DomainError("The new password must differ from the current one")
+    user.password = hash_password(new)
+    db.commit()
+    return True
 
 
 def register(
@@ -61,6 +89,8 @@ def register(
     user.timezone = tu.user_tz(user).key
     user.statsstartdate = tu.midnight(tu.local_date(now, tu.user_tz(user)), tu.user_tz(user))
     db.add(user)
+    db.flush()
+    schedule.create_base_period(db, user)
     db.commit()
     return user
 

@@ -27,6 +27,15 @@ cp docker.env.example docker.env   # Docker Hub username + access token (git-ign
 
 Each image is tagged `latest` and `YYYYMMDD_HHMMSS`, as `<namespace>/udtime2-backend` / `<namespace>/udtime2-frontend`.
 
+### GitHub Container Registry
+
+Every push to `main` builds both images in GitHub Actions ([.github/workflows/docker-images.yml](.github/workflows/docker-images.yml)) and publishes them to the repository's packages:
+
+- `ghcr.io/upsideduck/udtime2-backend`
+- `ghcr.io/upsideduck/udtime2-frontend`
+
+Each build is tagged `latest` and `YYYYMMDD_HHMMSS` (UTC, shared by both images of a run). It can also be started by hand from the Actions tab. To run them with compose, set `UDTIME_IMAGE_PREFIX=ghcr.io/upsideduck/` in `.env`. While the packages are private, `docker login ghcr.io` first with a personal access token that has `read:packages`.
+
 - **Uploading:** builds for `DOCKER_PLATFORMS` (default `linux/amd64`) and pushes to hub.docker.com.
 - **Local builds:** load the image into your local Docker for your own platform.
 
@@ -47,7 +56,9 @@ Setting up the reverse proxy and SSO is covered in [docs/authentik-nginx-proxy-m
 
 ## Migrating from the PHP version
 
-**Database.** The tables are not changed. The new code uses `lookups` and ignores the legacy `lookup` and `weeksdb` tables.
+**Database.** The existing tables are not changed. The new code uses `lookups` and ignores the legacy `lookup` and `weeksdb` tables. udTime 2.0 adds one table, `workschedule`, for work schedules that change over time.
+
+**Database updates.** When the backend starts, it checks whether the database needs patches ([backend/app/migrations.py](backend/app/migrations.py)). While any are pending, the API answers `503` except for sign-in, and the web app sends everyone to `/setup`. There, an admin can review each patch and its SQL, confirm they have a backup, and apply it. The old PHP app keeps working on the patched database.
 
 **Passwords.** md5 hashes are upgraded to argon2 at each user's next login. After that, the old PHP app can no longer log that user in.
 
@@ -65,4 +76,5 @@ Setting up the reverse proxy and SSO is covered in [docs/authentik-nginx-proxy-m
 - **Timezones.** The user's timezone is applied everywhere, including API calls. Week and month boundaries are local midnights and use ISO years.
 - **Registration.** It works without being logged in when `ALLOW_REGISTRATION=true`, and it sets every required column.
 - **Project colours.** Projects get a colour, and it is shown in the GUI.
+- **Work schedules.** The work week and its workdays can change over time (Profile → Change schedule). Targets are counted per day with the schedule valid that day, for weeks and months alike. Absence ranges fill only workdays. With a 5-day week this gives exactly the PHP numbers. `userdb.dworkweek` and `daysinworkweek` always hold today's schedule.
 - **Removed.** XML output, the Redis publish, the long-poll `events.php`, the unused `edit.php` forms and the test scripts.

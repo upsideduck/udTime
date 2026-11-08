@@ -72,3 +72,10 @@ def require_admin(principal: Annotated[Principal, Depends(get_principal)]) -> Us
     if principal.scopes is not None or not principal.user.admin:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Admin only")
     return principal.user
+
+
+def require_login(principal: Annotated[Principal, Depends(get_principal)]) -> User:
+    """A password or SSO login (bearer token); API keys are refused."""
+    if principal.scopes is not None:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Not allowed with an API key")
+    return principal.user

@@ -17,6 +17,7 @@ from sqlalchemy import (
     SmallInteger,
     String,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -186,6 +187,23 @@ class ApiKey(Base):
     last_used_at: Mapped[dt.datetime | None] = mapped_column(TIMESTAMP, nullable=True)
     name: Mapped[str | None] = mapped_column(String(255))
     created_at: Mapped[dt.datetime] = mapped_column(TIMESTAMP, nullable=False, default=utcnow)
+
+
+class WorkSchedule(Base):
+    """Work schedule periods (added by udTime 2.0, see app/migrations.py). A row applies from
+    `valid_from` until the next row; userdb.dworkweek/daysinworkweek mirror today's row."""
+
+    __tablename__ = "workschedule"
+    __table_args__ = (UniqueConstraint("member_id", "valid_from", name="member_valid_from"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    member_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    valid_from: Mapped[dt.date] = mapped_column(Date, nullable=False)
+    dworkweek: Mapped[int] = mapped_column(Integer, nullable=False)
+    daysinworkweek: Mapped[int] = mapped_column(Integer, nullable=False)
+    # ISO weekday digits, e.g. "1245" = Mon, Tue, Thu, Fri; empty = the first daysinworkweek days
+    workdays: Mapped[str | None] = mapped_column(String(7))
+    modified: Mapped[dt.datetime] = modified_column()
 
 
 class Deleted(Base):
