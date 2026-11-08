@@ -37,8 +37,12 @@ async def profile(request: Request, api: Api):
 
 @router.get("/profile/card")
 async def profile_card(request: Request, api: Api):
-    return render(request, "partials/profile_card.html", profile=await api.get("/auth/me"),
-                  schedules=await api.get("/schedules"))
+    return render(request, "partials/profile_card.html", profile=await api.get("/auth/me"))
+
+
+@router.get("/profile/schedule")
+async def schedule_card(request: Request, api: Api):
+    return render(request, "partials/schedule_card.html", schedules=await api.get("/schedules"))
 
 
 @cache
@@ -201,6 +205,11 @@ async def upload_avatar(request: Request, api: Api, file: Annotated[UploadFile, 
     return htmx_response(toast(request, "Avatar updated"), trigger={"avatarChanged": True}, reswap="none")
 
 
+@router.get("/forms/password")
+async def password_form(request: Request, api: Api):  # Api: signed-in users only
+    return render(request, "forms/password.html", headers={"HX-Trigger-After-Swap": '{"openModal": true}'})
+
+
 @router.post("/profile/password")
 async def change_password(
     request: Request,
@@ -215,7 +224,7 @@ async def change_password(
         await api.put("/users/me/password", {"current_password": current_password, "new_password": new_password})
     except BackendError as exc:
         return failed(request, exc)
-    return htmx_response(toast(request, "Password changed"), trigger={"passwordChanged": True}, reswap="none")
+    return htmx_response(toast(request, "Password changed"), trigger={"closeModal": True}, reswap="none")
 
 
 @router.get("/admin/recompute/preview")

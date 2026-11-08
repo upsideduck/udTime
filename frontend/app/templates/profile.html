@@ -9,41 +9,11 @@
 </div>
 
 <div class="row g-4">
-  <div class="col-lg-7">
+  <div class="{{ 'col-lg-7' if profile.admin else 'col-12' }}">
     {% include "partials/profile_card.html" %}
   </div>
-
-  <div class="col-lg-5 d-flex flex-column gap-4">
-    <div class="surface">
-      <div class="surface-header"><h2 class="surface-title">Password</h2></div>
-      <div class="surface-body">
-        {% if sso %}<p class="small text-muted">You signed in with {{ sso_label }}. This changes the password for
-          the udTime login form only.</p>{% endif %}
-        <form id="password-form" hx-post="/profile/password" hx-disabled-elt="find button" hx-disinherit="hx-disabled-elt">
-          <input type="text" name="username" value="{{ profile.username }}" autocomplete="username" hidden>
-          <div class="mb-2">
-            <label class="form-label" for="current_password">Current password</label>
-            <input class="form-control" type="password" id="current_password" name="current_password"
-                   autocomplete="current-password" required>
-          </div>
-          <div class="row g-2 mb-3">
-            <div class="col-sm-6">
-              <label class="form-label" for="new_password">New password</label>
-              <input class="form-control" type="password" id="new_password" name="new_password" minlength="8"
-                     maxlength="1024" autocomplete="new-password" required>
-            </div>
-            <div class="col-sm-6">
-              <label class="form-label" for="confirm_password">Repeat new password</label>
-              <input class="form-control" type="password" id="confirm_password" name="confirm_password" minlength="8"
-                     maxlength="1024" autocomplete="new-password" required>
-            </div>
-          </div>
-          <button class="btn btn-primary">Change password</button>
-          <span class="form-text ms-2">At least 8 characters.</span>
-        </form>
-      </div>
-    </div>
-    {% if profile.admin %}
+  {% if profile.admin %}
+  <div class="col-lg-5">
     <div class="surface">
       <div class="surface-header"><h2 class="surface-title">Maintenance</h2></div>
       <div class="surface-body">
@@ -56,9 +26,10 @@
           <span class="spinner-border spinner-border-sm"></span> Calculating…</span>
       </div>
     </div>
-    {% endif %}
   </div>
+  {% endif %}
 </div>
+<div class="mt-4">{% include "partials/schedule_card.html" %}</div>
 {% if profile.admin %}<div id="recompute-result" class="mt-4"></div>{% endif %}
 <div class="mt-4">{% include "partials/apikeys.html" %}</div>
 {% endblock %}

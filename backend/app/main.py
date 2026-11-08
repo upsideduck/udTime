@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import PlainTextResponse, JSONResponse, RedirectResponse
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
 
 from . import migrations
 from .config import settings
@@ -95,6 +95,11 @@ def create_app() -> FastAPI:
     @app.exception_handler(DomainError)
     async def domain_error(_: Request, exc: DomainError):
         return JSONResponse({"detail": exc.message}, status_code=exc.status_code)
+
+    @app.exception_handler(OperationalError)
+    async def database_unavailable(_: Request, exc: OperationalError):
+        log.error("Database unavailable: %s", exc.orig)
+        return JSONResponse({"detail": "The database is not reachable right now. Try again shortly."}, status_code=503)
 
     for module in (auth, timer, periods, absences, projects, stats, apikeys, schedules, schema):
         app.include_router(module.router, prefix=API_PREFIX)

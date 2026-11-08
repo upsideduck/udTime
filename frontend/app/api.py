@@ -39,7 +39,10 @@ class Backend:
         headers = kwargs.pop("headers", {})
         if self.token:
             headers["Authorization"] = f"Bearer {self.token}"
-        response = await self.client.request(method, API_PREFIX + path, headers=headers, **kwargs)
+        try:
+            response = await self.client.request(method, API_PREFIX + path, headers=headers, **kwargs)
+        except httpx.TransportError as exc:  # backend down, restarting, or dropped the connection
+            raise BackendError(503, "The udTime server is not reachable right now. Try again shortly.") from exc
         if response.status_code == 401 and self.token:
             raise NotLoggedIn()
         if response.status_code >= 400:

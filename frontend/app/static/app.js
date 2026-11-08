@@ -81,10 +81,6 @@ document.addEventListener("click", (e) => {
 });
 
 // Empty the password form after a successful change
-document.body.addEventListener("passwordChanged", () => {
-  const form = document.getElementById("password-form");
-  if (form) form.reset();
-});
 
 // Work schedule form: days per week = the ticked workdays; keep "standard day" = work week / days
 function toMinutes(text) {
