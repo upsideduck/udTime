@@ -1,1 +1,0 @@
-<div id="resultpan" class="ui-widget"><div id="result" class=""></div></div>
