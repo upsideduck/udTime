@@ -25,13 +25,41 @@ function tickClocks() {
 }
 setInterval(tickClocks, 1000);
 
+// Date/time fields: browsers draw native pickers in their own locale (e.g. mm/dd/yyyy, AM/PM),
+// so flatpickr shows ISO dates and 24-hour time instead. Submitted values stay ISO
+// (2026-11-09, 2026-11-09 08:30:00, 08:30), which the server parses.
+const PICKERS = {
+  date: { dateFormat: "Y-m-d" },
+  datetime: { dateFormat: "Y-m-d H:i:S", enableTime: true, enableSeconds: true },
+  time: { dateFormat: "H:i", enableTime: true, noCalendar: true },
+};
+
+function initPickers(root) {
+  if (!window.flatpickr) return;
+  root.querySelectorAll("input[data-picker]").forEach((el) => {
+    if (el._flatpickr) return;
+    flatpickr(el, {
+      ...PICKERS[el.dataset.picker],
+      time_24hr: true,
+      allowInput: true,
+      disableMobile: true, // native mobile pickers would bring the locale format back
+      static: true, // render inside the modal, so Bootstrap's focus trap allows typing in it
+      locale: { firstDayOfWeek: 1 },
+      onChange: (_, __, fp) => fp.input.dispatchEvent(new Event("input", { bubbles: true })),
+    });
+  });
+}
+
 htmx.onLoad((root) => {
   root.querySelectorAll(".clock[data-server-time]").forEach((el) => {
     el._skew = Number(el.dataset.serverTime) - Date.now() / 1000;
   });
   tickClocks();
   showToasts();
+  initPickers(root);
 });
+// flatpickr loads deferred, after htmx's first onLoad on a full page
+window.addEventListener("DOMContentLoaded", () => initPickers(document));
 
 function showToasts() {
   document.querySelectorAll("#toasts .toast:not(.shown)").forEach((el) => {

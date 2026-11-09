@@ -21,10 +21,10 @@ def _modal(request: Request, name: str, **ctx):
 
 def _prefill_times(request: Request, date: str | None, start: str | None, end: str | None) -> tuple[str, str]:
     tz = session_tz(request)
-    if start and end:
-        return start[:19], end[:19]
+    if start and end:  # from a calendar selection, e.g. 2026-11-09T08:00:00
+        return start[:19].replace("T", " "), end[:19].replace("T", " ")
     day = dt.date.fromisoformat(date) if date else dt.datetime.now(tz).date()
-    return f"{day.isoformat()}T08:00:00", f"{day.isoformat()}T17:00:00"
+    return f"{day.isoformat()} 08:00:00", f"{day.isoformat()} 17:00:00"
 
 
 # --- work -----------------------------------------------------------------------------

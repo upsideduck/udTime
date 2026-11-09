@@ -85,19 +85,33 @@ def test_week_detail(db, user):
 
 
 def test_week_to_date(db, user, monkeypatch):
-    # "Today" is Wednesday 2024-01-03: target Mon-Wed = 24h, worked Mon 9h + Tue 8h, holiday Wed 4h
-    monkeypatch.setattr(stats.tu, "now_ts", lambda: ts(2024, 1, 3, 12))
+    # "Today" is Thursday 2024-01-04, so the completed days are Mon-Wed: target 24h,
+    # worked Mon 9h + Tue 8h, holiday Wed 4h. Thursday's work so far is left out.
+    monkeypatch.setattr(stats.tu, "now_ts", lambda: ts(2024, 1, 4, 12))
     add_work(db, user, ts(2024, 1, 1, 8), ts(2024, 1, 1, 17))
     add_work(db, user, ts(2024, 1, 2, 8), ts(2024, 1, 2, 16))
+    add_work(db, user, ts(2024, 1, 4, 8), ts(2024, 1, 4, 11))
     db.add(AgainstWorkTime(member_id=user.member_id, date=dt.date(2024, 1, 3), time=4 * 3600, type=1))
     db.commit()
     totals = stats.week_detail(db, user, 2024, 1)["totals"]
-    assert totals["diff"] == 17 * 3600 - (40 - 4) * 3600
+    assert totals["diff"] == 20 * 3600 - (40 - 4) * 3600
     to_date = totals["to_date"]
     assert to_date["through"] == "2024-01-03"
+    assert to_date["days"] == 3
     assert to_date["towork_incl_againstworktime"] == 20 * 3600
+    assert to_date["worked_incl_asworktime"] == 17 * 3600
     assert to_date["diff"] == -3 * 3600
     assert stats.week_detail(db, user, 2024, 2)["totals"]["to_date"] is None
+
+
+def test_week_to_date_on_first_day(db, user, monkeypatch):
+    # On Monday no day of the week is complete yet: nothing counts, not even today's work
+    monkeypatch.setattr(stats.tu, "now_ts", lambda: ts(2024, 1, 1, 15))
+    add_work(db, user, ts(2024, 1, 1, 8), ts(2024, 1, 1, 14))
+    to_date = stats.week_detail(db, user, 2024, 1)["totals"]["to_date"]
+    assert to_date["days"] == 0
+    assert to_date["through"] == "2023-12-31"
+    assert to_date["diff"] == 0
 
 
 def test_preview_recompute_writes_nothing(db, monkeypatch):

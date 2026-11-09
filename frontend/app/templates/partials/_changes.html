@@ -9,9 +9,9 @@
         <strong class="{{ 'text-warning' if section.changes else '' }}">{{ section.changes | length }} to update</strong></span>
     </div>
     <div class="surface-body d-flex flex-wrap gap-4 small border-bottom">
-      <div><div class="text-muted">Balance to date</div><div class="fw-semibold fs-6">{{ signed(section.balance_before) }}</div></div>
+      <div><div class="text-muted">Balance through yesterday</div><div class="fw-semibold fs-6">{{ signed(section.balance_before) }}</div></div>
       <div class="align-self-end text-muted pb-1"><i class="bi bi-arrow-right"></i></div>
-      <div><div class="text-muted">To date after update</div><div class="fw-semibold fs-6">{{ signed(section.balance_after) }}</div></div>
+      <div><div class="text-muted">After update</div><div class="fw-semibold fs-6">{{ signed(section.balance_after) }}</div></div>
       {% set delta = section.balance_after - section.balance_before %}
       {% if delta %}<div><div class="text-muted">Change</div><div class="fw-semibold fs-6">{{ signed(delta) }}</div></div>{% endif %}
     </div>
@@ -22,7 +22,8 @@
         <tbody>
         {% for c in section.changes %}
           <tr>
-            <td class="fw-semibold">{{ c.period }}</td>
+            <td class="fw-semibold">{{ c.period }}
+              {% if c.to_date %}<div class="small fw-normal text-muted text-nowrap">current, through yesterday</div>{% endif %}</td>
             <td>{% if c.status == "missing" %}<span class="tag accent">new row</span>{% else %}<span class="tag">changed</span>{% endif %}</td>
             <td class="small">
               {% for field, v in c.fields.items() %}

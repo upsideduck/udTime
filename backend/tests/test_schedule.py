@@ -2,7 +2,7 @@ import datetime as dt
 
 from sqlalchemy import func, select, text
 
-from app.models import AsWorkTime, MonthStats, WeekStats, WorkSchedule
+from app.models import AsWorkTime, MonthStats, WeekStats, Work, WorkSchedule
 from app.services import schedule as sch
 from app.services import stats
 
@@ -96,11 +96,40 @@ def test_preview_saves_nothing(client, db, user, auth):
              db.scalar(select(func.sum(WeekStats.towork))), db.scalar(select(func.sum(MonthStats.towork))))
     assert before == after
 
-    # Applying gives exactly the previewed balance
+    # Applying gives exactly the previewed balance. The preview stops at yesterday; the stored
+    # week total also includes what today and the rest of this week add.
     client.post(f"{API}/schedules", json={"valid_from": "2024-03-04", "dworkweek": 30 * H, "daysinworkweek": 4},
                 headers=auth)
     weeks = client.get(f"{API}/stats/balance/weeks", headers=auth).json()
-    assert weeks[-1]["total"] - preview["weeks"]["future_target"] == preview["weeks"]["balance_after"]
+    assert weeks[-1]["total"] - preview["weeks"]["pending"] == preview["weeks"]["balance_after"]
+
+
+def test_preview_differences_run_through_yesterday(client, db, user, auth, monkeypatch):
+    # 8 h days, changed to 7 h days (35 h week) from Monday 2024-03-04. "Today" is Wednesday
+    # 2024-03-13: 3 h worked so far today and a vacation day booked for Friday must not count.
+    monkeypatch.setattr(stats.tu, "now_ts", lambda: ts(2024, 3, 13, 12))
+    for day in (4, 5, 6, 7, 8, 11, 12):
+        db.add(Work(member_id=user.member_id, starttime=ts(2024, 3, day, 8), endtime=ts(2024, 3, day, 15), logged=0))
+    db.add(Work(member_id=user.member_id, starttime=ts(2024, 3, 13, 8), endtime=ts(2024, 3, 13, 11), logged=0))
+    db.add(AsWorkTime(member_id=user.member_id, date=dt.date(2024, 3, 15), time=8 * H, type=1))
+    db.commit()
+    stats.recompute_all(db, user)
+
+    preview = client.post(f"{API}/schedules/preview", json={"op": "create", "valid_from": "2024-03-04",
+                                                             "dworkweek": 35 * H, "daysinworkweek": 5},
+                          headers=auth).json()
+    assert preview["through"] == "2024-03-12"
+    weeks = {c["period"]: c for c in preview["weeks"]["changes"]}
+    # Past week: 35 h worked against 40 h, then 35 h
+    assert (weeks["2024-W10"]["old_diff"], weeks["2024-W10"]["new_diff"]) == (-5 * H, 0)
+    assert not weeks["2024-W10"]["to_date"]
+    # Current week, Mon-Tue only: 14 h worked against 16 h, then 14 h
+    assert (weeks["2024-W11"]["old_diff"], weeks["2024-W11"]["new_diff"]) == (-2 * H, 0)
+    assert weeks["2024-W11"]["to_date"]
+    # March through the 12th: Fri 1st (8 h, before the change) + 7 days of 7 h worked
+    month = preview["months"]["changes"][0]
+    assert (month["old_diff"], month["new_diff"]) == (49 * H - 64 * H, 49 * H - 57 * H)
+    assert preview["weeks"]["balance_after"] - preview["weeks"]["balance_before"] == 7 * H
 
 
 def test_absence_standard_day_follows_schedule(client, db, user, auth):

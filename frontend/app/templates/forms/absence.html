@@ -13,11 +13,11 @@
     <div class="row g-2 mb-3">
       <div class="col-sm-6">
         <label class="form-label">From</label>
-        <input class="form-control" type="date" name="start_date" value="{{ start }}" required>
+        <input class="form-control" type="text" data-picker="date" placeholder="YYYY-MM-DD" autocomplete="off" name="start_date" value="{{ start }}" required>
       </div>
       <div class="col-sm-6">
         <label class="form-label">To (inclusive)</label>
-        <input class="form-control" type="date" name="end_date" value="{{ end }}" required>
+        <input class="form-control" type="text" data-picker="date" placeholder="YYYY-MM-DD" autocomplete="off" name="end_date" value="{{ end }}" required>
       </div>
     </div>
     {% endif %}

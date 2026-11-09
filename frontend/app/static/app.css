@@ -431,6 +431,38 @@ a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; tex
 .legend-dot.againstworktime { background: var(--ev-againstworktime); }
 .legend-dot.asworktime { background: var(--ev-asworktime); }
 
+/* ---- date & time pickers (flatpickr) ---------------------------------------------- */
+
+.flatpickr-wrapper { display: block; width: 100%; }
+.flatpickr-calendar {
+  background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius);
+  box-shadow: 0 12px 32px rgba(20, 16, 12, .18); font-family: var(--font-text); width: auto;
+}
+.flatpickr-calendar::before, .flatpickr-calendar::after { display: none; }
+.flatpickr-calendar.static { top: calc(100% + 4px); z-index: 1060; }
+.flatpickr-months .flatpickr-month, .flatpickr-current-month input.cur-year,
+.flatpickr-current-month .flatpickr-monthDropdown-months { color: var(--app-text); fill: var(--app-text); }
+.flatpickr-current-month { font-size: 1rem; font-weight: 600; }
+.flatpickr-current-month .flatpickr-monthDropdown-months { background: transparent; }
+.flatpickr-current-month .flatpickr-monthDropdown-months option { background: var(--app-surface); }
+.flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month { color: var(--app-muted); fill: var(--app-muted); }
+.flatpickr-months .flatpickr-prev-month:hover svg, .flatpickr-months .flatpickr-next-month:hover svg { fill: var(--app-accent); }
+span.flatpickr-weekday { color: var(--app-muted); font-weight: 600; font-size: .75rem; }
+.flatpickr-day { color: var(--app-text); border-radius: var(--app-radius-sm); }
+.flatpickr-day:hover, .flatpickr-day:focus { background: var(--app-surface-2); border-color: var(--app-surface-2); }
+.flatpickr-day.today { border-color: var(--app-accent); }
+.flatpickr-day.today:hover { background: var(--app-accent-soft); color: var(--app-accent); border-color: var(--app-accent); }
+.flatpickr-day.selected, .flatpickr-day.selected:hover, .flatpickr-day.selected:focus {
+  background: var(--app-accent); border-color: var(--app-accent); color: var(--app-on-accent);
+}
+.flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay, .flatpickr-day.flatpickr-disabled { color: var(--app-muted); opacity: .55; }
+.flatpickr-time { border-top: 1px solid var(--app-border) !important; }
+.flatpickr-time input, .flatpickr-time .flatpickr-time-separator, .flatpickr-time .flatpickr-am-pm { color: var(--app-text); font-variant-numeric: tabular-nums; }
+.flatpickr-time input:hover, .flatpickr-time input:focus, .flatpickr-time .flatpickr-am-pm:hover { background: var(--app-surface-2); }
+.flatpickr-time .numInputWrapper span.arrowUp::after { border-bottom-color: var(--app-muted); }
+.flatpickr-time .numInputWrapper span.arrowDown::after { border-top-color: var(--app-muted); }
+.numInputWrapper:hover { background: var(--app-surface-2); }
+
 /* ---- modal & toast --------------------------------------------------------------- */
 
 .modal-content { border: 1px solid var(--app-border); border-top: 3px solid var(--app-rule); border-radius: var(--app-radius); background: var(--app-surface); box-shadow: 0 24px 60px rgba(20, 16, 12, .22); }

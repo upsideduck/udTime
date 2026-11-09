@@ -1,23 +1,25 @@
 {# Summary tiles for a week or month. Expects `t` (totals), `period` ("week"/"month") and optional `label`. #}
 {% set td = t.to_date %}
+{# Completed days only (today is left out); on the period's first day there are none yet #}
+{% macro so_far(content) %}<span>{% if td.days %}{{ content }}{% else %}<span title="No completed days yet">—</span>{% endif %}</span>{% endmacro %}
 {% macro signed(value, text) %}<span class="{{ text | sign_class }}">{% if value > 0 %}+{% endif %}{{ text }} h</span>{% endmacro %}
 <div class="row g-3">
   <div class="col-sm-4"><div class="surface stat-tile h-100">
     <div class="stat-label"><i class="bi bi-flag"></i> To work{% if label %} · {{ label }}{% endif %}</div>
     <div class="stat-value">{{ t.sumtoworkinclfree }} h</div>
     <div class="stat-hint">{{ t.sumtowork }} h{% if t.againstworktime %} − {{ t.sumagainstworktime }} h reduction{% else %} scheduled{% endif %}</div>
-    {% if td %}<div class="stat-split"><span>Up to today</span><span>{{ td.sumtoworkinclfree }} h</span></div>{% endif %}
+    {% if td %}<div class="stat-split"><span>Through yesterday</span>{{ so_far(td.sumtoworkinclfree ~ " h") }}</div>{% endif %}
   </div></div>
   <div class="col-sm-4"><div class="surface stat-tile h-100">
     <div class="stat-label"><i class="bi bi-check2-circle"></i> Worked</div>
     <div class="stat-value">{{ t.sumworkedinclvac }} h</div>
     <div class="stat-hint">{{ t.sumworked }} h{% if t.asworktime %} + {{ t.sumasworktime }} h as work time{% else %} logged{% endif %}</div>
-    {% if td %}<div class="stat-split"><span>Up to today</span><span>{{ td.sumworkedinclvac }} h</span></div>{% endif %}
+    {% if td %}<div class="stat-split"><span>Through yesterday</span>{{ so_far(td.sumworkedinclvac ~ " h") }}</div>{% endif %}
   </div></div>
   <div class="col-sm-4"><div class="surface stat-tile h-100">
     <div class="stat-label"><i class="bi bi-plus-slash-minus"></i> Difference</div>
     <div class="stat-value">{{ signed(t.diff, t.sumdiff) }}</div>
     <div class="stat-hint">{{ "over" if t.diff > 0 else "under" if t.diff < 0 else "on" }} target for the whole {{ period }}</div>
-    {% if td %}<div class="stat-split"><span>Up to today</span><strong>{{ signed(td.diff, td.sumdiff) }}</strong></div>{% endif %}
+    {% if td %}<div class="stat-split"><span>Through yesterday</span><strong>{{ so_far(signed(td.diff, td.sumdiff)) }}</strong></div>{% endif %}
   </div></div>
 </div>

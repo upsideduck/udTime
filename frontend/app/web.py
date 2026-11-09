@@ -40,8 +40,8 @@ def localtime(ts, tz: ZoneInfo, fmt: str = "%Y-%m-%d %H:%M") -> str:
 
 
 def input_value(ts, tz: ZoneInfo) -> str:
-    """Value for <input type=datetime-local step=1>."""
-    return localtime(ts, tz, "%Y-%m-%dT%H:%M:%S")
+    """Value for the date-and-time picker (data-picker="datetime"): ISO with a space separator."""
+    return localtime(ts, tz, "%Y-%m-%d %H:%M:%S")
 
 
 def sign_class(value) -> str:

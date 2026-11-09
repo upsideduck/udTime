@@ -8,11 +8,11 @@
     <div class="row g-2 mb-3">
       <div class="col-sm-6">
         <label class="form-label">Start</label>
-        <input class="form-control" type="datetime-local" step="1" name="starttime" value="{{ start }}" required>
+        <input class="form-control" type="text" data-picker="datetime" placeholder="YYYY-MM-DD HH:MM:SS" autocomplete="off" name="starttime" value="{{ start }}" required>
       </div>
       <div class="col-sm-6">
         <label class="form-label">End</label>
-        <input class="form-control" type="datetime-local" step="1" name="endtime" value="{{ end }}"
+        <input class="form-control" type="text" data-picker="datetime" placeholder="YYYY-MM-DD HH:MM:SS" autocomplete="off" name="endtime" value="{{ end }}"
                {% if work and not work.endtime %}disabled title="Period is running"{% else %}required{% endif %}>
       </div>
     </div>

@@ -44,7 +44,8 @@
     <div class="timer-options">
       <input class="form-control" type="text" name="comment" placeholder="What are you working on?"
              value="{{ timer.work.comment if timer.work and timer.work.comment else '' }}">
-      <input class="form-control" type="time" name="time" title="Leave empty to use the current time">
+      <input class="form-control" type="text" data-picker="time" name="time" placeholder="HH:MM" autocomplete="off"
+             title="Leave empty to use the current time">
     </div>
     <div class="form-text">Leave the time empty to use now.
       <a href="#" hx-get="/forms/work" hx-target="#modal-content" class="ms-1">Add a past entry</a></div>

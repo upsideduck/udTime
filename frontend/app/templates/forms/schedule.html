@@ -8,7 +8,7 @@
     <input type="hidden" name="id" value="{{ values.id }}">
     <div class="mb-3" style="max-width: 16rem">
       <label class="form-label" for="s-from">Applies from</label>
-      <input class="form-control" type="date" id="s-from" name="valid_from" value="{{ values.valid_from }}" required>
+      <input class="form-control" type="text" data-picker="date" placeholder="YYYY-MM-DD" autocomplete="off" id="s-from" name="valid_from" value="{{ values.valid_from }}" required>
     </div>
     <div class="row g-3">
       <div class="col-sm-4">

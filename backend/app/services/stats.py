@@ -162,18 +162,29 @@ def recompute_all(db: Session, user: User) -> None:
 STAT_FIELDS = ("towork", "worked", "asworktime", "againstworktime")
 
 
-def _future_target(user: User, sched: Schedules, first: dt.date, last: dt.date) -> int:
-    """Target time for the workdays after today in [first, last] (not yet due)."""
-    tomorrow = tu.local_date(tu.now_ts(), tu.user_tz(user)) + dt.timedelta(days=1)
-    return _target(user, sched, max(first, tomorrow), last)
+def _pending_diff(db: Session, user: User, sched: Schedules, first: dt.date, last: dt.date) -> int:
+    """What the days from today on in [first, last] add to the period's difference: today's work
+    so far and absences already entered, minus their target. Leaving it out of the current
+    period gives its difference through yesterday, the last completed day."""
+    tz = tu.user_tz(user)
+    from_day = max(first, tu.local_date(tu.now_ts(), tz), tu.local_date(user.statsstartdate, tz))
+    if from_day > last:
+        return 0
+    start, end = tu.midnight(from_day, tz), tu.midnight(last + dt.timedelta(days=1), tz) - 1
+    worked = worked_and_break(db, user.member_id, start, end)[0]
+    asw = absence_summary(db, "asworktime", user.member_id, from_day, last)["sum"]
+    agw = absence_summary(db, "againstworktime", user.member_id, from_day, last)["sum"]
+    return worked + asw - _target(user, sched, from_day, last) + agw
 
 
 def _preview_rows(
-    user: User, existing: dict, computed: list[tuple[tuple[int, int], dict]], label, future: dict, carried: int = 0
+    user: User, existing: dict, computed: list[tuple[tuple[int, int], dict]], label,
+    pending_old: dict, pending_new: dict, carried: int = 0
 ) -> dict:
     """Compare freshly computed stats with the stored rows (the row recompute would update).
-    The balances run up to today: the target of workdays still to come in the current
-    period (`future`) is left out, so week and month balances are comparable."""
+    Differences and balances run through yesterday: what today and the days after it add to the
+    current period (`pending_*`, under the old and the new schedule) is left out, so week and
+    month balances are comparable and a schedule change isn't judged on days still to come."""
     changes = []
     before = after = user.offset
     for key, new in computed:
@@ -186,8 +197,11 @@ def _preview_rows(
             if old_values
             else 0
         )
-        before += old_diff + (future.get(key, 0) if old_values else 0)
-        after += new_diff + future.get(key, 0)
+        if old_values:
+            old_diff -= pending_old.get(key, 0)
+        new_diff -= pending_new.get(key, 0)
+        before += old_diff
+        after += new_diff
         if old_values == new_values:
             continue
         changes.append({
@@ -202,13 +216,14 @@ def _preview_rows(
             },
             "old_diff": old_diff if old_values else None,
             "new_diff": new_diff,
+            "to_date": key in pending_new,  # current period: differences through yesterday
         })
     return {
         "checked": len(computed) - carried,
         "changes": changes,
         "balance_before": before,
         "balance_after": after,
-        "future_target": sum(future.values()),
+        "pending": sum(pending_new.values()),
     }
 
 
@@ -219,7 +234,8 @@ def preview_recompute(
     With `sched` the stats are computed for a proposed schedule; with `start_day` only weeks and
     months from that day on are recomputed (earlier stored rows still count in the balances)."""
     tz = tu.user_tz(user)
-    sched = sched or Schedules.load(db, user)
+    current_sched = Schedules.load(db, user)
+    sched = sched or current_sched
     start, end = user.statsstartdate, tu.now_ts()
     if start_day is not None and start_day > dt.date.min:  # dt.date.min: the whole history
         start = max(start, tu.midnight(start_day, tz))
@@ -249,18 +265,20 @@ def preview_recompute(
     today = tu.local_date(end, tz)
     iso_year, iso_week, _ = today.isocalendar()
     monday = tu.week_monday(iso_year, iso_week)
-    week_future = {(iso_year, iso_week): _future_target(user, sched, monday, monday + dt.timedelta(days=6))}
-    month_future = {
-        (today.year, today.month): _future_target(
-            user, sched, dt.date(today.year, today.month, 1), tu.month_last_day(today.year, today.month)
-        )
-    }
+    week_span = (monday, monday + dt.timedelta(days=6))
+    month_span = (dt.date(today.year, today.month, 1), tu.month_last_day(today.year, today.month))
+
+    def pending(key, span):
+        return ({key: _pending_diff(db, user, current_sched, *span)}, {key: _pending_diff(db, user, sched, *span)})
+
+    week_old, week_new = pending((iso_year, iso_week), week_span)
+    month_old, month_new = pending((today.year, today.month), month_span)
     return {
-        "through": today.isoformat(),
-        "weeks": _preview_rows(user, weeks_rows, week_carried + weeks, lambda y, w: f"{y}-W{w:02d}", week_future,
-                               carried=len(week_carried)),
+        "through": (today - dt.timedelta(days=1)).isoformat(),
+        "weeks": _preview_rows(user, weeks_rows, week_carried + weeks, lambda y, w: f"{y}-W{w:02d}",
+                               week_old, week_new, carried=len(week_carried)),
         "months": _preview_rows(user, months_rows, month_carried + months, lambda y, m: f"{y}-{m:02d}",
-                                month_future, carried=len(month_carried)),
+                                month_old, month_new, carried=len(month_carried)),
     }
 
 
@@ -375,19 +393,20 @@ def _totals(stats: dict) -> dict:
 
 
 def _to_date(user: User, sched: Schedules, rows: list[dict]) -> dict | None:
-    """Totals for the days up to and including today, when today lies inside the period.
-    The target counts each day's scheduled time on or after statsstartdate, matching how the
-    week/month target is built."""
+    """Totals for the completed days (up to and including yesterday), when today lies inside the
+    period. Today is left out while it is still being worked. The target counts each day's
+    scheduled time on or after statsstartdate, matching how the week/month target is built."""
     tz = tu.user_tz(user)
     today = tu.local_date(tu.now_ts(), tz)
     first, last = dt.date.fromisoformat(rows[0]["date"]), dt.date.fromisoformat(rows[-1]["date"])
     if not first <= today <= last:
         return None
+    through = today - dt.timedelta(days=1)
     stats_start = tu.local_date(user.statsstartdate, tz)
     towork = worked = asw = agw = 0.0
     for row in rows:
         day = dt.date.fromisoformat(row["date"])
-        if day > today or day < stats_start:
+        if day > through or day < stats_start:
             continue
         towork += sched.day_target(day)
         worked += sum(p["worked_seconds"] for p in row["periods"])
@@ -395,7 +414,8 @@ def _to_date(user: User, sched: Schedules, rows: list[dict]) -> dict | None:
         agw += row["againstworktime"]["time"] if row["againstworktime"] else 0
     towork_incl, worked_incl = round(towork - agw), round(worked + asw)
     return {
-        "through": today.isoformat(),
+        "through": through.isoformat(),
+        "days": (through - first).days + 1,  # 0 on the period's first day
         "towork_incl_againstworktime": towork_incl,
         "worked_incl_asworktime": worked_incl,
         "diff": worked_incl - towork_incl,
