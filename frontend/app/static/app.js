@@ -85,14 +85,6 @@ document.addEventListener("click", (e) => {
   } catch (err) {}
 });
 
-// Buttons that empty a container, e.g. "Discard" on the stats preview
-document.addEventListener("click", (e) => {
-  const button = e.target.closest("[data-clear]");
-  if (!button) return;
-  const target = document.querySelector(button.dataset.clear);
-  if (target) target.innerHTML = "";
-});
-
 // Reload after a new avatar was uploaded so every avatar image refreshes
 document.body.addEventListener("avatarChanged", () => location.reload());
 

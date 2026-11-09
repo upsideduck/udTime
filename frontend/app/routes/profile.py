@@ -8,7 +8,7 @@ from fastapi import APIRouter, File, Form, Request, UploadFile
 from fastapi.responses import Response
 
 from ..api import BackendError
-from ..web import Api, failed, fragment, htmx_response, render, session_tz, toast
+from ..web import Api, changed, failed, fragment, htmx_response, render, session_tz, toast
 
 router = APIRouter()
 
@@ -233,8 +233,9 @@ async def recompute_preview(request: Request, api: Api):
     try:
         preview = await api.get("/admin/recompute-stats/preview", timeout=RECOMPUTE_TIMEOUT)
     except BackendError as exc:
-        return htmx_response(toast(request, exc.detail, "danger"), reswap="none")
-    return htmx_response(fragment(request, "partials/recompute_preview.html", preview=preview))
+        return failed(request, exc)
+    return render(request, "partials/recompute_preview.html", preview=preview,
+                  headers={"HX-Trigger-After-Swap": '{"openModal": true}'})
 
 
 @router.post("/admin/recompute")
@@ -242,12 +243,8 @@ async def recompute(request: Request, api: Api):
     try:
         result = await api.post("/admin/recompute-stats", timeout=RECOMPUTE_TIMEOUT)
     except BackendError as exc:
-        return htmx_response(toast(request, exc.detail, "danger"), reswap="none")
-    return htmx_response(
-        fragment(request, "partials/recompute_preview.html", applied=True),
-        toast(request, result["message"]),
-        trigger={"dataChanged": True},
-    )
+        return failed(request, exc)
+    return changed(request, result["message"])
 
 
 # --- API keys -------------------------------------------------------------------------

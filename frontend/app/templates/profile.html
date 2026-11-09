@@ -19,7 +19,7 @@
       <div class="surface-body">
         <p class="small text-muted">Recalculate the cached week and month statistics since the statistics start date.
           You will see the proposed changes before anything is saved.</p>
-        <button class="btn btn-soft" hx-get="/admin/recompute/preview" hx-target="#recompute-result"
+        <button class="btn btn-soft" hx-get="/admin/recompute/preview" hx-target="#modal-content"
                 hx-disabled-elt="this" hx-indicator="#recompute-spinner">
           <i class="bi bi-search"></i> Check stats</button>
         <span id="recompute-spinner" class="htmx-indicator small text-muted ms-2">
@@ -30,6 +30,5 @@
   {% endif %}
 </div>
 <div class="mt-4">{% include "partials/schedule_card.html" %}</div>
-{% if profile.admin %}<div id="recompute-result" class="mt-4"></div>{% endif %}
 <div class="mt-4">{% include "partials/apikeys.html" %}</div>
 {% endblock %}

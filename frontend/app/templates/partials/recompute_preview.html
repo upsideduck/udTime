@@ -1,31 +1,24 @@
 {% from "partials/_changes.html" import changes_table with context %}
-<div id="recompute-panel">
-{% if applied %}
-  <div class="surface surface-body d-flex align-items-center gap-3">
-    <span class="pill work"><i class="bi bi-check-lg"></i> Applied</span>
-    <span class="small text-muted">The statistics have been recalculated and saved.</span>
+{% set total = (preview.weeks.changes | length) + (preview.months.changes | length) %}
+<form hx-post="/admin/recompute" hx-disabled-elt="find button" hx-disinherit="hx-disabled-elt">
+  <div class="modal-header">
+    <h5 class="modal-title">Recalculate statistics</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
   </div>
-{% else %}
-  {% set total = (preview.weeks.changes | length) + (preview.months.changes | length) %}
-  <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-3">
-    <div>
-      <h2 class="h5 fw-bold mb-1">Proposed changes</h2>
-      <p class="text-muted small mb-0">
-        {% if total %}Dry run: nothing has been saved yet. Review the changes below.
-        {% else %}Everything is up to date: recalculating would not change anything.{% endif %}
-      </p>
-    </div>
-    <div class="d-flex gap-2">
-      <button class="btn btn-soft" data-clear="#recompute-result">
-        {{ "Discard" if total else "Close" }}</button>
-      {% if total %}
-      <button class="btn btn-primary" hx-post="/admin/recompute" hx-target="#recompute-result" hx-disabled-elt="this"
-              hx-confirm="Apply {{ total }} change{{ '' if total == 1 else 's' }} to the statistics?">
-        <i class="bi bi-check2"></i> Apply changes</button>
-      {% endif %}
-    </div>
+  <div class="modal-body">
+    {% if total %}
+      <p class="small text-muted">Nothing has been saved yet. Applying updates
+        {{ total }} cached week and month row{{ "" if total == 1 else "s" }} as below.</p>
+      {{ changes_table("Weeks", preview.weeks) }}
+      {{ changes_table("Months", preview.months) }}
+    {% else %}
+      <p class="small text-muted mb-0">Everything is up to date: recalculating would not change anything.</p>
+    {% endif %}
   </div>
-  {{ changes_table("Weeks", preview.weeks) }}
-  {{ changes_table("Months", preview.months) }}
-{% endif %}
-</div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ "Cancel" if total else "Close" }}</button>
+    {% if total %}
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Apply</button>
+    {% endif %}
+  </div>
+</form>
