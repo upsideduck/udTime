@@ -1,0 +1,53 @@
+/* Upsideduck brand tokens. Light by default; dark under [data-theme="dark"]. */
+:root {
+  --ud-ink: #14100C;  /* Ink */
+  --ud-cream: #F6F1E4;  /* Cream */
+  --ud-green: #1C4A38;  /* Bottle Green */
+  --app-bg: #EFE8D8;
+  --app-surface: #F6F1E4;
+  --app-surface-2: #ECE5D3;
+  --app-field: #FBF8F0;
+  --app-border: rgba(20, 16, 12, .16);
+  --app-rule: #14100C;
+  --app-text: #14100C;
+  --app-muted: #5C5347;
+  --app-accent: #1C4A38;
+  --app-accent-hover: #143829;
+  --app-accent-soft: rgba(28, 74, 56, .10);
+  --app-on-accent: #F6F1E4;
+  --app-success: #2F6B47;
+  --app-warning: #9A6A1C;
+  --app-danger: #8E2A1E;
+  --data-green: #1C4A38;
+  --data-ochre: #B07D2B;
+  --data-sienna: #A0522D;
+  --data-slate: #4A5D7E;
+  --radius: 3px;
+  --radius-sm: 2px;
+  --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-logo: "IM Fell English", "Iowan Old Style", Palatino, Georgia, serif;   /* logo only */
+  --font-logo-caps: "IM Fell English SC", "IM Fell English", Georgia, serif;   /* logo only */
+}
+
+[data-theme="dark"] {
+  --app-bg: #14100C;
+  --app-surface: #1C1813;
+  --app-surface-2: #252019;
+  --app-field: #17130F;
+  --app-border: rgba(246, 241, 228, .18);
+  --app-rule: #F6F1E4;
+  --app-text: #F6F1E4;
+  --app-muted: #C4BBA9;
+  --app-accent: #A8D6BE;
+  --app-accent-hover: #C2E4D2;
+  --app-accent-soft: rgba(141, 191, 165, .20);
+  --app-on-accent: #14100C;
+  --app-success: #A8D6BE;
+  --app-warning: #E6BA72;
+  --app-danger: #EDA393;
+}
+
+/* Victorian double rule: 2px heavy line over a 1px hairline */
+.double-rule { height: 6px; border: 0; margin: 0;
+  background: linear-gradient(var(--app-rule), var(--app-rule)) top / 100% 2px no-repeat,
+              linear-gradient(var(--app-border), var(--app-border)) bottom / 100% 1px no-repeat; }
