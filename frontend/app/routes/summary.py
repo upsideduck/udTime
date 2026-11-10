@@ -113,7 +113,7 @@ async def calendar_events(request: Request, api: Api, start: str, end: str):
             "title": _work_title(w["worked"]),
             "start": iso(w["starttime"]),
             "end": iso(w["endtime"]),
-            "color": "#1C4A38",
+            "color": "#4F39F6",
             "extendedProps": {"kind": "work", "itemId": w["id"], "comment": w["comment"] or ""},
         })
         for b in w["breaks"]:
@@ -122,11 +122,11 @@ async def calendar_events(request: Request, api: Api, start: str, end: str):
                     "title": "Break",
                     "start": iso(b["starttime"]),
                     "end": iso(b["endtime"]),
-                    "color": "#B07D2B",
+                    "color": "#D08700",
                     "classNames": ["break"],
                     "extendedProps": {"kind": "break", "itemId": b["id"]},
                 })
-    for kind, items, color in (("asworktime", asw, "#4A5D7E"), ("againstworktime", agw, "#A0522D")):
+    for kind, items, color in (("asworktime", asw, "#009689"), ("againstworktime", agw, "#E60076")):
         for item in items:
             events.append({
                 "title": f"{item['typelabel'] or kind} {item['time_hms']}",
@@ -138,7 +138,7 @@ async def calendar_events(request: Request, api: Api, start: str, end: str):
     for title, ts in (("Registered", me["registerdate"]), ("Stats begin ->", me["statsstartdate"])):
         day = dt.datetime.fromtimestamp(ts, tz).date()
         if first <= day <= last:
-            events.append({"title": title, "start": day.isoformat(), "allDay": True, "color": "#6B6255"})
+            events.append({"title": title, "start": day.isoformat(), "allDay": True, "color": "#6A7282"})
     return events
 
 

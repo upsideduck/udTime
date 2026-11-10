@@ -1,74 +1,70 @@
-/* udTime — an Upsideduck app. Layer on top of Bootstrap 5.3:
-   cream ground, ink type, bottle-green accent; Inter for the UI, IM Fell English for the logo only. */
+/* udTime — an Upsideduck app. Layer on top of Bootstrap 5.3, styled to match the udElectrical
+   (tibber.adell.nu) look: DaisyUI's default light/dark palette, indigo accent, system sans, rounded corners. */
 
 :root {
-  /* Upsideduck palette */
-  --ud-ink: #14100C;
-  --ud-cream: #F6F1E4;
-  --ud-green: #1C4A38;
+  /* Upsideduck palette (DaisyUI defaults) */
+  --ud-ink: #18181B;
+  --ud-white: #FFFFFF;
+  --ud-indigo: #4F39F6;
 
-  --app-bg: #EFE8D8;
-  --app-surface: #F6F1E4;
-  --app-surface-2: #ECE5D3;
-  --app-field: #FBF8F0;
-  --app-border: rgba(20, 16, 12, .16);
-  --app-rule: var(--ud-ink);
+  --app-bg: #F8F8F8;
+  --app-surface: #FFFFFF;
+  --app-surface-2: #F2F2F3;
+  --app-field: #FFFFFF;
+  --app-border: #E4E4E7;
+  --app-rule: #D4D4D8;
   --app-text: var(--ud-ink);
-  --app-muted: #5C5347;
-  --app-accent: var(--ud-green);
-  --app-accent-hover: #143829;
-  --app-accent-soft: rgba(28, 74, 56, .10);
-  --app-on-accent: var(--ud-cream);
-  --app-success: #2F6B47;
-  --app-success-soft: rgba(47, 107, 71, .12);
-  --app-warning: #9A6A1C;
-  --app-warning-soft: rgba(176, 125, 43, .15);
-  --app-danger: #8E2A1E;
-  --app-danger-soft: rgba(142, 42, 30, .10);
-  --app-radius: 3px;
-  --app-radius-sm: 2px;
-  --app-shadow: 0 1px 0 rgba(20, 16, 12, .05);
+  --app-muted: #6A7282;
+  --app-accent: var(--ud-indigo);
+  --app-accent-hover: #615FFF;
+  --app-accent-soft: rgba(79, 57, 246, .10);
+  --app-on-accent: var(--ud-white);
+  --app-success: #007A55;
+  --app-success-soft: rgba(0, 211, 144, .14);
+  --app-warning: #A65F00;
+  --app-warning-soft: rgba(252, 183, 0, .18);
+  --app-danger: #C70036;
+  --app-danger-soft: rgba(255, 98, 125, .14);
+  --app-radius: .5rem;
+  --app-radius-sm: .25rem;
+  --app-shadow: 0 1px 3px rgba(0, 0, 0, .08), 0 1px 2px -1px rgba(0, 0, 0, .08);
 
   /* Entry kinds: calendar events and legend (keep in sync with routes/summary.py) */
-  --ev-work: #1C4A38;
-  --ev-break: #B07D2B;
-  --ev-againstworktime: #A0522D;
-  --ev-asworktime: #4A5D7E;
+  --ev-work: #4F39F6;
+  --ev-break: #D08700;
+  --ev-againstworktime: #E60076;
+  --ev-asworktime: #009689;
 
-  /* Logo lockup only */
-  --font-display: "IM Fell English", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
-  --font-caps: "IM Fell English SC", "IM Fell English", Georgia, serif;
-  --font-text: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-text: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   --sidebar-w: 248px;
 }
 
 [data-bs-theme="dark"] {
-  --app-bg: #14100C;
-  --app-surface: #1C1813;
-  --app-surface-2: #252019;
-  --app-field: #17130F;
-  --app-border: rgba(246, 241, 228, .18);
-  --app-rule: var(--ud-cream);
-  --app-text: var(--ud-cream);
-  --app-muted: #C4BBA9;
-  --app-accent: #A8D6BE;
-  --app-accent-hover: #C2E4D2;
-  --app-accent-soft: rgba(141, 191, 165, .20);
-  --app-on-accent: var(--ud-ink);
-  --app-success: #A8D6BE;
-  --app-success-soft: rgba(141, 191, 165, .20);
-  --app-warning: #E6BA72;
-  --app-warning-soft: rgba(217, 168, 90, .20);
-  --app-danger: #EDA393;
-  --app-danger-soft: rgba(224, 138, 120, .20);
-  --app-shadow: none;
+  --app-bg: #1D232A;
+  --app-surface: #1E2939;
+  --app-surface-2: #273447;
+  --app-field: #191E24;
+  --app-border: #364153;
+  --app-rule: #4A5565;
+  --app-text: #ECF9FF;
+  --app-muted: #99A1AF;
+  --app-accent: #605DFF;
+  --app-accent-hover: #7C86FF;
+  --app-accent-soft: rgba(96, 93, 255, .20);
+  --app-on-accent: #FFFFFF;
+  --app-success: #00D390;
+  --app-success-soft: rgba(0, 211, 144, .16);
+  --app-warning: #FCB700;
+  --app-warning-soft: rgba(252, 183, 0, .16);
+  --app-danger: #FF627D;
+  --app-danger-soft: rgba(255, 98, 125, .16);
+  --app-shadow: 0 10px 15px -3px rgba(0, 0, 0, .3), 0 4px 6px -4px rgba(0, 0, 0, .3);
 }
 
 /* ---- base ------------------------------------------------------------------------ */
 
 body {
   font-family: var(--font-text);
-  font-feature-settings: "cv11", "ss01";
   background: var(--app-bg);
   color: var(--app-text);
   --bs-body-bg: var(--app-bg);
@@ -77,26 +73,20 @@ body {
   --bs-border-color: var(--app-border);
   --bs-secondary-color: var(--app-muted);
   --bs-tertiary-bg: var(--app-surface-2);
-  --bs-link-color-rgb: 28, 74, 56;
-  --bs-link-hover-color-rgb: 20, 56, 41;
+  --bs-link-color-rgb: 79, 57, 246;
+  --bs-link-hover-color-rgb: 97, 95, 255;
   --bs-emphasis-color: var(--app-text);
   -webkit-font-smoothing: antialiased;
 }
-[data-bs-theme="dark"] body { --bs-link-color-rgb: 168, 214, 190; --bs-link-hover-color-rgb: 194, 228, 210; }
+[data-bs-theme="dark"] body { --bs-link-color-rgb: 124, 134, 255; --bs-link-hover-color-rgb: 163, 179, 255; }
 
 a { text-decoration: none; }
 a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .18em; }
 .text-muted, .text-body-secondary { color: var(--app-muted) !important; }
 .tabular { font-variant-numeric: tabular-nums; }
-::selection { background: var(--ud-green); color: var(--ud-cream); }
+::selection { background: var(--app-accent); color: var(--app-on-accent); }
 
-/* Victorian double rule: heavy line, then a hairline */
-.double-rule {
-  height: 6px; border: 0; opacity: 1; margin: 0;
-  background:
-    linear-gradient(var(--app-rule), var(--app-rule)) top / 100% 2px no-repeat,
-    linear-gradient(var(--app-border), var(--app-border)) bottom / 100% 1px no-repeat;
-}
+.double-rule { height: 0; border: 0; border-top: 1px solid var(--app-border); opacity: 1; margin: 0; }
 
 /* ---- buttons --------------------------------------------------------------------- */
 
@@ -108,7 +98,7 @@ a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; tex
   --bs-btn-hover-bg: var(--app-accent-hover); --bs-btn-hover-border-color: var(--app-accent-hover);
   --bs-btn-active-bg: var(--app-accent-hover); --bs-btn-active-border-color: var(--app-accent-hover);
   --bs-btn-disabled-bg: var(--app-accent); --bs-btn-disabled-border-color: var(--app-accent);
-  --bs-btn-focus-shadow-rgb: 28, 74, 56;
+  --bs-btn-focus-shadow-rgb: 79, 57, 246;
 }
 .btn-outline-primary {
   --bs-btn-color: var(--app-accent); --bs-btn-border-color: var(--app-accent);
@@ -126,7 +116,7 @@ a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; tex
 }
 .btn-outline-danger {
   --bs-btn-color: var(--app-danger); --bs-btn-border-color: var(--app-danger);
-  --bs-btn-hover-color: var(--ud-cream); --bs-btn-hover-bg: var(--app-danger); --bs-btn-hover-border-color: var(--app-danger);
+  --bs-btn-hover-color: #fff; --bs-btn-hover-bg: var(--app-danger); --bs-btn-hover-border-color: var(--app-danger);
 }
 .btn-soft {
   background: var(--app-surface-2); border: 1px solid var(--app-border); color: var(--app-text);
@@ -182,30 +172,22 @@ a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; tex
   backdrop-filter: blur(8px); border-bottom: 1px solid var(--app-border);
 }
 
-/* Lockup: the Upsideduck ring mark beside the app name, "Upsideduck" set in engraved caps (the only serif in the app) */
-.brand { display: flex; align-items: center; gap: .7rem; color: var(--app-text); }
+/* Lockup: the Upsideduck duck beside the app name, as on udElectrical */
+.brand { display: flex; align-items: center; gap: .6rem; color: var(--app-text); }
 .brand:hover { color: var(--app-text); }
 .brand-mark {
-  width: 2.4rem; height: 2.4rem; flex-shrink: 0; background: currentColor;
-  -webkit-mask: url("brand/mark.svg") center / contain no-repeat; mask: url("brand/mark.svg") center / contain no-repeat;
+  width: 2.5rem; height: 2.5rem; flex-shrink: 0; background: currentColor;
+  -webkit-mask: url("brand/duck.svg") center / contain no-repeat; mask: url("brand/duck.svg") center / contain no-repeat;
 }
-.brand-text { display: flex; flex-direction: column; line-height: 1; }
-.brand-name { font-family: var(--font-display); font-size: 1.55rem; letter-spacing: .01em; }
-.brand-family { font-family: var(--font-caps); font-size: .72rem; letter-spacing: .26em; color: var(--app-muted); margin-top: .3rem; }
-.app-sidebar .brand, .offcanvas .brand { padding-bottom: 1rem; margin-bottom: .25rem; position: relative; }
-.app-sidebar .brand::after, .offcanvas .brand::after {
-  content: ""; position: absolute; left: .5rem; right: .5rem; bottom: 0; height: 5px;
-  background:
-    linear-gradient(var(--app-rule), var(--app-rule)) top / 100% 2px no-repeat,
-    linear-gradient(var(--app-border), var(--app-border)) bottom / 100% 1px no-repeat;
-}
+.brand-name { font-size: 1.25rem; font-weight: 600; line-height: 1; }
+.app-sidebar .brand, .offcanvas .brand { padding-bottom: 1rem; margin-bottom: .25rem; border-bottom: 1px solid var(--app-border); }
 .app-topbar .brand-mark { width: 2rem; height: 2rem; }
-.app-topbar .brand-name { font-size: 1.35rem; }
+.app-topbar .brand-name { font-size: 1.15rem; }
 
-/* Round status seal on the small result pages (registered, error) */
+/* Round status badge on the small result pages (registered, error) */
 .status-mark {
   width: 3.25rem; height: 3.25rem; border-radius: 50%; display: grid; place-items: center; font-size: 1.4rem;
-  border: 2px solid currentColor; box-shadow: 0 0 0 3px var(--app-surface), 0 0 0 4px currentColor;
+  background: color-mix(in srgb, currentColor 14%, transparent);
 }
 .status-mark.success { color: var(--app-success); }
 .status-mark.danger { color: var(--app-danger); }
@@ -224,7 +206,7 @@ a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; tex
 .user-chip { display: flex; align-items: center; gap: .6rem; padding: .25rem .5rem; }
 .avatar-circle {
   width: 2.1rem; height: 2.1rem; border-radius: 50%; display: grid; place-items: center; overflow: hidden;
-  background: var(--ud-green); color: var(--ud-cream); font-weight: 600; font-size: .85rem; flex-shrink: 0;
+  background: var(--app-accent); color: var(--app-on-accent); font-weight: 600; font-size: .85rem; flex-shrink: 0;
   box-shadow: 0 0 0 1px var(--app-surface), 0 0 0 2px var(--app-border);
 }
 .avatar-circle { position: relative; }
@@ -235,14 +217,14 @@ a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; tex
 .avatar-edit { border: 0; padding: 0; cursor: pointer; }
 .avatar-edit-overlay {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: .25rem;
-  background: rgba(20, 16, 12, .55); color: var(--ud-cream); font-size: .8rem; font-weight: 600;
+  background: rgba(0, 0, 0, .55); color: #fff; font-size: .8rem; font-weight: 600;
   opacity: 0; transition: opacity .15s ease;
 }
 .avatar-edit:hover .avatar-edit-overlay, .avatar-edit:focus-visible .avatar-edit-overlay { opacity: 1; }
 .avatar-edit:focus-visible { outline: 2px solid var(--app-accent); outline-offset: 2px; }
 /* Touch screens have no hover: keep a small pencil badge visible */
 @media (hover: none) {
-  .avatar-edit-overlay { opacity: 1; inset: auto 0 0 0; height: 35%; font-size: 0; background: rgba(20, 16, 12, .45); }
+  .avatar-edit-overlay { opacity: 1; inset: auto 0 0 0; height: 35%; font-size: 0; background: rgba(0, 0, 0, .45); }
   .avatar-edit-overlay i { font-size: .8rem; }
 }
 
@@ -253,9 +235,7 @@ a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; tex
 .page-header {
   display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem;
   margin-bottom: 1.75rem; padding-bottom: 1.1rem;
-  background:
-    linear-gradient(var(--app-rule), var(--app-rule)) left bottom 4px / 100% 2px no-repeat,
-    linear-gradient(var(--app-border), var(--app-border)) left bottom / 100% 1px no-repeat;
+  border-bottom: 1px solid var(--app-border);
 }
 .page-title { font-size: 1.6rem; font-weight: 700; letter-spacing: -.02em; margin: 0; }
 .page-subtitle { color: var(--app-muted); margin: .25rem 0 0; }
@@ -316,11 +296,10 @@ a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; tex
 .timer-meta { color: var(--app-muted); font-size: .9rem; }
 .timer-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1.5rem 0 1.25rem; }
 .timer-actions .btn { padding: .7rem 1.4rem; font-size: 1rem; border-radius: var(--app-radius-sm); display: inline-flex; align-items: center; gap: .5rem; }
-.btn-work { background: var(--ud-green); color: var(--ud-cream); border: 1px solid var(--ud-green); }
-.btn-work:hover { background: #143829; color: var(--ud-cream); border-color: #143829; }
-[data-bs-theme="dark"] .btn-work { border-color: rgba(246, 241, 228, .25); }
+.btn-work { background: var(--ud-indigo); color: #fff; border: 1px solid var(--ud-indigo); }
+.btn-work:hover { background: #615FFF; color: #fff; border-color: #615FFF; }
 .btn-break { background: var(--app-warning-soft); color: var(--app-warning); border: 1px solid var(--app-warning); }
-.btn-break:hover { background: var(--app-warning); color: var(--ud-cream); }
+.btn-break:hover { background: var(--app-warning); color: var(--app-surface); }
 .btn-home { background: transparent; color: var(--app-text); border: 1px solid var(--app-rule); }
 .btn-home:hover { background: var(--app-danger-soft); color: var(--app-danger); border-color: var(--app-danger); }
 .timer-options { display: grid; grid-template-columns: 1fr 9rem; gap: .6rem; }
@@ -372,7 +351,7 @@ a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; tex
 .day-row:last-child { border-bottom: 0; }
 .day-row:hover { background: var(--app-surface-2); }
 .day-row.weekend { background: color-mix(in srgb, var(--app-surface-2) 60%, transparent); }
-.day-row.today .day-date .dnum { background: var(--ud-green); border-color: var(--ud-green); color: var(--ud-cream); }
+.day-row.today .day-date .dnum { background: var(--app-accent); border-color: var(--app-accent); color: var(--app-on-accent); }
 .day-date { display: flex; align-items: center; gap: .55rem; }
 .day-date .dnum {
   width: 2.2rem; height: 2.2rem; border-radius: 50%; display: grid; place-items: center;
@@ -436,7 +415,7 @@ a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; tex
 .flatpickr-wrapper { display: block; width: 100%; }
 .flatpickr-calendar {
   background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius);
-  box-shadow: 0 12px 32px rgba(20, 16, 12, .18); font-family: var(--font-text); width: auto;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .18); font-family: var(--font-text); width: auto;
 }
 .flatpickr-calendar::before, .flatpickr-calendar::after { display: none; }
 .flatpickr-calendar.static { top: calc(100% + 4px); z-index: 1060; }
@@ -465,11 +444,11 @@ span.flatpickr-weekday { color: var(--app-muted); font-weight: 600; font-size: .
 
 /* ---- modal & toast --------------------------------------------------------------- */
 
-.modal-content { border: 1px solid var(--app-border); border-top: 3px solid var(--app-rule); border-radius: var(--app-radius); background: var(--app-surface); box-shadow: 0 24px 60px rgba(20, 16, 12, .22); }
+.modal-content { border: 1px solid var(--app-border); border-radius: var(--app-radius); background: var(--app-surface); box-shadow: 0 24px 60px rgba(0, 0, 0, .25); }
 .modal-header, .modal-footer { border-color: var(--app-border); padding: 1rem 1.5rem; }
 .modal-body { padding: 1.25rem 1.5rem; }
 .modal-title { font-weight: 650; font-size: 1.05rem; }
-.modal-backdrop { --bs-backdrop-bg: #14100C; --bs-backdrop-opacity: .45; }
+.modal-backdrop { --bs-backdrop-bg: #000; --bs-backdrop-opacity: .45; }
 .choice-btn {
   display: flex; align-items: center; gap: .9rem; width: 100%; padding: .85rem 1rem; text-align: left;
   border: 1px solid var(--app-border); border-radius: var(--app-radius); background: var(--app-field); color: var(--app-text);
@@ -478,21 +457,20 @@ span.flatpickr-weekday { color: var(--app-muted); font-weight: 600; font-size: .
 .choice-btn .icon { width: 2.4rem; height: 2.4rem; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; }
 .choice-btn small { display: block; color: var(--app-muted); }
 
-.toast { border-radius: var(--app-radius); box-shadow: 0 10px 30px rgba(20, 16, 12, .22); }
-.toast.text-bg-success { background-color: var(--ud-green) !important; color: var(--ud-cream) !important; }
-.toast.text-bg-danger { background-color: #8E2A1E !important; color: var(--ud-cream) !important; }
-.toast.text-bg-warning { background-color: #8A5F1A !important; color: var(--ud-cream) !important; }
-.toast.text-bg-info, .toast.text-bg-primary, .toast.text-bg-secondary { background-color: var(--ud-ink) !important; color: var(--ud-cream) !important; }
+.toast { border-radius: var(--app-radius); box-shadow: 0 10px 30px rgba(0, 0, 0, .22); }
+.toast.text-bg-success { background-color: #007A55 !important; color: #fff !important; }
+.toast.text-bg-danger { background-color: #C70036 !important; color: #fff !important; }
+.toast.text-bg-warning { background-color: #FCB700 !important; color: #793205 !important; }
+.toast.text-bg-info, .toast.text-bg-primary, .toast.text-bg-secondary { background-color: var(--ud-indigo) !important; color: #fff !important; }
 
 /* ---- auth pages ------------------------------------------------------------------ */
 
 .auth-wrap { min-height: 100vh; display: grid; place-items: center; padding: 2rem 1rem; }
-.auth-card { width: 100%; max-width: 420px; padding: 2.25rem; border-top: 3px solid var(--app-rule); }
+.auth-card { width: 100%; max-width: 420px; padding: 2.25rem; }
 .auth-card.wide { max-width: 560px; }
 .auth-card .brand { justify-content: center; flex-direction: column; gap: .6rem; text-align: center; }
-.auth-card .brand-mark { width: 4rem; height: 4rem; }
-.auth-card .brand-text { align-items: center; }
-.auth-card .brand-name { font-size: 2rem; }
+.auth-card .brand-mark { width: 4.5rem; height: 4.5rem; }
+.auth-card .brand-name { font-size: 1.5rem; font-weight: 700; letter-spacing: -.01em; }
 
 .auth-divider { display: flex; align-items: center; gap: .75rem; margin: 1.25rem 0; color: var(--app-muted); font-size: .8rem; }
 .auth-divider::before, .auth-divider::after { content: ""; flex: 1; border-top: 1px solid var(--app-border); }
