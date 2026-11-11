@@ -41,6 +41,10 @@ function initPickers(root) {
     flatpickr(el, {
       ...PICKERS[el.dataset.picker],
       time_24hr: true,
+      // Default step of 5 makes flatpickr's own minute/second inputs (which sit inside the
+      // form because of `static`) fail HTML validation for e.g. 08:37, blocking submit.
+      minuteIncrement: 1,
+      secondIncrement: 1,
       allowInput: true,
       disableMobile: true, // native mobile pickers would bring the locale format back
       static: true, // render inside the modal, so Bootstrap's focus trap allows typing in it
