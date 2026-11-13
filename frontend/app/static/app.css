@@ -161,9 +161,9 @@ a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; tex
   background: var(--app-surface); border-right: 1px solid var(--app-border);
   display: flex; flex-direction: column; padding: 1.4rem .9rem 1.25rem;
 }
-.app-main { min-height: 100vh; }
+.app-main { min-height: 100vh; display: flex; flex-direction: column; }
 @media (min-width: 992px) { .app-main { margin-left: var(--sidebar-w); } }
-.app-content { max-width: 1180px; margin: 0 auto; padding: 2.25rem 1.5rem 4rem; }
+.app-content { flex: 1 0 auto; display: flex; flex-direction: column; width: 100%; max-width: 1180px; margin: 0 auto; padding: 2.25rem 1.5rem 4rem; }
 @media (max-width: 575.98px) { .app-content { padding: 1.25rem 1rem 3rem; } }
 
 .app-topbar {
@@ -202,7 +202,12 @@ a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; tex
 .side-link.active { background: var(--app-accent-soft); color: var(--app-accent); border-left-color: var(--app-accent); font-weight: 600; }
 .side-link.active i { color: var(--app-accent); }
 
-.page-footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--app-border); text-align: center; font-size: .8rem; color: var(--app-muted); }
+/* margin-top: auto pushes it to the bottom of short pages. The negative margin cancels most of
+   .app-content's bottom padding so the footer ends 1.25rem from the bottom, like the sidebar, and the
+   text row has the user chip's height, so both sit on the same line. */
+.page-footer { margin-top: auto; margin-bottom: -2.75rem; padding-top: 2.5rem; font-size: .8rem; color: var(--app-muted); }
+.page-footer > div { border-top: 1px solid var(--app-border); padding-top: .9rem; min-height: calc(2.6rem + .9rem + 1px); display: flex; align-items: center; justify-content: center; }
+@media (max-width: 575.98px) { .page-footer { margin-bottom: -1.75rem; } }
 .sidebar-footer { margin-top: auto; border-top: 1px solid var(--app-border); padding-top: .9rem; }
 .user-chip { display: flex; align-items: center; gap: .6rem; padding: .25rem .5rem; }
 .avatar-circle {
