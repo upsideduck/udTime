@@ -202,6 +202,7 @@ a:not([class]) { text-decoration: underline; text-decoration-thickness: 1px; tex
 .side-link.active { background: var(--app-accent-soft); color: var(--app-accent); border-left-color: var(--app-accent); font-weight: 600; }
 .side-link.active i { color: var(--app-accent); }
 
+.page-footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--app-border); text-align: center; font-size: .8rem; color: var(--app-muted); }
 .sidebar-footer { margin-top: auto; border-top: 1px solid var(--app-border); padding-top: .9rem; }
 .user-chip { display: flex; align-items: center; gap: .6rem; padding: .25rem .5rem; }
 .avatar-circle {

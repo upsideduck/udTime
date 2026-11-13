@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Form, Request
 
 from ..api import BackendError
+from ..config import settings
 from ..web import Api, fragment, htmx_response, render, session_tz, toast
 
 router = APIRouter()
@@ -29,13 +30,25 @@ def _greeting(request: Request) -> str:
     return "Good morning" if 5 <= hour < 12 else "Good afternoon" if hour < 18 else "Good evening"
 
 
+def _build_date(request: Request) -> str:
+    """Build time from the Docker image, in the user's time zone; empty outside an image build."""
+    try:
+        built = dt.datetime.fromisoformat(settings.build_date)
+    except ValueError:
+        return ""
+    if built.tzinfo is None:
+        built = built.replace(tzinfo=dt.timezone.utc)
+    return built.astimezone(session_tz(request)).strftime("%Y-%m-%d %H:%M")
+
+
 @router.get("/")
 async def home(request: Request, api: Api):
     timer, stats, projects, me = await asyncio.gather(
         api.get("/timer"), _stats(api), api.get("/projects"), api.get("/auth/me")
     )
     return render(request, "index.html", timer=timer, stats=stats, projects=projects, profile=me,
-                  greeting=_greeting(request), today=dt.datetime.now(session_tz(request)))
+                  greeting=_greeting(request), today=dt.datetime.now(session_tz(request)),
+                  build_date=_build_date(request))
 
 
 @router.get("/partials/timer")

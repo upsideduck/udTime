@@ -148,6 +148,7 @@ for component in $COMPONENTS; do
     --label "org.opencontainers.image.version=$TIMESTAMP" \
     --label "org.opencontainers.image.revision=$REVISION" \
     --label "org.opencontainers.image.created=$CREATED" \
+    --build-arg "BUILD_DATE=$CREATED" \
     "$component"
 done
 

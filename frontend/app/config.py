@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     oidc_scopes: str = "openid profile email"
     oidc_username_claim: str = "preferred_username"
     sso_label: str = "udauth"
+    build_date: str = ""  # ISO 8601, set by the Docker build (BUILD_DATE build arg)
 
     @model_validator(mode="after")
     def _require_real_secrets(self):

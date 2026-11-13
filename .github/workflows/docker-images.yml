@@ -17,11 +17,13 @@ jobs:
     outputs:
       tag: ${{ steps.stamp.outputs.tag }}
       owner: ${{ steps.stamp.outputs.owner }}
+      created: ${{ steps.stamp.outputs.created }}
     steps:
       # One timestamp for the whole run, so backend and frontend from the same commit share a tag
       - id: stamp
         run: |
           echo "tag=$(date -u +%Y%m%d_%H%M%S)" >> "$GITHUB_OUTPUT"
+          echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
           echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
 
   build:
@@ -65,6 +67,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: BUILD_DATE=${{ needs.stamp.outputs.created }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 

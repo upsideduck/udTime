@@ -43,6 +43,11 @@ ENV UDTIME2_BACKEND_URL="http://udtime2-backend:8000" \
     UDTIME2_SSO_LABEL="udauth" \
     UDTIME2_FORWARDED_ALLOW_IPS="127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
 
+# Build time (ISO 8601 UTC), shown in the footer of the Today page. Set late so it does not
+# invalidate the cached layers above.
+ARG BUILD_DATE=""
+ENV UDTIME2_BUILD_DATE="$BUILD_DATE"
+
 EXPOSE 8001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/login', timeout=4)"
