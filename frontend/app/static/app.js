@@ -54,6 +54,17 @@ function initPickers(root) {
   });
 }
 
+// flatpickr commits a typed hour/minute only when that field blurs, but it closes the picker on
+// mousedown outside it, before the blur, and rewrites the time from the main input (e.g. 08:00
+// while the typed :30 is still pending). Blur the field first so the typed value is committed.
+["mousedown", "touchstart"].forEach((type) =>
+  window.addEventListener(type, (e) => {
+    const el = document.activeElement;
+    const calendar = el?.closest?.(".flatpickr-calendar");
+    if (calendar && el.matches(".flatpickr-time input") && !calendar.contains(e.target)) el.blur();
+  }, true),
+);
+
 htmx.onLoad((root) => {
   root.querySelectorAll(".clock[data-server-time]").forEach((el) => {
     el._skew = Number(el.dataset.serverTime) - Date.now() / 1000;
