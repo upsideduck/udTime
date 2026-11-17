@@ -34,12 +34,24 @@ const PICKERS = {
   time: { dateFormat: "H:i", enableTime: true, noCalendar: true },
 };
 
+// flatpickr's parser matches the ":" in "H:i" as any character, so a typed 1232 is read as
+// 12, "3", 2 = 12:02. Insert the colons first: 1232 → 12:32, 930 → 09:30, 123045 → 12:30:45.
+function expandTime(text) {
+  return String(text)
+    .trim()
+    .replace(/(^|\s)(\d{1,2})(\d{2})(\d{2})?$/, (_, pre, h, m, s) => pre + h + ":" + m + (s ? ":" + s : ""));
+}
+
 function initPickers(root) {
   if (!window.flatpickr) return;
   root.querySelectorAll("input[data-picker]").forEach((el) => {
     if (el._flatpickr) return;
+    const config = PICKERS[el.dataset.picker];
     flatpickr(el, {
-      ...PICKERS[el.dataset.picker],
+      ...config,
+      ...(config.enableTime && {
+        parseDate: (text, format) => flatpickr.parseDate(expandTime(text), format),
+      }),
       time_24hr: true,
       // Default step of 5 makes flatpickr's own minute/second inputs (which sit inside the
       // form because of `static`) fail HTML validation for e.g. 08:37, blocking submit.

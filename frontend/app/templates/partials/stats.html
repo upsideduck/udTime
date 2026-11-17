@@ -5,15 +5,19 @@
       <div class="stat-label"><i class="bi bi-{{ icon }}"></i> {{ label }}</div>
       <div class="stat-value">{{ stats[key].worktime | hm }}</div>
       <div class="stat-hint">{% if stats[key].breaktime %}{{ stats[key].breaktime | hm }} breaks{% else %}worked{% endif %}</div>
+      {% set diff = stats[key].diff_to_date %}
+      {% if diff is number %}
+      <div class="stat-hint {{ (diff | hms) | sign_class }}" title="Difference through yesterday">{% if diff > 0 %}+{% endif %}{{ diff | hm }} through yesterday</div>
+      {% endif %}
     </div>
   </div>
   {% endfor %}
   <div class="col-6 col-xl-3">
     <a class="surface stat-tile h-100 d-block text-reset" href="/summary/week-totals">
       <div class="stat-label"><i class="bi bi-graph-up"></i> Balance</div>
-      {% if stats.balance %}
-        <div class="stat-value {{ stats.balance.totaldifftime | sign_class }}">{{ stats.balance.totaldifftime[:-3] }}</div>
-        <div class="stat-hint">until week {{ stats.balance.week }}</div>
+      {% if stats.balance is number %}
+        <div class="stat-value {{ (stats.balance | hms) | sign_class }}">{{ stats.balance | hm }}</div>
+        <div class="stat-hint">through yesterday</div>
       {% else %}
         <div class="stat-value text-muted">—</div>
         <div class="stat-hint">no statistics yet</div>

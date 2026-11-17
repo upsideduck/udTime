@@ -15,13 +15,26 @@ router = APIRouter()
 TIMER_ACTIONS = ("start-work", "start-break", "end-break", "end-work")
 
 
-async def _stats(api: Api) -> dict:
-    summary, weeks = await asyncio.gather(
+async def _stats(request: Request, api: Api) -> dict:
+    today = dt.datetime.now(session_tz(request)).date()
+    year, week, _ = today.isocalendar()
+    summary, weeks, this_week, this_month = await asyncio.gather(
         api.get("/stats/summary", params={"types": "today,thisweek,thismonth"}),
         api.get("/stats/balance/weeks"),
+        api.get(f"/stats/week/{year}/{week}"),
+        api.get(f"/stats/month/{today.year}/{today.month}"),
     )
-    finished = [w for w in weeks if not w["ongoing"]]
-    summary["balance"] = finished[-1] if finished else None
+    # Difference over the completed days (through yesterday); none on the period's first day
+    for key, totals in (("thisweek", this_week), ("thismonth", this_month)):
+        to_date = totals.get("to_date")
+        summary[key]["diff_to_date"] = to_date["diff"] if to_date and to_date["days"] else None
+    # Balance through yesterday: the total after the last finished week (the starting offset
+    # when the ongoing week is the first) plus this week's completed days
+    summary["balance"] = None
+    if weeks:
+        last = weeks[-1]
+        before_week = last["total"] - last["diff"] if last["ongoing"] else last["total"]
+        summary["balance"] = before_week + (summary["thisweek"]["diff_to_date"] or 0)
     return summary
 
 
@@ -44,7 +57,7 @@ def _build_date(request: Request) -> str:
 @router.get("/")
 async def home(request: Request, api: Api):
     timer, stats, projects, me = await asyncio.gather(
-        api.get("/timer"), _stats(api), api.get("/projects"), api.get("/auth/me")
+        api.get("/timer"), _stats(request, api), api.get("/projects"), api.get("/auth/me")
     )
     return render(request, "index.html", timer=timer, stats=stats, projects=projects, profile=me,
                   greeting=_greeting(request), today=dt.datetime.now(session_tz(request)),
@@ -57,7 +70,7 @@ async def timer_partial(request: Request, api: Api):
 
 
 async def _timer_refresh(request: Request, api: Api, message: str, level: str = "success"):
-    timer, stats = await asyncio.gather(api.get("/timer"), _stats(api))
+    timer, stats = await asyncio.gather(api.get("/timer"), _stats(request, api))
     return htmx_response(
         fragment(request, "partials/timer.html", timer=timer, stats=stats),
         fragment(request, "partials/stats.html", stats=stats, oob=True),
