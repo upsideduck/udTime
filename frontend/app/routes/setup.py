@@ -13,7 +13,8 @@ from ..web import render
 router = APIRouter()
 
 # Pages that keep working while an update is pending
-EXEMPT_PREFIXES = ("/setup", "/static", "/login", "/logout", "/sso", "/avatar")
+# /api/ answers 503 from the backend itself instead of redirecting to the setup page
+EXEMPT_PREFIXES = ("/setup", "/static", "/login", "/logout", "/sso", "/avatar", "/api/")
 CHECK_INTERVAL = 30  # seconds an "up to date" answer is trusted
 
 _up_to_date_until = 0.0

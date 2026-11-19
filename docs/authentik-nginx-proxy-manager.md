@@ -120,7 +120,13 @@ udTime limits failed logins itself: 10 per username and 30 per IP within 15 minu
 
 ## 4. Exposing the API for scripts and apps (optional)
 
-Browser users never need the backend directly. For scripts, mobile apps or API keys, publish the backend with a **second** proxy host, e.g. `time-api.example.com` → `udtime2-backend:8000`, with SSL. In its Advanced tab:
+The frontend serves the API on the same host, at `https://time.example.com/api/v1`, for requests that send an `X-API-Key` header. Nothing extra is needed in NPM. It only passes the key on, so a request gets exactly what the key's scopes allow. Endpoints that can't be used with an API key anyway (sign-in, registration, password change, API key management and admin) answer `404` there. Set `UDTIME2_PUBLIC_API=false` to turn it off.
+
+```bash
+curl -H "X-API-Key: <key>" https://time.example.com/api/v1/timer
+```
+
+**Alternative: a separate API host.** If you also need login tokens (`POST /auth/login`, `Authorization: Bearer`) from outside, publish the backend itself with a **second** proxy host, e.g. `time-api.example.com` → `udtime2-backend:8000`, with SSL. Uncomment the backend's `ports:` in `docker-compose.yml`, or attach it to NPM's network. In its Advanced tab:
 
 ```nginx
 # Only the frontend may use the trusted login

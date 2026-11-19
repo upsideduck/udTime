@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     session_max_age: int = 12 * 3600
     frontend_service_secret: str = ""
     default_timezone: str = "Europe/Stockholm"
+    # Forward /api/v1/* to the backend for requests with an X-API-Key header
+    public_api: bool = True
 
     # Single sign-on with OpenID Connect (e.g. Authentik). Needs issuer and client id when enabled.
     oidc_enabled: bool = False

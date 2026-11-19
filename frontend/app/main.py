@@ -9,7 +9,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from .api import BackendError, NotLoggedIn, make_client
 from .config import settings
 from .oidc import OIDCClient
-from .routes import auth, forms, home, profile, setup, summary
+from .routes import api_proxy, auth, forms, home, profile, setup, summary
 from .web import render, toast
 
 # Scripts only from this site and jsDelivr (htmx, Bootstrap, FullCalendar); no inline scripts.
@@ -98,7 +98,7 @@ def create_app() -> FastAPI:
             return HTMLResponse(toast(request, exc.detail, "danger"), headers={"HX-Reswap": "none"})
         return render(request, "error.html", status_code=exc.status_code, error=exc.detail)
 
-    for module in (auth, home, summary, forms, profile, setup):
+    for module in (api_proxy, auth, home, summary, forms, profile, setup):
         app.include_router(module.router)
     return app
 

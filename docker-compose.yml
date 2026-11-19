@@ -27,8 +27,8 @@ services:
       UDTIME2_DB_HAS_DELETE_TRIGGERS: ${UDTIME2_DB_HAS_DELETE_TRIGGERS:-false}
       UDTIME2_DEFAULT_TIMEZONE: ${UDTIME2_DEFAULT_TIMEZONE:-Europe/Stockholm}
       UDTIME2_API_DOCS: ${UDTIME2_API_DOCS:-false}
-    # Not published: only the frontend talks to it. To expose the API for scripts/API keys,
-    # uncomment and put it behind the proxy (see docs/authentik-nginx-proxy-manager.md).
+    # Not published: only the frontend talks to it. The frontend forwards /api/v1/* here for
+    # requests with an X-API-Key (UDTIME2_PUBLIC_API), so this port normally stays closed.
     # ports:
     #   - "${UDTIME2_BACKEND_BIND:-0.0.0.0}:${UDTIME2_BACKEND_PORT:-8000}:8000"
     depends_on:
@@ -58,6 +58,7 @@ services:
       UDTIME2_SSO_LABEL: ${UDTIME2_SSO_LABEL:-udauth}
       UDTIME2_DEFAULT_TIMEZONE: ${UDTIME2_DEFAULT_TIMEZONE:-Europe/Stockholm}
       UDTIME2_FORWARDED_ALLOW_IPS: ${UDTIME2_FORWARDED_ALLOW_IPS:-127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+      UDTIME2_PUBLIC_API: ${UDTIME2_PUBLIC_API:-true}
     ports:
       - "${UDTIME2_FRONTEND_BIND:-0.0.0.0}:${UDTIME2_FRONTEND_PORT:-8001}:8001"
     depends_on:

@@ -21,6 +21,7 @@ The backend must be running at `UDTIME2_BACKEND_URL`.
   - Logout also ends the session at the identity provider.
 
   See [docs/authentik-nginx-proxy-manager.md](../docs/authentik-nginx-proxy-manager.md) for setting up Authentik and Nginx Proxy Manager.
+- **Public API:** `/api/v1/*` is forwarded to the backend for requests with an `X-API-Key` header, so scripts and apps can use the same host. Only the key, `Content-Type` and `Accept` are passed on. Sign-in, registration, password change, key management and admin endpoints are blocked. Turn it off with `UDTIME2_PUBLIC_API=false`. See [docs/api.md](../docs/api.md).
 - **Security:**
   - `UDTIME2_SESSION_SECRET` and `UDTIME2_FRONTEND_SERVICE_SECRET` must be random values of at least 16 characters, or the app refuses to start.
   - Responses carry a strict Content-Security-Policy (no inline scripts), `X-Frame-Options: DENY`, and HSTS when `UDTIME2_SESSION_HTTPS_ONLY=true`.
