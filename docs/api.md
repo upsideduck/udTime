@@ -58,7 +58,7 @@ A `:write` scope implies the matching `:read`. A key whose scopes are `*` has al
 - Timestamps must be from year 2000 up to about a year ahead. Timer actions can't be in the future.
 - A work period is at most 7 days, an absence range at most 366 days, a duration at most 24 h.
 - Comments are at most 1000 characters.
-- Request bodies are at most 1 MB (`413` otherwise); avatars at most 20 000 bytes.
+- Request bodies are at most 1 MB (`413` otherwise), except avatar uploads, which may be up to 10 MB.
 - Failed logins: 10 per username and 30 per client IP within 15 minutes, then `429` with `Retry-After` (seconds).
 
 ### Errors
@@ -169,7 +169,7 @@ The image bytes with their media type, or `404` if none is set.
 
 ### `PUT /users/me/avatar` — `profile:write`
 
-`multipart/form-data` with a `file` field, under 20 000 bytes. Returns `{"message": "Avatar updated"}`.
+`multipart/form-data` with a `file` field: a JPEG, PNG, GIF or WebP image up to 10 MB. The server applies the EXIF rotation, crops it to a centred square and scales it down to at most 256×256. It stores a PNG if the image has transparency, otherwise a JPEG; an animated image keeps its first frame. Returns `{"message": "Avatar updated"}`. Other files, and images over 50 megapixels, get `400`.
 
 ---
 

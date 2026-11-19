@@ -9,8 +9,8 @@
       {{ (me.firstname or me.username)[:1] | upper }}
     </span>
     <div class="flex-grow-1">
-      <input class="form-control" type="file" name="file" accept="image/jpeg,image/png,image/gif" required>
-      <div class="form-text">JPEG, PNG or GIF, max 20 kB.</div>
+      <input class="form-control" type="file" name="file" accept="image/jpeg,image/png,image/gif,image/webp" required>
+      <div class="form-text">JPEG, PNG, GIF or WebP, up to 10 MB. It is cropped to a square and scaled down.</div>
     </div>
   </div>
   <div class="modal-footer">

@@ -14,7 +14,8 @@ router = APIRouter()
 
 # Recomputing every week/month since statsstartdate can take a while on a large history
 RECOMPUTE_TIMEOUT = 300
-MAX_AVATAR_BYTES = 20000
+# Largest avatar upload; the backend shrinks it to 256 x 256 before storing it
+MAX_AVATAR_BYTES = 10 * 1024 * 1024
 
 # API key scope areas: (area, label, has a write scope)
 SCOPE_AREAS = [
@@ -197,7 +198,7 @@ async def avatar_form(request: Request):
 async def upload_avatar(request: Request, api: Api, file: Annotated[UploadFile, File()]):
     data = await file.read(MAX_AVATAR_BYTES + 1)
     if len(data) > MAX_AVATAR_BYTES:
-        return htmx_response(toast(request, "Avatar must be smaller than 20 kB", "danger"), reswap="none")
+        return htmx_response(toast(request, "The image must be smaller than 10 MB", "danger"), reswap="none")
     try:
         await api.put("/users/me/avatar", files={"file": (file.filename or "avatar", data, file.content_type)})
     except BackendError as exc:

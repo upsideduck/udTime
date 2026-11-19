@@ -2,6 +2,7 @@ import hmac
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Header, HTTPException, Request, Response, UploadFile, status
+from fastapi.concurrency import run_in_threadpool
 
 from ..config import settings
 from ..deps import DB, require, require_login
@@ -123,5 +124,6 @@ def get_avatar(user: Annotated[User, Depends(require("profile:read"))]):
 async def put_avatar(
     db: DB, user: Annotated[User, Depends(require("profile:write"))], file: Annotated[UploadFile, File()]
 ):
-    users.set_avatar(db, user, await file.read(users.MAX_AVATAR_BYTES + 1))
+    data = await file.read(users.MAX_AVATAR_BYTES + 1)
+    await run_in_threadpool(users.set_avatar, db, user, data)  # resizing is CPU work
     return Message(message="Avatar updated")

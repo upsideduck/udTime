@@ -12,6 +12,7 @@ from .config import settings
 from .db import get_db
 from .errors import DomainError
 from .routers import absences, apikeys, auth, periods, projects, schedules, schema, stats, timer
+from .services import users
 
 log = logging.getLogger("udtime")
 
@@ -24,8 +25,10 @@ SECURITY_HEADERS = {
 }
 
 
-# Largest accepted request body (forms, JSON, the 20 kB avatar)
+# Largest accepted request body (forms, JSON); avatar uploads may be larger, they are shrunk
 MAX_BODY_BYTES = 1024 * 1024
+AVATAR_PATH = f"{API_PREFIX}/users/me/avatar"
+MAX_AVATAR_BODY_BYTES = users.MAX_AVATAR_BYTES + 64 * 1024  # plus multipart overhead
 
 # Usable while database patches are pending: sign-in and the schema endpoints
 SCHEMA_EXEMPT = (f"{API_PREFIX}/auth/", f"{API_PREFIX}/schema", f"{API_PREFIX}/admin/schema/")
@@ -77,7 +80,8 @@ def create_app() -> FastAPI:
     @app.middleware("http")
     async def limit_body_size(request: Request, call_next):
         length = request.headers.get("content-length")
-        if length and (not length.isdigit() or int(length) > MAX_BODY_BYTES):
+        limit = MAX_AVATAR_BODY_BYTES if request.url.path == AVATAR_PATH else MAX_BODY_BYTES
+        if length and (not length.isdigit() or int(length) > limit):
             return PlainTextResponse("Request too large", status_code=413)
         return await call_next(request)
 

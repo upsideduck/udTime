@@ -44,8 +44,10 @@ async def lifespan(app: FastAPI):
     await app.state.http.aclose()
 
 
-# Largest accepted request body (forms, JSON, the 20 kB avatar)
+# Largest accepted request body (forms, JSON); avatar uploads may be larger, the backend shrinks them
 MAX_BODY_BYTES = 1024 * 1024
+AVATAR_PATHS = ("/profile/avatar", "/api/v1/users/me/avatar")
+MAX_AVATAR_BODY_BYTES = profile.MAX_AVATAR_BYTES + 64 * 1024  # plus multipart overhead
 
 
 def create_app() -> FastAPI:
@@ -72,7 +74,8 @@ def create_app() -> FastAPI:
     @app.middleware("http")
     async def limit_body_size(request: Request, call_next):
         length = request.headers.get("content-length")
-        if length and (not length.isdigit() or int(length) > MAX_BODY_BYTES):
+        limit = MAX_AVATAR_BODY_BYTES if request.url.path in AVATAR_PATHS else MAX_BODY_BYTES
+        if length and (not length.isdigit() or int(length) > limit):
             return PlainTextResponse("Request too large", status_code=413)
         return await call_next(request)
 
